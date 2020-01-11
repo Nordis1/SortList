@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <EditText
+        android:id="@+id/etName"
+        android:hint="Name/Model/search"
+        android:layout_width="wrap_content"
+        android:layout_weight="1"
+        android:layout_height="wrap_content">
+    </EditText>
+    <Button
+        android:id="@+id/btnJaak"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAllCaps="false"
+        android:text="The rest"/>
+<!--    <EditText
+        android:id="@+id/etData"
+        android:hint="Nadal/lisa"
+        android:layout_width="wrap_content"
+        android:layout_weight="1"
+        android:layout_height="wrap_content">
+
+    </EditText>-->
+
+</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/etModel"
+            android:hint="Model/lisa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2">
+        </EditText>
+        <Button
+            android:id="@+id/btnChange"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change"
+            android:textAllCaps="false"/>
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Load DB"
+            android:textAllCaps="false"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_cloud_download_black_24dp"
+            android:id="@+id/loadtext"/>
+        <Button
+            android:id="@+id/btnDeleteAll"
+            android:layout_width="wrap_content"
+            android:textAllCaps="false"
+            android:drawableLeft="@drawable/ic_clear_black_24dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Del all"/>
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_autorenew_black_24dp"
+            android:onClick="btnSave"
+            android:textAllCaps="false"
+            android:layout_weight="1"
+            android:text="Save/Update"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <ListView
+            android:id="@+id/list_item_model"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </ListView>
+
+</LinearLayout>
+</LinearLayout>
