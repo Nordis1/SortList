@@ -448,10 +448,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-public static void NewCommon(){
-    System.out.println("lol");
-}
-
     /*Создаём меню и регистрируем там поиск*//*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
