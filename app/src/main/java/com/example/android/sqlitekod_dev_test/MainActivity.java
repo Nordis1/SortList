@@ -41,8 +41,8 @@ import static com.example.android.sqlitekod_dev_test.R.color.valmis;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SearchView.OnQueryTextListener {
     DBHelper dbHelper;
     SQLiteDatabase db;
-    EditText etName, etModel,etsecond;
-    Button btnSave, loadtext, btnDeleteAll,btnJaak,btnChange,btnsearch;
+    EditText etName, etModel, etsecond;
+    Button btnSave, loadtext, btnDeleteAll, btnJaak, btnChange, btnsearch;
     ListView list_of_View;   //Лист куда закидываеться Arlismodel при помощи адаптера (adapter1)
     ArrayList<String> mainList;     //основной лист
     ArrayList<String> listFromPreferenses = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> found_List = new ArrayList<>();
     String nameS = "";
     public static String model = "";
-    public  static String name = "";
+    public static String name = "";
     HashSet<String> hset = new HashSet<>(); // главный подсчёт выделяемых itemov в setOnItemCL
     int abra = 0; //значение рабоает с hset
     int lan = 0; // используеться в Остатке btnJaak. значение работает с mainList
@@ -114,12 +114,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int green = getResources().getColor(valmis);
-                if (JustList.isEmpty()){
-                    for (int i = 0; i< mainList.size(); i++){
+                if (JustList.isEmpty()) {
+                    for (int i = 0; i < mainList.size(); i++) {
                         JustList.add(mainList.get(i));
                     }
                 }
-                checked_Items = ((TextView)view).getText().toString();
+                checked_Items = ((TextView) view).getText().toString();
 
                 try {
                     if (mainList.isEmpty()) {
@@ -148,27 +148,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 //закончен поиск id
 
-                    if (hset.contains(checked_Items)){
-                        hset.remove(checked_Items);
-                    }else {
-                        hset.add(checked_Items);
-                    }
-                    abra = hset.size();
+                if (hset.contains(checked_Items)) {
+                    hset.remove(checked_Items);
+                } else {
+                    hset.add(checked_Items);
+                }
+                abra = hset.size();
 
 
-                    /*Save stats in sharedPreferences*/
-                    Log.d(LOG_TAG,"запись в SharedPreferences");
+                /*Save stats in sharedPreferences*/
+                Log.d(LOG_TAG, "запись в SharedPreferences");
                 ArrayList<String> gap = new ArrayList<>(hset);
-                    sPref = getSharedPreferences("SAVE",MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sPref.edit();
-                    sPref.edit().clear().apply();
-                    for (int i = 0; i<hset.size();i++) {
-                            editor.putString("Keyg" + i,gap.get(i));
-                        }
-                        editor.putInt("Kolichesvo",abra);
+                sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sPref.edit();
+                sPref.edit().clear().apply();
+                for (int i = 0; i < hset.size(); i++) {
+                    editor.putString("Keyg" + i, gap.get(i));
+                }
+                editor.putInt("Kolichesvo", abra);
 
-                    editor.commit();
-                    gap.clear();
+                editor.commit();
+                gap.clear();
             }
         });
 
@@ -210,9 +210,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     mainList.clear();
                     viewData();
 
-                               //UP-date Main
-                    sPref = getSharedPreferences("SAVE",MODE_PRIVATE);
-                    int kol = sPref.getInt("Kolichesvo",abra);
+                    //UP-date Main
+                    sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+                    int kol = sPref.getInt("Kolichesvo", abra);
                     if (listFromPreferenses.isEmpty()) {
                         for (int i = 0; i < kol; i++) {
                             listFromPreferenses.add(sPref.getString("Keyg" + i, "")); //загрузка с Preferences
@@ -222,15 +222,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ArrayList<Integer> positionofIndex = new ArrayList<>();
                     for (int i = 0; i < mainList.size(); i++) {             //Поиск выбранных(загруженных) елементов в основном листе
                         for (int g = 0; g < listFromPreferenses.size(); g++) {
-                            if (mainList.get(i).contains(listFromPreferenses.get(g))){
+                            if (mainList.get(i).contains(listFromPreferenses.get(g))) {
                                 String o = mainList.get(i);                //Найденный елемент приобразуем в строку и передаём переменной
                                 positionofIndex.add(mainList.indexOf(o));   // в Лист integer заполняем  индексами.
                                 break;
                             }
                         }
                     }
-                    for (int i = 0; i<positionofIndex.size();i++){
-                        list_of_View.setItemChecked(positionofIndex.get(i),true); //Чек итемов которые были полученны.
+                    for (int i = 0; i < positionofIndex.size(); i++) {
+                        list_of_View.setItemChecked(positionofIndex.get(i), true); //Чек итемов которые были полученны.
                     }
 
                     if (hset.isEmpty()) {
@@ -241,8 +241,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     positionofIndex.clear();
                     listFromPreferenses.clear();
                     found_List.clear();
-                    Toast.makeText(MainActivity.this,"UpDate is successfully",Toast.LENGTH_SHORT).show();
-                }else {
+                    Toast.makeText(MainActivity.this, "UpDate is successfully", Toast.LENGTH_SHORT).show();
+                } else {
                     etModel.setText("");
                     etName.setText("");
                     Toast.makeText(this, "Cler add Object", Toast.LENGTH_SHORT).show();
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (del.equals(delete)) { // Если Ввёл в строку Delete
                     db.delete(DBHelper.TABLE_CONTACT, null, null);
                     try {
-                        for (int i = 0; i< 2; i++) {
+                        for (int i = 0; i < 2; i++) {
                             File file = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser");
                             File file2 = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser-journal");
                             file.delete();
@@ -284,9 +284,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     JustList.clear();
                     etName.setText("");
                     Toast.makeText(MainActivity.this, "Deleted is successfully", Toast.LENGTH_SHORT).show();
-                }else if (!del.isEmpty()){ // Если Строка не пустая , а с каким то значением
+                } else if (!del.isEmpty()) { // Если Строка не пустая , а с каким то значением
                     try {
-                        int upadateCount1 = db.delete(DBHelper.TABLE_CONTACT,DBHelper.KEY_ID + "= ?" ,new String[] {name});
+                        int upadateCount1 = db.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_ID + "= ?", new String[]{name});
                         System.out.println("Строк удаленно " + upadateCount1);
                         JustList.clear();
                         etName.setText("");
@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(MainActivity.this, "Error deleted", Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
-                }else {
+                } else {
                     Toast.makeText(this, "Add in name 'Delete' or number", Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -306,9 +306,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (!mainList.isEmpty() || !found_List.isEmpty()) {
                     Toast.makeText(MainActivity.this, "DataBase is full", Toast.LENGTH_SHORT).show();
                 } else {
-                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
                 }//продолжение кода в onRequestPermissionsResult (Код ниже)
-                        break;
+                break;
 //Остаток
             case R.id.btnJaak:
                 if (name.equals("Rest")) { //Что бы сработал нужно ввести
@@ -337,27 +337,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     editor1.commit();
                     jaak.clear();
                     etName.setText("");
-                }else {
-                    Toast.makeText(MainActivity.this,"Put in name ' Rest ' " ,Toast.LENGTH_SHORT ).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Put in name ' Rest ' ", Toast.LENGTH_SHORT).show();
                 }
                 break;
 
 //Изменение
             case R.id.btnChange:
                 boolean a = false;
-                if (etModel.length() != 0){
-                     String changed = " Changed";
-                    contentValues.put(DBHelper.KEY_NAME,model + changed);
-                    if (!found_List.isEmpty()){    //Если Пойсковый лист не пустой
+                if (etModel.length() != 0) {
+                    String changed = " Changed";
+                    contentValues.put(DBHelper.KEY_NAME, model + changed);
+                    if (!found_List.isEmpty()) {    //Если Пойсковый лист не пустой
                         int upadateCount = db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
 
                         System.out.println("Строк обновленно " + upadateCount);
-                        Toast.makeText(MainActivity.this,"String was changed " + upadateCount ,Toast.LENGTH_SHORT ).show();
-                        a  = true;
+                        Toast.makeText(MainActivity.this, "String was changed " + upadateCount, Toast.LENGTH_SHORT).show();
+                        a = true;
                         etModel.setText("");
                         btnSave.callOnClick();
                         etName.setText(nameS);
-                    }else {
+                    } else {
                         int upadateCount = db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
 
                         System.out.println("Строк обновленно " + upadateCount);
@@ -366,10 +366,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         etModel.setText("");
                         btnSave.callOnClick();
                     }
-                }
-                else if (checked_Items.isEmpty()){
-                    Toast.makeText(MainActivity.this,"Choose item" ,Toast.LENGTH_SHORT ).show();
-                }else if (a == false){
+                } else if (checked_Items.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Choose item", Toast.LENGTH_SHORT).show();
+                } else if (a == false) {
                     etModel.setText(checked_Items);
                 }
                 break;
@@ -403,10 +402,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                             //Дополнительная подгрузка остатка (код ниже)
-                            sPref = getSharedPreferences("Jaak",MODE_PRIVATE);
-                            int luk = sPref.getInt("Kol-jaak",lan);
-                            for (int i = 0; i< luk;i++){
-                                String s = sPref.getString("naidis" + i,"");
+                            sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
+                            int luk = sPref.getInt("Kol-jaak", lan);
+                            for (int i = 0; i < luk; i++) {
+                                String s = sPref.getString("naidis" + i, "");
                                 gap.add(s + "The_Rest");
                             }
                             sPref.edit().clear().apply();
@@ -448,6 +447,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
         }
     }
+
+public static void NewCommon(){
+    System.out.println("lol");
+}
 
     /*Создаём меню и регистрируем там поиск*//*
     @Override
