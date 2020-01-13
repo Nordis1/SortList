@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 <LinearLayout
     android:layout_width="match_parent"
@@ -15,12 +14,20 @@
         android:layout_weight="1"
         android:layout_height="wrap_content">
     </EditText>
+    <EditText
+        android:id="@+id/secondSearch"
+        android:hint="SecondType"
+        android:layout_width="wrap_content"
+        android:layout_weight="1"
+        android:layout_height="wrap_content">
+    </EditText>
     <Button
-        android:id="@+id/btnJaak"
+        android:id="@+id/btnSearch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAllCaps="false"
-        android:text="The rest"/>
+        android:text="Search"/>
+
 <!--    <EditText
         android:id="@+id/etData"
         android:hint="Nadal/lisa"
@@ -49,6 +56,12 @@
             android:layout_height="wrap_content"
             android:text="Change"
             android:textAllCaps="false"/>
+        <Button
+            android:id="@+id/btnJaak"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:text="The rest"/>
 
     </LinearLayout>
 

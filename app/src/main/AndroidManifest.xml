@@ -26,7 +26,8 @@
         android:roundIcon="@mipmap/neiserr"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.example.android.sqlitekod_dev_test.MainActivity">
+        <activity android:name="com.example.android.sqlitekod_dev_test.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
