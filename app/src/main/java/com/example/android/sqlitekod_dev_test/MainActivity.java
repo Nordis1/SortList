@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-/*    @Override //после получения доступа Загружаем базу данных
+    @Override //после получения доступа Загружаем базу данных
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    *//*Создаём меню и регистрируем там поиск*//*
+    /*Создаём меню и регистрируем там поиск*//*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
