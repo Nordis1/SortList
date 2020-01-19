@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         etName.setText(nameOf_etname); //сюда закидываються слова которые были в поиске
                         etsecond.setText(nameOf_etsecond);// как для Имени  так и для второго значиния.
                         btnsearch.callOnClick();
-                    }} else {
+                    }}else {
                         int upadateCount = db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
 
                         System.out.println("Строк обновленно " + upadateCount);
