@@ -246,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     listFromPreferenses.clear();
                     found_List.clear();
                     checked_Items = "";
+                    Log.d(LOG_TAG, "Только что зашли в save/update при условии что все поля пусты  etname" + nameOf_etname + " etSecond "+ nameOf_etsecond);
                     Toast.makeText(MainActivity.this, "UpDate is successfully", Toast.LENGTH_SHORT).show();
                 } else {
                     etModel.setText("");
@@ -370,6 +371,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Toast.makeText(MainActivity.this, "String was changed " + upadateCount, Toast.LENGTH_SHORT).show();
                             a = true;
                             b = true;
+                            Log.d(LOG_TAG, "Change   etname " + nameOf_etname + " etSecond "+ nameOf_etsecond);
                             etModel.setText("");
                             btnSave.callOnClick();
                             etName.setText(nameOf_etname); //сюда закидываються слова которые были в поиске
@@ -545,6 +547,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override//для поиска
     public boolean onQueryTextSubmit(String s) { //метод для поиска слова (присвоил к кнопке)
+        Log.d(LOG_TAG, "Только что зашли в search  etname " + nameOf_etname + " etSecond "+ nameOf_etsecond);
         nameOf_etsecond = etsecond.getText().toString();
         nameOf_etname = s;
 
