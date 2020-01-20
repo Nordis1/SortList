@@ -36,11 +36,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public void insertData(String name, String model) {
+    public void insertData(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_NAME, name);
-        contentValues.put(KEY_MODEL, model);
+        //contentValues.put(KEY_MODEL, model);
         //contentValues.put(KEY_DATA, data);
         db.insert(TABLE_CONTACT, null, contentValues);
 /*        long result = db.insert(TABLE_CONTACT, null, contentValues);

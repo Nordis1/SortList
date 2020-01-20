@@ -40,10 +40,10 @@ import static com.example.android.sqlitekod_dev_test.R.color.valmis;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SearchView.OnQueryTextListener, AdapterView.OnItemClickListener {
     DBHelper dbHelper;
     SQLiteDatabase db;
-    EditText etName, etModel, etsecond;
+    EditText etName, etModel, etsecond,etNameOf_hide;
     Button btnSave, loadtext, btnDeleteAll, btnJaak, btnChange, btnsearch;
     ListView list_of_View;   //Лист куда закидываеться Arlismodel при помощи адаптера (adapter1)
-    ArrayList<String> mainList;     //основной лист
+    ArrayList<String> mainList;     //основной лист, в прошлом был Arlistmodel
     ArrayList<String> listFromPreferenses = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
     ArrayList<String> JustList = new ArrayList<>(); //для показа примерной позиции , берёт начало от mainList в setOnItemCL (и чистица в Delete общем и одиночном)
     ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> found_List = new ArrayList<>();
     String nameOf_etname = "";
     String nameOf_etsecond = "";
-    public static String model = "";
+    public static String model,hideName = "";
     public static String name = "";
     HashSet<String> hset = new HashSet<>(); // главный подсчёт выделяемых itemov в setOnItemCL
     int abra = 0; //значение рабоает с hset
@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /*находим Добавление view*/
         etName = findViewById(R.id.etName);
+        etNameOf_hide = findViewById(R.id.etNameOf_hide);
         etModel = findViewById(R.id.etModel);
         etsecond = findViewById(R.id.secondSearch);
 
@@ -196,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         name = etName.getText().toString();
         model = etModel.getText().toString();
+        hideName = etNameOf_hide.getText().toString();
 
 
         db = dbHelper.getWritableDatabase();
@@ -205,9 +207,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Обновить
             case R.id.btnSave:
                 contentValues.put(DBHelper.KEY_NAME, name);
-                contentValues.put(KEY_MODEL, model);
+                contentValues.put(DBHelper.KEY_NAME, hideName);
+                //contentValues.put(KEY_MODEL, model);
 
-                if (etName.length() == 0 && etModel.length() == 0 && etsecond.length() == 0) {
+                if (etName.length() == 0 && etModel.length() == 0 && etsecond.length() == 0 && etNameOf_hide.length() == 0) {
                     mainList.clear();
                     viewData();
 
@@ -248,6 +251,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     etModel.setText("");
                     etsecond.setText("");
                     etName.setText("");
+
+                    dbHelper.insertData(hideName);
+                    mainList.clear();
+                    viewData();
+
                     nameOf_etname = "";
                     nameOf_etsecond = "";
                     Toast.makeText(this, "Clear Object", Toast.LENGTH_SHORT).show();
@@ -426,19 +434,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                             //Дополнительная подгрузка остатка (код ниже)
-                            sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
-                            int luk = sPref.getInt("Kol-jaak", lan);
-                            for (int i = 0; i < luk; i++) {
-                                String s = sPref.getString("naidis" + i, "");
-                                gap.add(s + "The_Rest");
+                            try {
+                                sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
+                                int luk = sPref.getInt("Kol-jaak", lan);
+                                for (int i = 0; i < luk; i++) {
+                                    String s = sPref.getString("naidis" + i, "");
+                                    gap.add(s + "The_Rest");
+                                }
+                                sPref.edit().clear().apply();
+                                for (int i = 0; i < gap.size(); i++) {
+                                    etNameOf_hide.setText(gap.get(i));
+                                    btnSave.callOnClick();
+                                    etNameOf_hide.setText("");
+                                }
+                                gap.clear();
+                                Log.d(LOG_TAG,"Считал данные с доп загрузки");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Log.d(LOG_TAG,"Ошибка при чтении доп-загрузки");
+                                Toast.makeText(MainActivity.this, "Ошибка при чтении доп-загрузки", Toast.LENGTH_SHORT).show();
+
                             }
-                            sPref.edit().clear().apply();
-                            for (int i = 0; i < gap.size(); i++) {
-                                etName.setText(gap.get(i));
-                                btnSave.callOnClick();
-                                etName.setText("");
-                            }
-                            gap.clear();
                             //доп загрузка закончена
 
 
@@ -454,12 +470,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                             int kokku = gap.size();
                             for (int i = 0; i < kokku; i++) {
-                                etName.setText(gap.get(i));
+                                etNameOf_hide.setText(gap.get(i));
                                 btnSave.callOnClick();
-                                etName.setText("");
+                                etNameOf_hide.setText("");
                             }
                             reader.close();
                             gap.clear();
+                            Log.d(LOG_TAG,"Считала новый план");
 
                         } catch (IOException e) {
                             Toast.makeText(MainActivity.this, "Ошибка при чтении файла!", Toast.LENGTH_SHORT).show();
