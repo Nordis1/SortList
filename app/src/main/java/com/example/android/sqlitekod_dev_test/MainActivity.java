@@ -195,19 +195,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onClick(View v) {
-        name = etName.getText().toString();
+        name = etName.getText().toString(); //Сохранение в базу шаг 1
         model = etModel.getText().toString();
         hideName = etNameOf_hide.getText().toString();
 
 
         db = dbHelper.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
+        ContentValues contentValues = new ContentValues(); //шаг 2
         switch (v.getId()) {
 
 //Обновить
             case R.id.btnSave:
-                contentValues.put(DBHelper.KEY_NAME, name);
-                contentValues.put(DBHelper.KEY_NAME, hideName);
+                //contentValues.put(DBHelper.KEY_NAME, name);
+                contentValues.put(DBHelper.KEY_NAME, hideName); //шаг 3
                 //contentValues.put(KEY_MODEL, model);
 
                 if (etName.length() == 0 && etModel.length() == 0 && etsecond.length() == 0 && etNameOf_hide.length() == 0) {
@@ -253,9 +253,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     etsecond.setText("");
                     etName.setText("");
 
-                    dbHelper.insertData(hideName);
+                    dbHelper.insertData(hideName);// шаг 4
                     mainList.clear();
-                    viewData();
+                    viewData(); //обновление mainLista и отображение его.
 
                     nameOf_etname = "";
                     nameOf_etsecond = "";
