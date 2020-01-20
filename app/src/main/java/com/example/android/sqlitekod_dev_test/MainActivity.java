@@ -252,10 +252,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     etModel.setText("");
                     etsecond.setText("");
                     etName.setText("");
-
-                    dbHelper.insertData(hideName);// шаг 4
-                    mainList.clear();
-                    viewData(); //обновление mainLista и отображение его.
+                    if (hideName.length() > 0) {
+                        dbHelper.insertData(hideName);// шаг 4
+                        mainList.clear();
+                        viewData(); //обновление mainLista и отображение его.
+                    }
 
                     nameOf_etname = "";
                     nameOf_etsecond = "";
