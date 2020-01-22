@@ -371,10 +371,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (checked_Items.contains(changed)){ // Если строке уже было присвоенно Changed то оно не добавляеться сново.
                         contentValues.put(DBHelper.KEY_NAME, model);
                         if (!found_List.isEmpty()) {
-                            int upadateCount = db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
-
-                            System.out.println("Строк обновленно " + upadateCount);
-                            Toast.makeText(MainActivity.this, "String was changed " + upadateCount, Toast.LENGTH_SHORT).show();
+                           db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
+                            Toast.makeText(MainActivity.this, "If was changed  ", Toast.LENGTH_SHORT).show();
+                            Log.d(LOG_TAG, "If was changed");
                             a = true;
                             b = true;
                             Log.d(LOG_TAG, "Change   etname " + nameOf_etname + " etSecond "+ nameOf_etsecond);
@@ -390,22 +389,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         int upadateCount = db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
 
                         System.out.println("Строк обновленно " + upadateCount);
-                        Toast.makeText(MainActivity.this, "String was changed " + upadateCount, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "If was not changed ", Toast.LENGTH_SHORT).show();
+                        Log.d(LOG_TAG, "If was not changed");
                         a = true;
                         etModel.setText("");
                         btnSave.callOnClick();
                         etName.setText(nameOf_etname); //сюда закидываються слова которые были в поиске
                         etsecond.setText(nameOf_etsecond);// как для Имени  так и для второго значиния.
                         btnsearch.callOnClick();
-                    }}else {
-                        int upadateCount = db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
-
-                        System.out.println("Строк обновленно " + upadateCount);
-                        Toast.makeText(MainActivity.this, "String was changed999 " + upadateCount, Toast.LENGTH_SHORT).show();
+                    }else {
+                        db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
+                        Toast.makeText(MainActivity.this, "String was changed", Toast.LENGTH_SHORT).show();
+                        Log.d(LOG_TAG, "Странный");
                         a = true;
                         etModel.setText("");
                         btnSave.callOnClick();
-                    }
+                    }}
                 } else if (checked_Items.isEmpty()) {
                     Toast.makeText(MainActivity.this, "Choose item", Toast.LENGTH_SHORT).show();
                 } else if (a == false) {// если ничего из изменений не выполнялось тогда просто закидывает строку. Для того что бы начать менять её.
