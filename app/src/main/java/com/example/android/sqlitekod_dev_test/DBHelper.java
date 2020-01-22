@@ -47,13 +47,11 @@ public class DBHelper extends SQLiteOpenHelper {
         return result != -1;*/
     }
 
-    public void uninsertData(String name, String model, String data) {
+    public void uninsertData(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.get(data);
-        contentValues.get(model);
-        contentValues.get(name);
-        db.getAttachedDbs();
+     /*   ContentValues contentValues = new ContentValues();
+        contentValues.put(KEY_NAME, name);*/
+        db.delete(TABLE_CONTACT,KEY_NAME,new String[]{name});
         db.close();
     }
 
