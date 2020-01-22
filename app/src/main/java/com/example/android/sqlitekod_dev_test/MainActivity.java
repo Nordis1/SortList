@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     HashSet<String> hset = new HashSet<>(); // главный подсчёт выделяемых itemov в setOnItemCL
     int abra = 0; //значение рабоает с hset
     int lan = 0; // используеться в Остатке btnJaak. значение работает с mainList
+    int counter = 0; //для повторений запроса в первом элементе etName.
 
     SharedPreferences sPref;
     final String LOG_TAG = "mylogs";
@@ -249,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(LOG_TAG, "Только что зашли в save/update при условии что все поля пусты  etname" + nameOf_etname + " etSecond "+ nameOf_etsecond);
                     Toast.makeText(MainActivity.this, "UpDate is successfully", Toast.LENGTH_SHORT).show();
                 } else {
+
                     etModel.setText("");
                     etsecond.setText("");
                     etName.setText("");
@@ -256,6 +258,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         dbHelper.insertData(hideName);// шаг 4
                         mainList.clear();
                         viewData(); //обновление mainLista и отображение его.
+                    }
+                    if (counter > 2){
+                        etName.setText(nameOf_etname);
                     }
 
                     nameOf_etname = "";
@@ -549,6 +554,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override//для поиска
     public boolean onQueryTextSubmit(String s) { //метод для поиска слова (присвоил к кнопке)
         Log.d(LOG_TAG, "Только что зашли в search  etname " + nameOf_etname + " etSecond "+ nameOf_etsecond);
+        if (nameOf_etname.equals(s)){
+            counter++;
+        }else{
+            counter = 0;
+        }
         nameOf_etsecond = etsecond.getText().toString();
         nameOf_etname = s;
 
