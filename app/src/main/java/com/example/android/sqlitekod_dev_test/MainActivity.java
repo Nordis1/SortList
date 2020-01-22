@@ -216,8 +216,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     viewData();
 
                     //UP-date Main
+                    Log.i(LOG_TAG," иду по стандарту дальше...");
                     sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
-                    int kol = sPref.getInt("Kolichesvo", abra);
+                    int kol = sPref.getInt("Kolichesvo", 0);
                     if (listFromPreferenses.isEmpty()) {
                         for (int i = 0; i < kol; i++) {
                             listFromPreferenses.add(sPref.getString("Keyg" + i, "")); //загрузка с Preferences
@@ -280,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             File file = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser");
                             File file2 = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser-journal");
                             file.delete();
-                            file2.delete();
+                            file2.delete(); //data/data/com.example.android.sqlitekod_dev_test/shared_prefs/SAVE.xml
                         }
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, "File is not", Toast.LENGTH_SHORT).show();
@@ -513,10 +514,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.item_ready:
-                int countMain = mainList.size();
-                int countReady = hset.size();
+                double countMain = mainList.size();
+                double countReady = hset.size();
                 double persent = countReady * 100 / countMain;
-                Toast.makeText(MainActivity.this, "Persent is done " + persent, Toast.LENGTH_SHORT).show();
+                String persentString = String.valueOf(persent);
+                Toast.makeText(MainActivity.this, "Persent is done " + persentString.substring(0,4), Toast.LENGTH_LONG).show();
 
         }
         return super.onOptionsItemSelected(item);
@@ -537,14 +539,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.item1:
-                sPref = getSharedPreferences("Jaak",MODE_PRIVATE);
+                sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
                 sPref.edit().clear().apply();
-                Toast.makeText(MainActivity.this,"The rest memory was Deleted " ,Toast.LENGTH_SHORT ).show();
+                Toast.makeText(MainActivity.this, "The rest memory was Deleted ", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.item2:
-                Toast.makeText(MainActivity.this,"In works... " ,Toast.LENGTH_SHORT ).show();
-                break;
-                }
+        }
 
                 return super.onContextItemSelected(item);
         }
