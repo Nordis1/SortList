@@ -247,6 +247,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     listFromPreferenses.clear();
                     found_List.clear();
                     checked_Items = "";
+                    if (counter >= 2){
+                        etName.setText(nameOf_etname);
+                    }
                     Log.d(LOG_TAG, "Только что зашли в save/update при условии что все поля пусты  etname" + nameOf_etname + " etSecond "+ nameOf_etsecond);
                     Toast.makeText(MainActivity.this, "UpDate is successfully", Toast.LENGTH_SHORT).show();
                 } else {
@@ -258,9 +261,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         dbHelper.insertData(hideName);// шаг 4
                         mainList.clear();
                         viewData(); //обновление mainLista и отображение его.
-                    }
-                    if (counter > 2){
-                        etName.setText(nameOf_etname);
                     }
 
                     nameOf_etname = "";
