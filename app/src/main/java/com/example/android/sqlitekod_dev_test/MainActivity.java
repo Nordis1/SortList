@@ -413,7 +413,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.btnSearch:
-                onQueryTextSubmit(etName.getText().toString());
+                if (name == null || name.length() == 0){
+                    Toast.makeText(this,"Write something in the place \"Name\" ",Toast.LENGTH_LONG).show();
+                }else {
+                    onQueryTextSubmit(etName.getText().toString());
+                }
                 break;
         }
         dbHelper.close();
