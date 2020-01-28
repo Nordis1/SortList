@@ -444,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             //Дополнительная подгрузка остатка (код ниже)
                             try {
                                 sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
-                                int luk = sPref.getInt("Kol-jaak", lan);
+                                int luk = sPref.getInt("Kol-jaak", 0);
                                 for (int i = 0; i < luk; i++) {
                                     String s = sPref.getString("naidis" + i, "");
                                     gap.add(s + "The_Rest");
@@ -514,11 +514,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.item_ready:
-                double countMain = mainList.size();
-                double countReady = hset.size();
-                double persent = countReady * 100 / countMain;
-                String persentString = String.valueOf(persent);
-                Toast.makeText(MainActivity.this, "Persent is done " + persentString.substring(0,4), Toast.LENGTH_LONG).show();
+                try {
+                    double countMain = mainList.size();
+                    double countReady = hset.size();
+                    double persent = countReady * 100 / countMain;
+                    String persentString = String.valueOf(persent);
+                    Toast.makeText(MainActivity.this, "Persent is done " + persentString.substring(0,4), Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    Toast.makeText(this,"Persent is done  0.0",Toast.LENGTH_LONG).show();
+                }
 
         }
         return super.onOptionsItemSelected(item);
@@ -593,7 +597,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //UP-date Search list
         sPref = getSharedPreferences("SAVE",MODE_PRIVATE);
-        int koli = sPref.getInt("Kolichesvo",abra);
+        int koli = sPref.getInt("Kolichesvo",0);
         if (listFromPreferenses.isEmpty()) {
             for (int i = 0; i < koli; i++) {
                 listFromPreferenses.add(sPref.getString("Keyg" + i, ""));
