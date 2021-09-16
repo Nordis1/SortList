@@ -1,6 +1,9 @@
 package com.example.android.sqlitekod_dev_test;
 
+import static com.example.android.sqlitekod_dev_test.R.color.valmis;
+
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -27,6 +30,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -34,19 +38,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import static com.example.android.sqlitekod_dev_test.DBHelper.KEY_MODEL;
-import static com.example.android.sqlitekod_dev_test.R.color.valmis;
-
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SearchView.OnQueryTextListener, AdapterView.OnItemClickListener {
     DBHelper dbHelper;
-    SQLiteDatabase db;
-    EditText etName, etModel, etsecond,etNameOf_hide;
-    Button btnSave, loadtext, btnDeleteAll, btnJaak, btnChange, btnsearch;
+    SQLiteDatabase sqLiteDatabase;
+    EditText etName, etModel, etSecond,etNameOf_hide;
+    Button btnSave, loadText, btnDeleteAll, btnJaak, btnChange, btnSearch, btnBackSearch;
     ListView list_of_View;   //Лист куда закидываеться Arlismodel при помощи адаптера (adapter1)
     ArrayList<String> mainList;     //основной лист, в прошлом был Arlistmodel
-    ArrayList<String> listFromPreferenses = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
+    ArrayList<String> sharedPreferenceList = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
     ArrayList<String> JustList = new ArrayList<>(); //для показа примерной позиции , берёт начало от mainList в setOnItemCL (и чистица в Delete общем и одиночном)
     ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
+    ArrayList<String> backSearchlist = new ArrayList<>();
 
     /*test*/
     ArrayList<String> found_List = new ArrayList<>();
@@ -55,12 +57,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static String model,hideName = "";
     public static String name = "";
     HashSet<String> hset = new HashSet<>(); // главный подсчёт выделяемых itemov в setOnItemCL
-    int abra = 0; //значение рабоает с hset
+    int abra,backcounter = 0; //значение рабоает с hset, backcounter - работает с backSearchlist
     int lan = 0; // используеться в Остатке btnJaak. значение работает с mainList
     int counter = 0; //для повторений запроса в первом элементе etName.
+    boolean permisionGranted = false; //permisionGranted специальная переменная для удаленя файла на носителе.
 
     SharedPreferences sPref;
-    final String LOG_TAG = "mylogs";
+    final String TAG = "mylogs";
     public static String checked_Items = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с hset
     /*test*/
 
@@ -84,8 +87,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnSave = findViewById(R.id.btnSave);
         btnSave.setOnClickListener(this);
 
-        loadtext = findViewById(R.id.loadtext);
-        loadtext.setOnClickListener(this);
+        loadText = findViewById(R.id.loadtext);
+        loadText.setOnClickListener(this);
 
         btnJaak = findViewById(R.id.btnJaak);
         btnJaak.setOnClickListener(this);
@@ -97,14 +100,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnChange = findViewById(R.id.btnChange);
         btnChange.setOnClickListener(this);
 
+        btnBackSearch = findViewById(R.id.IdBackSearch);
+        btnBackSearch.setOnClickListener(this);
+
         /*находим Добавление view*/
         etName = findViewById(R.id.etName);
         etNameOf_hide = findViewById(R.id.etNameOf_hide);
         etModel = findViewById(R.id.etModel);
-        etsecond = findViewById(R.id.secondSearch);
+        etSecond = findViewById(R.id.secondSearch);
 
-        btnsearch = findViewById(R.id.btnSearch);
-        btnsearch.setOnClickListener(this);
+        btnSearch = findViewById(R.id.btnSearch);
+        btnSearch.setOnClickListener(this);
 
 
         dbHelper = new DBHelper(this);
@@ -162,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         /*Save stats in sharedPreferences*/
-        Log.d(LOG_TAG, "запись в SharedPreferences");
+        Log.d(TAG, "запись в SharedPreferences");
         ArrayList<String> gap = new ArrayList<>(hset);
         sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
         SharedPreferences.Editor editor = sPref.edit();
@@ -193,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @SuppressLint({"NonConstantResourceId", "SetTextI18n"})
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onClick(View v) {
@@ -201,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         hideName = etNameOf_hide.getText().toString();
 
 
-        db = dbHelper.getWritableDatabase();
+        sqLiteDatabase = dbHelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues(); //шаг 2
         switch (v.getId()) {
 
@@ -211,24 +218,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 contentValues.put(DBHelper.KEY_NAME, hideName); //шаг 3
                 //contentValues.put(KEY_MODEL, model);
 
-                if (etName.length() == 0 && etModel.length() == 0 && etsecond.length() == 0 && etNameOf_hide.length() == 0) {
+                if (etName.length() == 0 && etModel.length() == 0 && etSecond.length() == 0 && etNameOf_hide.length() == 0) {
                     mainList.clear();
                     viewData();
 
                     //UP-date Main
-                    Log.i(LOG_TAG," иду по стандарту дальше...");
                     sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
                     int kol = sPref.getInt("Kolichesvo", 0);
-                    if (listFromPreferenses.isEmpty()) {
+                    if (sharedPreferenceList.isEmpty()) {
                         for (int i = 0; i < kol; i++) {
-                            listFromPreferenses.add(sPref.getString("Keyg" + i, "")); //загрузка с Preferences
+                            sharedPreferenceList.add(sPref.getString("Keyg" + i, "")); //загрузка с Preferences
                         }
                     }
-                    System.out.println(listFromPreferenses.size() + " UP - size");
+                    System.out.println(sharedPreferenceList.size() + " UP - size");
                     ArrayList<Integer> positionofIndex = new ArrayList<>();
                     for (int i = 0; i < mainList.size(); i++) {             //Поиск выбранных(загруженных) елементов в основном листе
-                        for (int g = 0; g < listFromPreferenses.size(); g++) {
-                            if (mainList.get(i).contains(listFromPreferenses.get(g))) {
+                        for (int g = 0; g < sharedPreferenceList.size(); g++) {
+                            if (mainList.get(i).contains(sharedPreferenceList.get(g))) {
                                 String o = mainList.get(i);                //Найденный елемент приобразуем в строку и передаём переменной
                                 positionofIndex.add(mainList.indexOf(o));   // в Лист integer заполняем  индексами.
                                 break;
@@ -240,23 +246,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     if (hset.isEmpty()) {
-                        for (String nn : listFromPreferenses) { //востановления Аррай листа
+                        for (String nn : sharedPreferenceList) { //востановления Аррай листа
                             hset.add(nn);
                         }
                     }
                     positionofIndex.clear();
-                    listFromPreferenses.clear();
+                    sharedPreferenceList.clear();
                     found_List.clear();
                     checked_Items = "";
                     if (counter >= 2){
                         etName.setText(nameOf_etname);
                     }
-                    Log.d(LOG_TAG, "Только что зашли в save/update при условии что все поля пусты  etname" + nameOf_etname + " etSecond "+ nameOf_etsecond);
+                    //Log.d(TAG, "Только что зашли в save/update при условии что все поля пусты  etname" + nameOf_etname + " etSecond "+ nameOf_etsecond);
                     Toast.makeText(MainActivity.this, "UpDate is successfully", Toast.LENGTH_SHORT).show();
                 } else {
 
                     etModel.setText("");
-                    etsecond.setText("");
+                    etSecond.setText("");
                     etName.setText("");
                     if (hideName.length() > 0) {
                         dbHelper.insertData(hideName);// шаг 4
@@ -275,39 +281,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String del = etName.getText().toString();
                 String delete = "Delete";
                 if (del.equals(delete)) { // Если Ввёл в строку Delete
-                    db.delete(DBHelper.TABLE_CONTACT, null, null);
                     try {
+                        permisionGranted = true;
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);
+
                         for (int i = 0; i < 2; i++) {
                             File file = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser");
                             File file2 = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser-journal");
+
                             file.delete();
                             file2.delete(); //data/data/com.example.android.sqlitekod_dev_test/shared_prefs/SAVE.xml
                         }
                     } catch (Exception e) {
+                        Log.d(TAG, "Строка 292 Попытка удалить внутренние файлы DBNeiser и DBNeiser-journal " + e.getMessage());
                         Toast.makeText(MainActivity.this, "File is not", Toast.LENGTH_SHORT).show();
                     }
-                    sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
-                    sPref.edit().clear().apply();
-                    db.close();
-                    dbHelper.close();
-                    cursor.close();
-                    listFromPreferenses.clear();
-                    listForSearch.clear();
-                    mainList.clear();
-                    found_List.clear();
-                    hset.clear();
-                    checked_Items = null;
-                    adapter1.clear();
-                    abra = 0;
-                    lan = 0;
-                    nameOf_etname = null;
-                    name = null;
-                    JustList.clear();
-                    etName.setText("");
+
+                    try {
+                        sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+                        sPref.edit().clear().apply();
+                        sqLiteDatabase.close();
+                        dbHelper.close();
+                        cursor.close();
+                        sharedPreferenceList.clear();
+                        listForSearch.clear();
+                        mainList.clear();
+                        found_List.clear();
+                        hset.clear();
+                        checked_Items = null;
+                        adapter1.clear();
+                        abra = 0;
+                        lan = 0;
+                        nameOf_etname = null;
+                        name = null;
+                        JustList.clear();
+                        etName.setText("");
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Something gone wrong", Toast.LENGTH_SHORT).show();
+                    }
                     Toast.makeText(MainActivity.this, "Deleted is successfully", Toast.LENGTH_SHORT).show();
                 } else if (!del.isEmpty()) { // Если Строка не пустая , а с каким то значением
                     try {
-                        int upadateCount1 = db.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_ID + "= ?", new String[]{name});
+                        int upadateCount1 = sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_ID + "= ?", new String[]{name});
                         System.out.println("Строк удаленно " + upadateCount1);
                         JustList.clear();
                         etName.setText("");
@@ -318,6 +334,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         e.printStackTrace();
                     }
                 } else {
+                    etName.setText("Delete");
                     Toast.makeText(this, "Add in name 'Delete' or number", Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -355,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     }
                     editor1.putInt("Kol-jaak", lan);
-                    editor1.commit();
+                    editor1.apply();
                     jaak.clear();
                     etName.setText("");
                 } else {
@@ -372,53 +389,93 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (checked_Items.contains(changed)){ // Если строке уже было присвоенно Changed то оно не добавляеться сново.
                         contentValues.put(DBHelper.KEY_NAME, model);
                         if (!found_List.isEmpty()) {
-                           db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
+                           sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
                             Toast.makeText(MainActivity.this, "If was changed  ", Toast.LENGTH_SHORT).show();
-                            Log.d(LOG_TAG, "If was changed");
+                            Log.d(TAG, "If was changed");
                             a = true;
                             b = true;
-                            Log.d(LOG_TAG, "Change   etname " + nameOf_etname + " etSecond "+ nameOf_etsecond);
+                            Log.d(TAG, "Change   etname " + nameOf_etname + " etSecond "+ nameOf_etsecond);
                             etModel.setText("");
                             btnSave.callOnClick();
                             etName.setText(nameOf_etname); //сюда закидываються слова которые были в поиске
-                            etsecond.setText(nameOf_etsecond);// как для Имени  так и для второго значиния.
-                            btnsearch.callOnClick();
+                            etSecond.setText(nameOf_etsecond);// как для Имени  так и для второго значиния.
+                            btnSearch.callOnClick();
                         }
                     }else if (!b){
                     contentValues.put(DBHelper.KEY_NAME, model + changed);
                     if (!found_List.isEmpty()) {    //Если Пойсковый лист не пустой то данные заменяються и запускаеться обновление
-                        int upadateCount = db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
+                        int upadateCount = sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
 
                         System.out.println("Строк обновленно " + upadateCount);
                         Toast.makeText(MainActivity.this, "If was not changed ", Toast.LENGTH_SHORT).show();
-                        Log.d(LOG_TAG, "If was not changed");
+                        Log.d(TAG, "If was not changed");
                         a = true;
                         etModel.setText("");
                         btnSave.callOnClick();
                         etName.setText(nameOf_etname); //сюда закидываються слова которые были в поиске
-                        etsecond.setText(nameOf_etsecond);// как для Имени  так и для второго значиния.
-                        btnsearch.callOnClick();
+                        etSecond.setText(nameOf_etsecond);// как для Имени  так и для второго значиния.
+                        btnSearch.callOnClick();
                     }else {
-                        db.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
+                        sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{checked_Items});
                         Toast.makeText(MainActivity.this, "String was changed", Toast.LENGTH_SHORT).show();
-                        Log.d(LOG_TAG, "Странный");
+                        Log.d(TAG, "Странный");
                         a = true;
                         etModel.setText("");
                         btnSave.callOnClick();
                     }}
                 } else if (checked_Items.isEmpty()) {
                     Toast.makeText(MainActivity.this, "Choose item", Toast.LENGTH_SHORT).show();
-                } else if (a == false) {// если ничего из изменений не выполнялось тогда просто закидывает строку. Для того что бы начать менять её.
+                } else if (!a) {// если ничего из изменений не выполнялось тогда просто закидывает строку. Для того что бы начать менять её.
                     etModel.setText(checked_Items);
                 }
                 break;
+//поиск
             case R.id.btnSearch:
                 if (name == null || name.length() == 0){
                     Toast.makeText(this,"Write something in the place \"Name\" ",Toast.LENGTH_LONG).show();
                 }else {
-                    onQueryTextSubmit(etName.getText().toString());
+                    String et = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
+                    onQueryTextSubmit(et);
+
+                     //Далее Логика для истории поиска, сохранения 4 последних поисковых запросов
+                    backcounter = 0;
+                    if (!backSearchlist.contains(et)){ // 1) Если в списке элемент не содержиться
+                        if (backSearchlist.size() >= 4){  // 3) Если лист больше 4 значений то пересорировываем
+                            backSearchlist.add(0,et);
+                            backSearchlist.remove(4);
+                        }else {
+                            backSearchlist.add(et); // 2) Просто добавляем
+                        }
+                    }
                 }
                 break;
+ //История поиска
+            case R.id.IdBackSearch:
+                btnSave.callOnClick();
+                if (backSearchlist.isEmpty()){ //Если чист то прерываем сеанс
+                    break;
+                }
+                if (backcounter >= 4){
+                    backcounter = 0; // что бы получаемый контент не ушёл за рамки возможного
+                }
+
+                try {
+                    etName.setText(backSearchlist.get(backcounter));
+                }catch (Exception e){
+                    Log.d(TAG, "onClick: ERROR - " + e.getMessage());
+                }
+
+                if (backSearchlist.size() > ++backcounter ){
+                    //Ничего не делаем тк переменная backcounter уже увеличилась в if позиции.
+                    Log.d(TAG, "onClick: btnbackSearch зашли в увеличение Counter. " +
+                            "List size: "+ backSearchlist.size()+
+                            "  backcounterValue is: " + backcounter);
+                }else {
+                    backcounter = 0;
+                }
+                break;
+
+
         }
         dbHelper.close();
 
@@ -427,78 +484,104 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override //после получения доступа Загружаем базу данных
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case 1:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (!mainList.isEmpty()) {
-                        Toast.makeText(MainActivity.this, "DataBase is full", Toast.LENGTH_SHORT).show();
-                    } else {
+        if (permisionGranted){ // permisionGranted специальная переменная для удаленя файла на носителе.
+            switch (requestCode){
+                case 1:
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                        File file = new File(sdCard, "Plan.txt");
                         try {
-                            File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                            Log.d(LOG_TAG, sdCard.getAbsolutePath());
-                            File file = new File(sdCard, "Plan.txt");
-                            Log.d(LOG_TAG, file.getAbsolutePath());
+                            if (file.delete()){
+                                Log.d(TAG, "onRequestPermissionsResult:  deleted");
+                            }else {
+                                Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
+                            }
+                        }catch (Exception e){
+                            Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage() );
+                            Toast.makeText(MainActivity.this, "File doesn't Deleted", Toast.LENGTH_SHORT).show();
+                        }
+                    }else {
+                        Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
+                    }
 
-                            FileReader fileReader = new FileReader(file);
-                            BufferedReader reader = new BufferedReader(fileReader);
-
-                            ArrayList<String> gap = new ArrayList<>();
-
-
-                            //Дополнительная подгрузка остатка (код ниже)
+            }
+        }
+        if (!permisionGranted) {
+            switch (requestCode) {
+                case 1:
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        if (!mainList.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "DataBase is full", Toast.LENGTH_SHORT).show();
+                        } else {
                             try {
-                                sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
-                                int luk = sPref.getInt("Kol-jaak", 0);
-                                for (int i = 0; i < luk; i++) {
-                                    String s = sPref.getString("naidis" + i, "");
-                                    gap.add(s + "The_Rest");
+                                File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                                Log.d(TAG, sdCard.getAbsolutePath());
+                                File file = new File(sdCard, "Plan.txt");
+                                Log.d(TAG, file.getAbsolutePath());
+
+                                FileReader fileReader = new FileReader(file);
+                                BufferedReader reader = new BufferedReader(fileReader);
+
+                                ArrayList<String> downloadList = new ArrayList<>();
+
+
+                                //Дополнительная подгрузка остатка (код ниже)
+                                try {
+                                    sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
+                                        int luk = sPref.getInt("Kol-jaak", 0);
+                                        for (int i = 0; i < luk; i++) {
+                                            String s = sPref.getString("naidis" + i, "");
+                                            downloadList.add(s + "The_Rest");
+                                        }
+                                        sPref.edit().clear().apply();
+                                        for (int i = 0; i < downloadList.size(); i++) {
+                                            etNameOf_hide.setText(downloadList.get(i));
+                                            btnSave.callOnClick();
+                                            etNameOf_hide.setText("");
+                                        }
+                                        downloadList.clear();
+                                        Log.d(TAG, "Считал данные с доп загрузки");
+                                    } catch(Exception e){
+                                        e.printStackTrace();
+                                        Log.d(TAG, "Ошибка при чтении доп-загрузки");
+                                        Toast.makeText(MainActivity.this, "Ошибка при чтении доп-загрузки", Toast.LENGTH_SHORT).show();
+
+                                    }
+                                //доп загрузка закончена
+
+
+                                // Начало основной загрузки
+                                String line = "";
+                                int j = 1;
+                                while ((line = reader.readLine()) != null) { //Считываем список с файла в Лист.
+                                    if (downloadList.contains(line)) {
+                                        downloadList.add(line + j);
+                                        j++;
+                                    } else {
+                                        downloadList.add(line);
+                                    }
                                 }
-                                sPref.edit().clear().apply();
-                                for (int i = 0; i < gap.size(); i++) {
-                                    etNameOf_hide.setText(gap.get(i));
+                                for (int i = 0; i < downloadList.size(); i++) {
+                                    etNameOf_hide.setText(downloadList.get(i));
                                     btnSave.callOnClick();
                                     etNameOf_hide.setText("");
                                 }
-                                gap.clear();
-                                Log.d(LOG_TAG,"Считал данные с доп загрузки");
-                            } catch (Exception e) {
+                                reader.close();
+                                fileReader.close();
+                                downloadList.clear();
+                                Log.d(TAG, "Считала новый план");
+
+                            } catch (IOException e) {
+                                Toast.makeText(MainActivity.this, "Ошибка при чтении файла!", Toast.LENGTH_SHORT).show();
                                 e.printStackTrace();
-                                Log.d(LOG_TAG,"Ошибка при чтении доп-загрузки");
-                                Toast.makeText(MainActivity.this, "Ошибка при чтении доп-загрузки", Toast.LENGTH_SHORT).show();
-
                             }
-                            //доп загрузка закончена
-
-
-                            String g = "";
-                            int j = 1;
-                            while ((g = reader.readLine()) != null) {
-                                if (gap.contains(g)) {
-                                    gap.add(g + j);
-                                    j++;
-                                } else {
-                                    gap.add(g);
-                                }
-                            }
-                            int kokku = gap.size();
-                            for (int i = 0; i < kokku; i++) {
-                                etNameOf_hide.setText(gap.get(i));
-                                btnSave.callOnClick();
-                                etNameOf_hide.setText("");
-                            }
-                            reader.close();
-                            gap.clear();
-                            Log.d(LOG_TAG,"Считала новый план");
-
-                        } catch (IOException e) {
-                            Toast.makeText(MainActivity.this, "Ошибка при чтении файла!", Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
                         }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
-                }
+            }
         }
+        permisionGranted = false;
     }
 
     /*Создаём меню и регистрируем там поиск*/
@@ -517,7 +600,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.item_ready:
+            case R.id.item_ready: //смотреть процент готовности плана
                 try {
                     double countMain = mainList.size();
                     double countReady = hset.size();
@@ -559,13 +642,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override//для поиска
     public boolean onQueryTextSubmit(String s) { //метод для поиска слова (присвоил к кнопке)
-        Log.d(LOG_TAG, "Только что зашли в search  etname " + nameOf_etname + " etSecond "+ nameOf_etsecond);
+        Log.d(TAG, "Только что зашли в onQueryTextSubmit  etname " + nameOf_etname + " etSecond "+ nameOf_etsecond);
         if (nameOf_etname.equals(s)){
             counter++;
         }else{
             counter = 0;
         }
-        nameOf_etsecond = etsecond.getText().toString();
+        nameOf_etsecond = etSecond.getText().toString();
         nameOf_etname = s;
 
 
@@ -597,25 +680,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         System.out.println(listForSearch.size() + "Кол-во копированных элементов с поиска");
         etName.setText("");
-        etsecond.setText("");
+        etSecond.setText("");
 
         //UP-date Search list
         sPref = getSharedPreferences("SAVE",MODE_PRIVATE);
         int koli = sPref.getInt("Kolichesvo",0);
-        if (listFromPreferenses.isEmpty()) {
+        if (sharedPreferenceList.isEmpty()) {
             for (int i = 0; i < koli; i++) {
-                listFromPreferenses.add(sPref.getString("Keyg" + i, ""));
+                sharedPreferenceList.add(sPref.getString("Keyg" + i, ""));
             }
         }
-        System.out.println(listFromPreferenses.size() + " UP_2 - size Кол-во отмеченных всего!");
+        System.out.println(sharedPreferenceList.size() + " UP_2 - size Кол-во отмеченных всего!");
 
         ArrayList<Integer> position_ofIndex1 = new ArrayList<>();
         System.out.println(listForSearch.size() + " Кол-во которое видит поик");
 
         for (int i = 0; i < listForSearch.size();i++) {
             System.out.println(listForSearch.get(i));
-            for (int g = 0; g < listFromPreferenses.size(); g++) {
-                if (listForSearch.get(i).contains(listFromPreferenses.get(g))){
+            for (int g = 0; g < sharedPreferenceList.size(); g++) {
+                if (listForSearch.get(i).contains(sharedPreferenceList.get(g))){
                     String o = listForSearch.get(i);
                     position_ofIndex1.add(listForSearch.indexOf(o));
                     break;
@@ -628,13 +711,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (hset.isEmpty()) {
-            for (String nn : listFromPreferenses) {
+            for (String nn : sharedPreferenceList) {
                 hset.add(nn);            //востановления Аррай листа
             }
         }
         listForSearch.clear();
         position_ofIndex1.clear();
-        listFromPreferenses.clear();
+        sharedPreferenceList.clear();
         return true;
     }
 
