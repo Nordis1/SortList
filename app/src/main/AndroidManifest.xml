@@ -3,13 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.android.sqlitekod_dev_test">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage">
+		
     </uses-permission>
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE">
+    </uses-permission>
+
     <uses-permission android:name="android.permission.READ_INPUT_STATE"
         tools:ignore="ProtectedPermissions">
-
-    </uses-permission>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE">
     </uses-permission>
 
     <supports-screens
@@ -21,13 +24,15 @@
 
     <application
         android:allowBackup="true"
+        android:fullBackupContent="true"
         android:icon="@mipmap/neiserr"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/neiserr"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name="com.example.android.sqlitekod_dev_test.MainActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

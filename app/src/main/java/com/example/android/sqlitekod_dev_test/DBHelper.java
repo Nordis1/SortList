@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
+	
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "DBNeiser";
     public static final String TABLE_CONTACT = "contact";
@@ -36,24 +37,22 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public void insertData(String name, String model) {
+    public void insertData(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_NAME, name);
-        contentValues.put(KEY_MODEL, model);
+        //contentValues.put(KEY_MODEL, model);
         //contentValues.put(KEY_DATA, data);
         db.insert(TABLE_CONTACT, null, contentValues);
 /*        long result = db.insert(TABLE_CONTACT, null, contentValues);
         return result != -1;*/
     }
 
-    public void uninsertData(String name, String model, String data) {
+    public void uninsertData(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.get(data);
-        contentValues.get(model);
-        contentValues.get(name);
-        db.getAttachedDbs();
+     /*   ContentValues contentValues = new ContentValues();
+        contentValues.put(KEY_NAME, name);*/
+        db.delete(TABLE_CONTACT,KEY_NAME,new String[]{name});
         db.close();
     }
 

@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">NEISER Plan   © Stas.Omelchenko</string>
     <string name="Download">Download</string>
+    <string name="search">Search</string>
+	
+    <string name="type_model">Type model</string>
 </resources>
