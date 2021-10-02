@@ -3,6 +3,7 @@
 
     <item
         android:id="@+id/item1"
+		
         android:title="Delete Rest memory">
 
     </item>

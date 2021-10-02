@@ -6,6 +6,7 @@ android {
         applicationId "com.example.android.sqlitekod_dev_test"
         minSdkVersion 15 /*15*/
         targetSdkVersion 30 /*27*/
+		
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

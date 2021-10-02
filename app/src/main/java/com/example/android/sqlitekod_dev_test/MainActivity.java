@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SearchView.OnQueryTextListener, AdapterView.OnItemClickListener {
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
@@ -484,9 +485,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override //после получения доступа Загружаем базу данных
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (permisionGranted){ // permisionGranted специальная переменная для удаленя файла на носителе.
+        if (permisionGranted){ // permisionGranted специальная переменная для удаления файла на носителе.
             switch (requestCode){
-                case 1:
+                case 1: // подготовка к удалению файла
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                         File file = new File(sdCard, "Plan.txt");
@@ -529,18 +530,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 try {
                                     sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
                                         int luk = sPref.getInt("Kol-jaak", 0);
-                                        for (int i = 0; i < luk; i++) {
-                                            String s = sPref.getString("naidis" + i, "");
-                                            downloadList.add(s + "The_Rest");
-                                        }
-                                        sPref.edit().clear().apply();
-                                        for (int i = 0; i < downloadList.size(); i++) {
-                                            etNameOf_hide.setText(downloadList.get(i));
-                                            btnSave.callOnClick();
-                                            etNameOf_hide.setText("");
-                                        }
-                                        downloadList.clear();
-                                        Log.d(TAG, "Считал данные с доп загрузки");
+                                        if (luk > 0) {
+                                            for (int i = 0; i < luk; i++) {
+                                                String s = sPref.getString("naidis" + i, "");
+                                                downloadList.add(s + "The_Rest");
+                                            }
+                                            sPref.edit().clear().apply();
+                                            for (int i = 0; i < downloadList.size(); i++) {
+                                                etNameOf_hide.setText(downloadList.get(i));
+                                                btnSave.callOnClick();
+                                                etNameOf_hide.setText("");
+                                            }
+                                            downloadList.clear();
+                                            Log.d(TAG, "Считал данные с доп загрузки");
+                                        }else sPref = null;
                                     } catch(Exception e){
                                         e.printStackTrace();
                                         Log.d(TAG, "Ошибка при чтении доп-загрузки");
