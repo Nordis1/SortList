@@ -17,8 +17,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String KEY_DATA = "data";
     public static final String KEY_ID = "_id";
     public static final String DBCREATE = "create table " + TABLE_CONTACT + "(" + KEY_NAME + " ," + KEY_MODEL + " ," + KEY_DATA + "," + KEY_ID + " INTEGER PRIMARY KEY " + ")";
-    //public static final String DBCREATE = "create table " + TABLE_CONTACT + "(" + KEY_NAME + "," + KEY_MODEL + "," + KEY_DATA + ")";
-    SQLiteDatabase db;
+
 
 
     public DBHelper(Context context) {
@@ -41,11 +40,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_NAME, name);
-        //contentValues.put(KEY_MODEL, model);
-        //contentValues.put(KEY_DATA, data);
         db.insert(TABLE_CONTACT, null, contentValues);
-/*        long result = db.insert(TABLE_CONTACT, null, contentValues);
-        return result != -1;*/
     }
 
     public void uninsertData(String name) {
@@ -63,14 +58,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
-/*    public boolean updateData(String name,String id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(KEY_NAME, name);
-        //contentValues.put(KEY_MODEL, model);
-        db.update(TABLE_CONTACT, contentValues, "_id = ?", new String[]{id});
-        return true;
-    }*/
 }
 
 

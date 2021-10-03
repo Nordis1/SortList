@@ -2,6 +2,13 @@
     <string name="app_name">NEISER Plan   © Stas.Omelchenko</string>
     <string name="Download">Download</string>
     <string name="search">Search</string>
-	
-    <string name="type_model">Type model</string>
+    <string name="Typeitem">Type Item</string>
+    <string name="CorrectItem">Click "Change" to change item</string>
+    <string name="Type">Type Item</string>
+    <string name="BackToMain">Return to Main List
+    \nSave/Update</string>
+    <string name="Change">Change</string>
+    <string name="Rest">Rest</string>
+    <string name="search_back">Back
+        \nSearch</string>
 </resources>
