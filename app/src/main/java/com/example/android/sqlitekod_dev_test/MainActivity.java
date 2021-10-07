@@ -288,8 +288,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         e.printStackTrace();
                     }
                 } else {
+                    DialogClass dialogClass = new DialogClass(MainActivity.this);
+                    dialogClass.createNewDialog();
+                    dialogClass.dialog.show();
                     etName.setText("Delete");
-                    Toast.makeText(this, "Add in name 'Delete' or number", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Press Delete last one", Toast.LENGTH_SHORT).show();
                 }
                 break;
 
@@ -304,10 +307,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Остаток
             case R.id.btnJaak:
                 if (name.equals("Rest")) { //Что бы сработал нужно ввести
-                    mainList.clear();
-                    viewData();
-                    restCreating();
-                    etName.setText("");
+                    createjaak();
                 } else {
                     Toast.makeText(MainActivity.this, "Put in name ' Rest ' ", Toast.LENGTH_SHORT).show();
                 }
@@ -429,6 +429,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         dbHelper.close();
 
+    }
+
+    public void createjaak() {
+        mainList.clear();
+        viewData();
+        restCreating();
+        etName.setText("");
     }
 
     private void restCreating() {

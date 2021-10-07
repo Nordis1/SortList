@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
-	
+
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "DBNeiser";
     public static final String TABLE_CONTACT = "contact";
@@ -17,7 +17,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String KEY_DATA = "data";
     public static final String KEY_ID = "_id";
     public static final String DBCREATE = "create table " + TABLE_CONTACT + "(" + KEY_NAME + " ," + KEY_MODEL + " ," + KEY_DATA + "," + KEY_ID + " INTEGER PRIMARY KEY " + ")";
-
 
 
     public DBHelper(Context context) {
@@ -47,7 +46,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
      /*   ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_NAME, name);*/
-        db.delete(TABLE_CONTACT,KEY_NAME,new String[]{name});
+        db.delete(TABLE_CONTACT, KEY_NAME, new String[]{name});
         db.close();
     }
 

@@ -11,4 +11,11 @@
     <string name="Rest">Rest</string>
     <string name="search_back">Back
         \nSearch</string>
+
+    <string name="dialog_message">We can put unselected items in memory.
+    And load it, when creating  a new list.</string>
+    <string name="dialog_Hello">Is it all items done?</string>
+    <string name="ok_accept">Put</string>
+    <string name="cancel">Cancel</string>
+
 </resources>
