@@ -2,12 +2,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
+<!--    <item
         android:id="@+id/item_ready"
         android:icon="@mipmap/persent1"
         android:title="persent"
-        app:showAsAction="always|collapseActionView">
+        app:showAsAction="never">
 
     </item>
+
+    <item
+        android:id="@+id/item_menu"
+        android:icon="@drawable/menuicon_24"
+        android:title="menu"
+        app:showAsAction="always|collapseActionView">
+
+    </item>-->
 
 </menu>
