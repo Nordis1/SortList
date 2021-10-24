@@ -19,5 +19,7 @@
     <string name="cancel">Cancel</string>
     <string name="load_db">Load file: txt, xls</string>
     <string name="del_all">Del file and list</string>
+    <string name="Change_Row">Change row</string>
+    <string name="Delete_Row">Delete row</string>
 
 </resources>

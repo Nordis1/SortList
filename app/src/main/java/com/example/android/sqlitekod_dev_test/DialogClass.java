@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -32,12 +33,15 @@ public class DialogClass extends MainActivity {
 
 
     Button btnDialogCancel,btnDialogChange1;
+    EditText editText;
+    String stringPrepareToChange;
     final String TAG = "dialogclassTag";
 
-    public DialogClass(Context context, @Nullable String dialog_message, LayoutInflater inflater) {
+    public DialogClass(Context context, @Nullable String dialog_message, LayoutInflater inflater, String stringPrepareToChange) {
         this.context = context;
         this.dialog_message = dialog_message;
         this.inflater = inflater;
+        this.stringPrepareToChange = stringPrepareToChange;
     }
 
 
@@ -58,12 +62,24 @@ public class DialogClass extends MainActivity {
             alertBuilder.setView(layout);
             btnDialogChange1 =  layout.findViewById(R.id.ID_btnChange_Dialog);
             btnDialogCancel =  layout.findViewById(R.id.ID_btnCancel_Dialog);
+            editText =  layout.findViewById(R.id.ID_Edit_text_Dialog);
+            editText.setText(stringPrepareToChange);
 
             btnDialogChange1.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Toast.makeText(context, "Yes", Toast.LENGTH_SHORT).show();
-                    dialog.cancel();
+                    String s = editText.getText().toString();
+                    if (!s.isEmpty() && !s.equals(stringPrepareToChange)){
+                        Message msg = handler.obtainMessage();
+                        Bundle bundle = new Bundle();
+
+                        bundle.putString("changeString", s);
+                        msg.setData(bundle);
+                        handler.sendMessage(msg);
+                    }else {
+                        dialog.cancel();
+                    }
                 }
             });
             btnDialogCancel.setOnClickListener(new View.OnClickListener() {

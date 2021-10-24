@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AdapterView.OnItemClickListener {
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
-    EditText etName, etChageStringg, etNameOf_hide;
+    EditText etName;
     Button btnSave, btnReadFile, btnDeleteAll, btnJaak, btnChange, btnSearch, btnBackSearch;
     ArrayList<String> listFromSharedPreference = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
     ArrayList<String> ListForTryingCatchPossition = new ArrayList<>(); //для показа примерной позиции , берёт начало от mainList в setOnItemCL (и чистица в Delete общем и одиночном)
@@ -67,11 +67,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> mainList; //основной лист
     ArrayList<String> found_List = new ArrayList<>();
     ArrayList<String> foundAccurateList = new ArrayList<>();// Используеться в более точном поиске
+    ArrayList<String> supportRequestHistoryForChangeStrings = new ArrayList<>();// Для изменения строки
     volatile ListView list_of_View;   //Лист куда закидываеться основной или поисковые листы при помощи адаптера (adapter1). Для отображения.
     volatile ArrayAdapter adapter1;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
 
-    String nameOf_etname = ""; // переменая реализуеться в  btnChange.onclick, после изменения сразу перекидывает на тот Лист, который нашёл поиск. берёт значение из метода поиска.
-    public static String model, hideName, name = "";
+
+    public static String name = "";
     HashSet<String> HashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
     int backcounter = 0;  //backcounter - работает с backSearchlist
     int requestCode1 = 1;
@@ -140,8 +141,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /*находим Добавление view*/
         etName = findViewById(R.id.etName);
-        etNameOf_hide = findViewById(R.id.etNameOf_hide);
-        etChageStringg = findViewById(R.id.etChageString);
 
         btnSearch = findViewById(R.id.btnSearch);
         btnSearch.setOnClickListener(this);
@@ -162,6 +161,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         handler = new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
+                String s = msg.getData().getString("changeString");
+                Log.d(TAG, "handleMessage: получили строку " + s);
+                if (!s.isEmpty()) {
+                    prepareTochange(s);
+                }
                 switch (msg.what) {
                     case 1:
                         toast = Toast.makeText(MainActivity.this, "Ошибка при чтении файла!", Toast.LENGTH_LONG);
@@ -219,6 +223,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         };
     }
+
+    public void prepareTochange(String changeAbleString) {
+        sqLiteDatabase = dbHelper.getWritableDatabase();
+
+            contentValues.put(DBHelper.KEY_NAME, changeAbleString);
+            if (!found_List.isEmpty() && !foundAccurateList.isEmpty()) {    //Если Пойсковый лист не пустой то данные заменяються и запускаеться обновление
+                int upadateCount = sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
+
+                btnSave.callOnClick();
+                ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
+                for (int i = 0; i < loadhistory.size(); i++) {
+                    etName.setText(supportRequestHistoryForChangeStrings.get(i)); //сюда закидываються слова которые были в поиске
+                    btnSearch.callOnClick();
+                }
+
+            } else {
+                sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
+                btnSave.callOnClick();
+            }
+        dbHelper.close();
+  /*
+             else if (!del.isEmpty()) { // Если Строка не пустая , а с каким то значением
+            try {
+                int upadateCount1 = sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_ID + "= ?", new String[]{name});
+                System.out.println("Строк удаленно " + upadateCount1);
+                ListForTryingCatchPossition.clear();
+                etName.setText("");
+                Toast.makeText(MainActivity.this, "Row is deleted " + upadateCount1, Toast.LENGTH_SHORT).show();
+                btnSave.callOnClick();
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "Error deleted", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+        }*/
+
+}
 
 
     @Override
@@ -414,15 +454,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         name = etName.getText().toString(); //Сохранение в базу шаг 1
-        model = etChageStringg.getText().toString();
-        hideName = etNameOf_hide.getText().toString();
         sqLiteDatabase = dbHelper.getWritableDatabase();
         //ContentValues contentValues = new ContentValues(); //шаг 2
         switch (v.getId()) {
 //Обновить
             case R.id.btnSave:
                 //contentValues.put(DBHelper.KEY_NAME, hideName); //шаг 3
-                if (etName.length() == 0 && etChageStringg.length() == 0 && etNameOf_hide.length() == 0) {
+                if (etName.length() == 0) {
                     //Если все значения были пустыми то чистим все листы и обновляем основной с проставлением checked
                     found_List.clear();
                     foundAccurateList.clear();
@@ -439,9 +477,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     choosen_ItemInClickmethod = "";
                     showListIsReadyPercent();
                 } else {
-                    etChageStringg.setText("");
                     etName.setText("");
-                    nameOf_etname = "";
                     Toast.makeText(this, "Clear Object", Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -481,7 +517,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         HashSetMainCollectorItems.clear();
                         choosen_ItemInClickmethod = null;
                         adapter1.clear();
-                        nameOf_etname = null;
                         name = null;
                         ListForTryingCatchPossition.clear();
                         etName.setText("");
@@ -490,20 +525,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     Toast.makeText(MainActivity.this, "Deleted is successfully", Toast.LENGTH_SHORT).show();
                 }
-                //Начинаеться метод если хотим удалить какой то отдельный элемент.
-                else if (!del.isEmpty()) { // Если Строка не пустая , а с каким то значением
-                    try {
-                        int upadateCount1 = sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_ID + "= ?", new String[]{name});
-                        System.out.println("Строк удаленно " + upadateCount1);
-                        ListForTryingCatchPossition.clear();
-                        etName.setText("");
-                        Toast.makeText(MainActivity.this, "Row is deleted " + upadateCount1, Toast.LENGTH_SHORT).show();
-                        btnSave.callOnClick();
-                    } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error deleted", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
-                } else {
+                else {
 
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
                             "We can put unselected items in memory. And load them with the next loading Data.",
@@ -549,8 +571,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 Log.i(TAG, "run: Получили имя файла идём в загрузку,fileOfNameReady: " + fileOfNameReady);
                                 ActivityCompat.requestPermissions(MainActivity.this,
                                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                            }else {
-                                toast = Toast.makeText(MainActivity.this, "Error fileNotChoosed: " + fileNotChoosed + ", fileOfNameReady: "+ fileOfNameReady, Toast.LENGTH_LONG);
+                            } else {
+                                toast = Toast.makeText(MainActivity.this, "Error fileNotChoosed: " + fileNotChoosed + ", fileOfNameReady: " + fileOfNameReady, Toast.LENGTH_LONG);
                                 toast.setGravity(Gravity.TOP, 0, 330);//250
                                 toast.show();
 
@@ -574,8 +596,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 LayoutInflater inflater = this.getLayoutInflater();
                 DialogClass dialogClass = new DialogClass(MainActivity.this,
                         "Lets do change",
-                        inflater
-                        );
+                        inflater,
+                        choosen_ItemInClickmethod
+                );
                 dialogClass.createCustomNewDialogChageitem();
                 dialogClass.dialog.show();
 
@@ -875,6 +898,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /*Создаём меню и регистрируем там поиск*/
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -901,9 +925,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -920,7 +941,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        //на рассмотрении
+        switch (v.getId()) {
+            case R.id.list_item_model:
+                getMenuInflater().inflate(R.menu.menuitem, menu);
+        }
 
         super.onCreateContextMenu(menu, v, menuInfo);
     }
@@ -928,25 +952,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         //на рассмотрении
+        switch (item.getItemId()) {
+            case R.id.menuitemChageRow:
+                LayoutInflater inflater = this.getLayoutInflater();
+                DialogClass dialogClass = new DialogClass(MainActivity.this,
+                        "Lets change row",
+                        inflater,
+                        choosen_ItemInClickmethod
+                );
+                dialogClass.createCustomNewDialogChageitem();
+                dialogClass.dialog.show();
+
+                break;
+            case R.id.menuitemDeleteRow:
+
+                break;
+        }
         return super.onContextItemSelected(item);
     }
 
     //для поиска
     public void onmyQueryTextSubmit(String s) { //метод для поиска слова (присвоил к кнопке)
         try {
-            nameOf_etname = s;
             //Тут начинаеться прыжки между двумя if else, если поиск продолжаться с уже найденного листа
             if (!found_List.isEmpty()) {
                 ToAppointSearchList(found_List, foundAccurateList, s);
+                supportRequestHistoryForChangeStrings.add(s);
+                Log.d(TAG, "Из found_List в foundAccurateList");
                 //ToAppointSearchList(C какого листа идёт выборка, в какой лист переносяться найденные строки,Поисковое слово)
-                Log.d(TAG, "Sessia - !found_List " + found_List.size());
             } else if (!foundAccurateList.isEmpty()) {
                 ToAppointSearchList(foundAccurateList, found_List, s);
-                Log.d(TAG, "Sessia - !foundAccurateList " + found_List.size());
+                supportRequestHistoryForChangeStrings.add(s);
+                Log.d(TAG, "Из foundAccurateList в found_List");
             } else {
                 ToAppointSearchList(mainList, found_List, s);
+                if (!supportRequestHistoryForChangeStrings.isEmpty()){
+                    supportRequestHistoryForChangeStrings.clear();
+                    supportRequestHistoryForChangeStrings.add(s);
+                    Log.d(TAG, "Из mainList в found_List с очисткой supportRequestHistoryForChangeStrings");
+                }else {
+                    Log.d(TAG, "Из mainList в found_List");
+                    supportRequestHistoryForChangeStrings.add(s);
+                }
                 // ToAppointSearchList(C какого листа идёт выборка, в какой лист переносяться найденные строки,Поисковое слово)
-                Log.d(TAG, "Sessia - !mainList " + mainList.size());
             }
         } catch (Exception e) {
             toast = Toast.makeText(MainActivity.this, "Error onmyQueryTextSubmit", Toast.LENGTH_LONG);

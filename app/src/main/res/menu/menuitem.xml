@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menuitemChageRow"
+        android:title="@string/Change_Row">
+
+    </item>
+
+    <item
+        android:id="@+id/menuitemDeleteRow"
+        android:title="@string/Delete_Row">
+
+    </item>
+
+</menu>
