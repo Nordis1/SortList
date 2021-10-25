@@ -24,6 +24,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -56,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     EditText etName;
     Button btnSave, btnReadFile, btnDeleteAll, btnJaak, btnChange, btnSearch, btnBackSearch;
     ArrayList<String> listFromSharedPreference = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
-    ArrayList<String> ListForTryingCatchPossition = new ArrayList<>(); //для показа примерной позиции , берёт начало от mainList в setOnItemCL (и чистица в Delete общем и одиночном)
     ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
     ArrayList<String> backSearchlist = new ArrayList<>();
     ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться значально тексты с файла а потом с него загружаем в Базу
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Toast toast;
     SharedPreferences sPref;
     final String TAG = "mylogs";
-    public static String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
+    public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
 
 
     Cursor cursor;
@@ -162,8 +162,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void handleMessage(@NonNull Message msg) {
                 String s = msg.getData().getString("changeString");
-                Log.d(TAG, "handleMessage: получили строку " + s);
-                if (!s.isEmpty()) {
+                if (s != null) {
+                    Log.d(TAG, "handleMessage: получили строку " + s);
                     prepareTochange(s);
                 }
                 switch (msg.what) {
@@ -225,30 +225,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void prepareTochange(String changeAbleString) {
+        Log.i(TAG, "prepareTochange: перешли в метод изменения строки");
         sqLiteDatabase = dbHelper.getWritableDatabase();
 
-            contentValues.put(DBHelper.KEY_NAME, changeAbleString);
-            if (!found_List.isEmpty() && !foundAccurateList.isEmpty()) {    //Если Пойсковый лист не пустой то данные заменяються и запускаеться обновление
-                int upadateCount = sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
-
-                btnSave.callOnClick();
-                ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
-                for (int i = 0; i < loadhistory.size(); i++) {
-                    etName.setText(supportRequestHistoryForChangeStrings.get(i)); //сюда закидываються слова которые были в поиске
-                    btnSearch.callOnClick();
-                }
-
-            } else {
-                sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
-                btnSave.callOnClick();
+        contentValues.put(DBHelper.KEY_NAME, changeAbleString);
+        if (!found_List.isEmpty() || !foundAccurateList.isEmpty()) {    //Если Пойсковый лист не пустой то данные заменяються и запускаеться обновление
+            int upadateCount = sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
+            Log.i(TAG, "prepareTochange: Изменение с сторией поиска");
+            btnSave.callOnClick();
+            ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
+            for (int i = 0; i < loadhistory.size(); i++) {
+                etName.setText(supportRequestHistoryForChangeStrings.get(i)); //сюда закидываються слова которые были в поиске
+                btnSearch.callOnClick();
             }
+
+        } else {
+            Log.i(TAG, "prepareTochange: простое изменение");
+            sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
+            btnSave.callOnClick();
+        }
         dbHelper.close();
   /*
              else if (!del.isEmpty()) { // Если Строка не пустая , а с каким то значением
             try {
                 int upadateCount1 = sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_ID + "= ?", new String[]{name});
                 System.out.println("Строк удаленно " + upadateCount1);
-                ListForTryingCatchPossition.clear();
+
                 etName.setText("");
                 Toast.makeText(MainActivity.this, "Row is deleted " + upadateCount1, Toast.LENGTH_SHORT).show();
                 btnSave.callOnClick();
@@ -258,15 +260,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }*/
 
-}
+    }
 
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         int green = getResources().getColor(valmis);
-        if (ListForTryingCatchPossition.isEmpty()) { // используеться когда мы в основном списке
-            ListForTryingCatchPossition.addAll(mainList);
-        }
+
         choosen_ItemInClickmethod = ((TextView) view).getText().toString(); // Кликнутая строка в данный момент
 
         //поиск и отображение id
@@ -285,7 +285,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             toast.show();
         }
         //закончен поиск id
+        checkedItemsReloadInfo();
 
+    }
+    public void checkedItemsReloadInfo(){
         if (HashSetMainCollectorItems.contains(choosen_ItemInClickmethod)) { // Основной Список Выбранных Элементов
             HashSetMainCollectorItems.remove(choosen_ItemInClickmethod);
         } else {
@@ -317,18 +320,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             while (cursor.moveToNext()) { // тут мы его считываем
                 mainList.add(cursor.getString(0));
                 mProgresscounter++;
-                try {
-                    TimeUnit.MILLISECONDS.sleep(30);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (progressBar.getMax() <= 40) {// В зависимости от объёма данных увеличиваем скорость загрузки
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(50);
+                        //Log.i(TAG, "Sleep 50");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else if (progressBar.getMax() > 40 && progressBar.getMax() <= 150) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(35);
+                        //Log.i(TAG, "Sleep 35");
+                        if (mProgresscounter % 2 == 0) {
+                            handler.post(incrementProgressbar);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else if (progressBar.getMax() > 150 && progressBar.getMax() <= 400) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(30);
+                        //Log.i(TAG, "Sleep 30");
+                        if (mProgresscounter % 3 == 0) {
+                            handler.post(incrementProgressbar);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else if (progressBar.getMax() > 400 && progressBar.getMax() <= 600) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(18);
+                        Log.i(TAG, "Sleep 20");
+                        if (mProgresscounter % 5 == 0) {
+                            handler.post(incrementProgressbar);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else if (progressBar.getMax() > 600) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(15);
+                        Log.i(TAG, "Sleep 15");
+                        if (mProgresscounter % 7 == 0) {
+                            handler.post(incrementProgressbar);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-                Log.i(TAG, "viewDataForDownloading: mProgresscounter = " + mProgresscounter);
-                handler.post(incrementProgressbar);
 
             }
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
             handler.sendEmptyMessage(hSetLoadingListOfView_fromAdapter1);
-            /*list_of_View.setAdapter(adapter1);*/
             cursor.close();
         }
     }
@@ -465,6 +508,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     found_List.clear();
                     foundAccurateList.clear();
                     mainList.clear();
+                    supportRequestHistoryForChangeStrings.clear();
                     viewData(); // - В этом методе востанавливаться mainList
 
                     LoadCheckedItems(mainList); // Загрузка
@@ -484,6 +528,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //Удаление
             case R.id.btnDeleteAll:
+                Log.i(TAG, "onClick: Была нажата кнопка удалить");
                 String del = etName.getText().toString();
                 String delete = "Delete";
                 if (del.equals(delete)) { // Если Ввёл в строку Delete
@@ -518,14 +563,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         choosen_ItemInClickmethod = null;
                         adapter1.clear();
                         name = null;
-                        ListForTryingCatchPossition.clear();
                         etName.setText("");
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                     }
                     Toast.makeText(MainActivity.this, "Deleted is successfully", Toast.LENGTH_SHORT).show();
-                }
-                else {
+                } else {
 
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
                             "We can put unselected items in memory. And load them with the next loading Data.",
@@ -839,28 +882,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int j = 1;
 
             while ((line = reader.readLine()) != null) { //Считываем список с файла в Лист.
+                if (line.isEmpty() || line.equals(" ")) { // если строка пустая , то пропускаем её.
+                    continue;
+                }
                 if (downloadList.contains(line)) {
+
                     downloadList.add(line + j);
                     j++;
                 } else {
                     downloadList.add(line);
                 }
             }
-            progressBar.setMax(downloadList.size() + mProgresscounter); // так как переменная volantile все изменения будут видны в любом потоке.
-            Log.i(TAG, "mainloading: progress bar MAX = " + (downloadList.size() + mProgresscounter));
+            j = downloadList.size() + mProgresscounter;
+            progressBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
+            Log.i(TAG, "mainloading: progress bar MAX = " + j);
             for (int i = 0; i < downloadList.size(); i++) {
                 //начал добавлять сразу в базу что бы не нагружать main.
                 dbHelper.insertData(downloadList.get(i));
             }
             reader.close();
             fileReader.close();
-            viewDataForDownloading(); //образуем показ списка после того как он полностью загрузиться в Базу
+            viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
             downloadList.clear();
             handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
             handler.sendEmptyMessage(hSetProgressBarGone);
             mProgresscounter = 0;
 
         } catch (IOException e) {
+            // Если ошибка, то все востанавливаем кнопки. и убираем видимость progressBar.
             handler.sendEmptyMessage(hSetToastErrorOfFileReading);
             handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
             handler.sendEmptyMessage(hSetProgressBarGone);
@@ -907,6 +956,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
+    }
+
+
     public void showListIsReadyPercent() {
         try {
             double countMain = mainList.size();
@@ -923,13 +978,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
-
 
     public void deleteRestMemory() {
+        Log.i(TAG, "deleteRestMemory: зашли удалить Остаток");
         try {
             sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
             sPref.edit().clear().apply();
@@ -937,7 +988,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
     }
-
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -954,6 +1004,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //на рассмотрении
         switch (item.getItemId()) {
             case R.id.menuitemChageRow:
+                AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+                int position1 = info.position; // находи позицию
+
+                choosen_ItemInClickmethod = list_of_View.getItemAtPosition(position1).toString();
+                //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
+                if (list_of_View.isItemChecked(position1)){
+                    list_of_View.setItemChecked(position1,false);
+                    checkedItemsReloadInfo();
+                }
+                //Создаём диалог
                 LayoutInflater inflater = this.getLayoutInflater();
                 DialogClass dialogClass = new DialogClass(MainActivity.this,
                         "Lets change row",
@@ -962,7 +1022,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 );
                 dialogClass.createCustomNewDialogChageitem();
                 dialogClass.dialog.show();
-
                 break;
             case R.id.menuitemDeleteRow:
 
@@ -986,11 +1045,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "Из foundAccurateList в found_List");
             } else {
                 ToAppointSearchList(mainList, found_List, s);
-                if (!supportRequestHistoryForChangeStrings.isEmpty()){
+                if (!supportRequestHistoryForChangeStrings.isEmpty()) {
                     supportRequestHistoryForChangeStrings.clear();
                     supportRequestHistoryForChangeStrings.add(s);
                     Log.d(TAG, "Из mainList в found_List с очисткой supportRequestHistoryForChangeStrings");
-                }else {
+                } else {
                     Log.d(TAG, "Из mainList в found_List");
                     supportRequestHistoryForChangeStrings.add(s);
                 }

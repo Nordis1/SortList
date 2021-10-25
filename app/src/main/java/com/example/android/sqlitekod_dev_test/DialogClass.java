@@ -77,6 +77,7 @@ public class DialogClass extends MainActivity {
                         bundle.putString("changeString", s);
                         msg.setData(bundle);
                         handler.sendMessage(msg);
+                        dialog.cancel();
                     }else {
                         dialog.cancel();
                     }
@@ -108,6 +109,7 @@ public class DialogClass extends MainActivity {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             //positive
+                            Log.i(TAG, "Dialog onClick: Была нажата кнопка Позитив");
                             handler.sendEmptyMessage(deleteWithOut_rest);
                             Toast toast = Toast.makeText(context, "Deleted successfully", Toast.LENGTH_LONG);
                             toast.setGravity(Gravity.TOP, 0, 330);//250
@@ -118,6 +120,7 @@ public class DialogClass extends MainActivity {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     // Негатив
+                    Log.i(TAG, "Dialog onClick: Была нажата кнопка Негатив");
                     handler.sendEmptyMessage(deleteWith_rest);
                     Toast toast = Toast.makeText(context, "Deleted successfully, the rest is waiting for a new load.", Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.TOP, 0, 330);
@@ -126,6 +129,7 @@ public class DialogClass extends MainActivity {
             }).setNeutralButton(btnNetral, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
+                    Log.i(TAG, "Dialog onClick: Была нажата кнопка нетрал");
                     handler.sendEmptyMessage(deleteIsCanceled);
                     Toast toast = Toast.makeText(context, "Cancel", Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.TOP, 0, 330);//250 //y - чем выше значение тем ниже элемент
