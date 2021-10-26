@@ -54,7 +54,7 @@ public class DialogClass extends MainActivity {
         this.btnNetral = btn_Netral;
     }
 
-    public void createCustomNewDialogChageitem(){
+    public void createCustomNewDialogChageItem(){
         //Work Example from: https://stackoverflow.com/questions/22655599/alertdialog-builder-with-custom-layout-and-edittext-cannot-access-view
         try {
             alertBuilder = new AlertDialog.Builder(context);
