@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
     EditText etName;
-    Button btnSave, btnReadFile, btnDeleteAll, btnJaak, btnChange, btnSearch, btnBackSearch;
+    Button btnSave, btnReadFile, btnDeleteAll, btnSearch, btnBackSearch;
     ArrayList<String> listFromSharedPreference = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
     ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
     ArrayList<String> backSearchlist = new ArrayList<>();
@@ -130,15 +130,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnReadFile = findViewById(R.id.loadtext);
         btnReadFile.setOnClickListener(this);
 
-        btnJaak = findViewById(R.id.btnJaak);
-        btnJaak.setOnClickListener(this);
-
-
         btnDeleteAll = findViewById(R.id.btnDeleteAll);
         btnDeleteAll.setOnClickListener(this);
-
-        btnChange = findViewById(R.id.btnChange);
-        btnChange.setOnClickListener(this);
 
         btnBackSearch = findViewById(R.id.IdBackSearch);
         btnBackSearch.setOnClickListener(this);
@@ -297,26 +290,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-        int green = getResources().getColor(valmis);
-
+        //int green = getResources().getColor(valmis);
         choosen_ItemInClickmethod = ((TextView) view).getText().toString(); // Кликнутая строка в данный момент
-
-        //поиск и отображение id
-        try {
-            if (!mainList.isEmpty()) { // функция для нахождения позиции кликнутого элемента в основном листе
-                cursor = dbHelper.viewData();
-                cursor.moveToPosition(position);
-                toast = Toast.makeText(MainActivity.this, "Position from DataBase " + cursor.getInt(3), Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.TOP, 0, 330);//250
-                toast.show();
-                cursor.close();
-            }
-        } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "Error with Cursor " + cursor.getInt(3), Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 330);//250
-            toast.show();
-        }
-        //закончен поиск id
         checkedItemsReloadInfo();
 
     }
@@ -658,74 +633,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     t.start();
                 }
                 break;
-//Остаток
-            case R.id.btnJaak:
-                if (name.equals("Rest")) { //Что бы сработал нужно ввести
-                    /* createRestWithSave();*/
-                    createUncheckedViewList();
-                } else {
-                    Toast.makeText(MainActivity.this, "Put in name ' Rest ' ", Toast.LENGTH_SHORT).show();
-                }
-                break;
-//Изменение
-            case R.id.btnChange:
-                LayoutInflater inflater = this.getLayoutInflater();
-                DialogClass dialogClass = new DialogClass(MainActivity.this,
-                        "Lets do change",
-                        inflater,
-                        choosen_ItemInClickmethod
-                );
-                dialogClass.createCustomNewDialogChageItem();
-                dialogClass.dialog.show();
-
-
-
-/*                boolean a = false;
-                boolean b = false;
-                if (etChageStringg.length() != 0 && !choosen_ItemInClickmethod.isEmpty()) {
-                    String changed = " Changed";
-                    if (choosen_ItemInClickmethod.contains(changed)) { // Если строке уже было присвоенно Changed то оно не добавляеться сново.
-                        contentValues.put(DBHelper.KEY_NAME, model);
-                        if (!found_List.isEmpty()) {
-                            sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
-                            Toast.makeText(MainActivity.this, "If was changed  ", Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "If was changed");
-                            a = true;
-                            b = true;
-                            Log.d(TAG, "Change   etname " + nameOf_etname);
-                            etChageStringg.setText("");
-                            btnSave.callOnClick();
-                            etName.setText(nameOf_etname); //сюда закидываються слова которые были в поиске
-                            btnSearch.callOnClick();
-                        }
-                    } else if (!b) {
-                        contentValues.put(DBHelper.KEY_NAME, model + changed);
-                        if (!found_List.isEmpty()) {    //Если Пойсковый лист не пустой то данные заменяються и запускаеться обновление
-                            int upadateCount = sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
-
-                            System.out.println("Строк обновленно " + upadateCount);
-                            Toast.makeText(MainActivity.this, "If was not changed ", Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "If was not changed");
-                            a = true;
-                            etChageStringg.setText("");
-                            btnSave.callOnClick();
-                            etName.setText(nameOf_etname); //сюда закидываються слова которые были в поиске
-                            btnSearch.callOnClick();
-                        } else {
-                            sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
-                            Toast.makeText(MainActivity.this, "String was changed", Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "Странный");
-                            a = true;
-                            etChageStringg.setText("");
-                            btnSave.callOnClick();
-                        }
-                    }
-                } else if (choosen_ItemInClickmethod.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Choose item", Toast.LENGTH_SHORT).show();
-                } else if (!a) {// если ничего из изменений не выполнялось тогда просто закидывает строку. Для того что бы начать менять её.
-                    etChageStringg.setText(choosen_ItemInClickmethod);
-                }*/
-                break;
 //поиск
             case R.id.btnSearch:
                 if (name == null || name.length() == 0) {
@@ -1063,6 +970,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (list_of_View.isItemChecked(position1)) {
                     list_of_View.setItemChecked(position1, false);
                     checkedItemsReloadInfo();// в конце метода checkedItemsReloadInfo(), bool_prepereDeleteRow должна стать true.
+                }else {
+                    bool_prepereDeleteRow = true;
                 }
                 Thread thread = new Thread(new Runnable() {
                     @Override
@@ -1082,7 +991,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 thread.start();
                 // handler запуститься через пол секунды
                 //handler.postAtTime(runnableToDelete,(SystemClock.uptimeMillis()+300));
-
+                break;
+            case R.id.menuUncheckedItems:
+                createUncheckedViewList();
                 break;
         }
         return super.onContextItemSelected(item);

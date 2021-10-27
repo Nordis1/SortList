@@ -13,7 +13,7 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@+id/ID_ConstraintForListView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.09"
+        app:layout_constraintHeight_percent="0.1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ID_ConstraintForBTNRow3">
 
@@ -64,14 +64,14 @@
             android:id="@+id/btnSave"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginRight="2dp"
+            android:layout_marginEnd="3dp"
+            android:layout_marginRight="3dp"
             android:drawableLeft="@drawable/ic_autorenew_black_24dp"
             android:onClick="btnSave"
             android:text="@string/BackToMain"
             android:textAllCaps="false"
-            android:textSize="15sp"
-            app:autoSizeMaxTextSize="19sp"
+            android:textSize="14sp"
+            app:autoSizeMaxTextSize="14sp"
             app:autoSizeMinTextSize="10sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -88,11 +88,11 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/ID_ConstraintForBTNRow3"
         android:layout_width="match_parent"
-        android:layout_height="86dp"
+        android:layout_height="0dp"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@+id/ID_ConstraintForBTNRow1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.09"
+        app:layout_constraintHeight_percent="0.06"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="spread">
@@ -101,8 +101,9 @@
             android:id="@+id/loadtext"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginLeft="2dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginLeft="3dp"
+            android:layout_marginTop="2dp"
             android:layout_weight="1"
             android:drawableLeft="@drawable/ic_cloud_download_black_24dp"
             android:text="@string/load_db"
@@ -111,14 +112,13 @@
             app:autoSizeMaxTextSize="19sp"
             app:autoSizeMinTextSize="10sp"
             app:autoSizeTextType="uniform"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnDeleteAll"
-            app:layout_constraintHeight_percent="0.8"
+            app:layout_constraintHeight_percent="0.9"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.24" />
+            app:layout_constraintWidth_percent="0.328" />
 
         <Button
             android:id="@+id/btnDeleteAll"
@@ -126,6 +126,7 @@
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
             android:layout_marginLeft="2dp"
+            android:layout_marginTop="2dp"
             android:layout_weight="1"
             android:drawableLeft="@drawable/ic_clear_black_24dp"
             android:text="@string/del_all"
@@ -134,34 +135,13 @@
             app:autoSizeMaxTextSize="19sp"
             app:autoSizeMinTextSize="10sp"
             app:autoSizeTextType="uniform"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/IdBackSearch"
-            app:layout_constraintHeight_percent="0.8"
+            app:layout_constraintHeight_percent="0.9"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/loadtext"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.24" />
+            app:layout_constraintWidth_percent="0.328" />
 
-        <Button
-            android:id="@+id/btnJaak"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginRight="2dp"
-            android:text="@string/Rest"
-            android:textAllCaps="false"
-            android:textSize="15sp"
-            android:textStyle="normal"
-            app:autoSizeMaxTextSize="19sp"
-            app:autoSizeMinTextSize="10sp"
-            app:autoSizeTextType="uniform"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.8"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/IdBackSearch"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.25" />
 
         <Button
             android:id="@+id/IdBackSearch"
@@ -169,21 +149,20 @@
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
             android:layout_marginLeft="2dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginRight="2dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="3dp"
+            android:layout_marginRight="3dp"
             android:text="@string/search_back"
+            android:textAllCaps="false"
             android:textSize="15sp"
-            android:textStyle="normal"
             app:autoSizeMaxTextSize="19sp"
-            app:autoSizeMinTextSize="8sp"
+            app:autoSizeMinTextSize="10sp"
             app:autoSizeTextType="uniform"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btnJaak"
-            app:layout_constraintHeight_percent="0.8"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.9"
             app:layout_constraintStart_toEndOf="@+id/btnDeleteAll"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.25">
+            app:layout_constraintWidth_percent="0.328">
 
         </Button>
 
@@ -197,7 +176,7 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.81"
+        app:layout_constraintHeight_percent="0.83"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ID_ConstraintForBTNRow1">
 

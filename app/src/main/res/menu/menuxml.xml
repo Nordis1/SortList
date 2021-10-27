@@ -8,9 +8,9 @@
         android:title="persent"
         app:showAsAction="never">
 
-    </item>
+    </item>-->
 
-    <item
+<!--    <item
         android:id="@+id/item_menu"
         android:icon="@drawable/menuicon_24"
         android:title="menu"

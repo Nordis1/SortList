@@ -9,8 +9,8 @@
     \nSave/Refresh</string>
     <string name="Change">Change</string>
     <string name="Rest">UnChecked</string>
-    <string name="search_back">Search
-    \nHistory</string>
+    <string name="search_back">Search history</string>
+    <string name="search_back_normal">History</string>
 
     <string name="dialog_message">We can put unselected items in memory.
     And load it, when creating  a new list.</string>
@@ -19,7 +19,9 @@
     <string name="cancel">Cancel</string>
     <string name="load_db">Load file: txt, xls</string>
     <string name="del_all">Del file and list</string>
-    <string name="Change_Row">Change row</string>
-    <string name="Delete_Row">Delete row</string>
+    <string name="del_allnormal">Del file \n and list</string>
+    <string name="Change_Row">Change this String</string>
+    <string name="Delete_Row">Delete this String</string>
+    <string name="ShowUnchekedItems">Show unchecked items</string>
 
 </resources>
