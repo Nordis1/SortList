@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static int hSetProgressBarGone = 7;
     final static int hSetLoadingListOfView_fromAdapter1 = 11;
     final static int hSetToastErrorfromReadingAdditionalLoad = 12;
+    final static int hSetErrorFileReading = 13;
 
 
     Toast toast;
@@ -211,7 +212,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         toast.show();
                         break;
                     case 13:
-                        toast = Toast.makeText(MainActivity.this, "Works", Toast.LENGTH_LONG);
+                        // используеться в классе FileXlsReader
+                        toast = Toast.makeText(MainActivity.this, "File reading Error!", Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
                         toast.show();
                         break;
@@ -737,11 +739,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i(TAG, "onRequestPermissionsResult: Переменная для удаления файла permisionGranted: " + bool_permisionGranted);
         if (bool_permisionGranted) { // permisionGranted специальная переменная для удаления файла на носителе.
             Log.i(TAG, "onRequestPermissionsResult:  Зашли в метод удаления файла.");
-            sPref = getSharedPreferences("FILENAME", MODE_PRIVATE);
+
+            sPref = getSharedPreferences("FILENAME", MODE_PRIVATE); // получаем имя файла, которое сохранили при загрузке
             fileName = sPref.getString("keyFileName", "");
-            if (fileName == null || fileName.equals("")) {
+
+        /*    if (fileName == null || fileName.equals("")) { // это должно пойти на удаление
                 fileName = "Plan.txt";
-            }
+            }*/
+
             switch (requestCode) {
                 case 1: // подготовка к удалению файла
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -790,6 +795,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 }
                         }
                     } else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
+                        try {
+                            handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
+                            handler.sendEmptyMessage(hSetProgressBarVisible); // Диактивируем кнопку и Активируем прогресс бар
+
+                            File_XLS_Reader file_xls_reader = new File_XLS_Reader(fileName); // передаём имя файла в наш Класс, который читает его.
+                            downloadList = file_xls_reader.readingXLS();
+                            loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
+
+                            int j = downloadList.size() + mProgresscounter;
+                            progressBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
+                            Log.i(TAG, "mainloading: progress bar MAX = " + j);
+                            for (int i = 0; i < downloadList.size(); i++) {
+                                //начал добавлять сразу в базу что бы не нагружать main.
+                                dbHelper.insertData(downloadList.get(i));
+                            }
+                            viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
+                            downloadList.clear();
+                            //Востанавливаем кнопку и убирает прогресс бар.
+                            handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
+                            handler.sendEmptyMessage(hSetProgressBarGone);
+                            mProgresscounter = 0;
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         Toast.makeText(MainActivity.this, "In works", Toast.LENGTH_LONG).show();
                     }
                 }

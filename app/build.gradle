@@ -4,7 +4,7 @@ android {
     compileSdkVersion 31 /*27*/
     defaultConfig {
         applicationId "com.example.android.sqlitekod_dev_test"
-        minSdkVersion 15 /*15*/
+        minSdkVersion 20 /*15*/
         targetSdkVersion 31 /*27*/
 		
         versionCode 1
@@ -28,7 +28,6 @@ dependencies {
     //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
-    implementation files('D:\\download\\jar_files\\poi-5.0.0.jar')
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
