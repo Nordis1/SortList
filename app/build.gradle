@@ -4,7 +4,7 @@ android {
     compileSdkVersion 31 /*27*/
     defaultConfig {
         applicationId "com.example.android.sqlitekod_dev_test"
-        minSdkVersion 20 /*15*/
+        minSdkVersion 26 /*15*/
         targetSdkVersion 31 /*27*/
 		
         versionCode 1

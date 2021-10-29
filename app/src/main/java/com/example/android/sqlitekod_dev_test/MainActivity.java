@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> listFromSharedPreference = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
     ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
     ArrayList<String> backSearchlist = new ArrayList<>();
-    ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться значально тексты с файла а потом с него загружаем в Базу
+    volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться значально тексты с файла а потом с него загружаем в Базу
     ArrayList<Integer> positionofIndex = new ArrayList<>(); // Используеться в LoadCheckedItems для обозначения позиций.
 
     //ниже 3 листа ипользуемые в методе onQueryTextSubmit для поиска.
@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final String TAG = "mylogs";
     public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
 
+    volatile File_XLS_Reader file_xls_reader;
 
     Cursor cursor;
     ContentValues contentValues = new ContentValues();
@@ -360,9 +361,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 } else if (progressBar.getMax() > 400 && progressBar.getMax() <= 600) {
                     try {
-                        TimeUnit.MILLISECONDS.sleep(18);
-                        Log.i(TAG, "Sleep 20");
-                        if (mProgresscounter % 5 == 0) {
+                        TimeUnit.MILLISECONDS.sleep(12);
+                        //Log.i(TAG, "Sleep 12");
+                        if (mProgresscounter % 7 == 0) {
                             handler.post(incrementProgressbar);
                         }
                     } catch (InterruptedException e) {
@@ -370,9 +371,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 } else if (progressBar.getMax() > 600) {
                     try {
-                        TimeUnit.MILLISECONDS.sleep(15);
-                        Log.i(TAG, "Sleep 15");
-                        if (mProgresscounter % 7 == 0) {
+                        TimeUnit.MILLISECONDS.sleep(5);
+                        //Log.i(TAG, "Sleep 5");
+                        if (mProgresscounter % 10 == 0) {
                             handler.post(incrementProgressbar);
                         }
                     } catch (InterruptedException e) {
@@ -384,6 +385,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
             handler.sendEmptyMessage(hSetLoadingListOfView_fromAdapter1);
             cursor.close();
+
         }
     }
 
@@ -625,10 +627,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 ActivityCompat.requestPermissions(MainActivity.this,
                                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
                             } else {
-                                toast = Toast.makeText(MainActivity.this, "Error fileNotChoosed: " + bool_fileNotChoosed + ", fileOfNameReady: " + bool_fileOfNameReady, Toast.LENGTH_LONG);
-                                toast.setGravity(Gravity.TOP, 0, 330);//250
-                                toast.show();
-
+                                handler.sendEmptyMessage(hSetErrorFileReading);
                             }
                         }
                     });
@@ -778,7 +777,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    Log.i(TAG, "run: Поток закачки был запущен");
                     if (fileName.substring(fileName.length() - 3, fileName.length()).equals("txt")) {
+                        Log.i(TAG, "run: File был распознан как txt");
                         switch (requestCode) {
                             case 1:
                                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -795,17 +796,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 }
                         }
                     } else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
+                        Log.i(TAG, "run: File был распознан как xls");
                         try {
                             handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
                             handler.sendEmptyMessage(hSetProgressBarVisible); // Диактивируем кнопку и Активируем прогресс бар
 
+                            Log.i(TAG, "run: Передаём имя файла, файлу который считывает");
+
                             File_XLS_Reader file_xls_reader = new File_XLS_Reader(fileName); // передаём имя файла в наш Класс, который читает его.
                             downloadList = file_xls_reader.readingXLS();
+                            Log.i(TAG, "run: Получили считанный лист. Его размер: " + downloadList.size());
                             loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
 
                             int j = downloadList.size() + mProgresscounter;
                             progressBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
                             Log.i(TAG, "mainloading: progress bar MAX = " + j);
+
                             for (int i = 0; i < downloadList.size(); i++) {
                                 //начал добавлять сразу в базу что бы не нагружать main.
                                 dbHelper.insertData(downloadList.get(i));
@@ -816,12 +822,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
                             handler.sendEmptyMessage(hSetProgressBarGone);
                             mProgresscounter = 0;
+                            progressBar.setProgress(0);
 
 
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        Toast.makeText(MainActivity.this, "In works", Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -878,6 +884,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
             handler.sendEmptyMessage(hSetProgressBarGone);
             mProgresscounter = 0;
+            progressBar.setProgress(0);
+
 
         } catch (IOException e) {
             // Если ошибка, то все востанавливаем кнопки. и убираем видимость progressBar.

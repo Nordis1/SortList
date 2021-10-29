@@ -50,9 +50,13 @@ public class File_XLS_Reader extends MainActivity {
                 arrayListFromXlsFile.clear();
             }
 
-            int rows;
+            int rows = 0;
 
-            rows = sheet.getPhysicalNumberOfRows(); //показывает сколько рядов, пробелы не считает
+            //rows = sheet.getPhysicalNumberOfRows();
+
+            if(sheet.getPhysicalNumberOfRows()>0)
+                rows = sheet.getLastRowNum() - sheet.getFirstRowNum();
+
             Log.i(TAG, "readingXLS: Кол-во рядов: " + rows);
             StringBuilder stringBuilder = new StringBuilder();
 
@@ -71,9 +75,6 @@ public class File_XLS_Reader extends MainActivity {
                     arrayListFromXlsFile.add(stringBuilder.toString());
                     stringBuilder.setLength(0);*/
 
-
-
-
                     //Это раздел  custom
                     if (lastUsedColumnIs == 11) lastUsedColumnIs = 7; // Убираем лишние Колонны 4 штуки в Xls
                     if (firstUsedColumnIs == 9) lastUsedColumnIs = 7; // убираем ненужную строку в 2 ряду в плане
@@ -82,17 +83,25 @@ public class File_XLS_Reader extends MainActivity {
 
                     for (int c = firstUsedColumnIs; c < lastUsedColumnIs; c++) {
                         cell = row.getCell(c); // Тут начинаем считывать все ячейки с лева на право, или с первой по последнюю
-                        if (cell != null) {
-                            if (!booldate) {
-                                stringBuilder.append(cell + " ");
-                                //System.out.print(cell + " ");
-                            } else {
-                                stringBuilder.append(cell);
-                                //System.out.print(cell);
+
+                        if (cell != null ) {
+                            String string1 = cell.toString();
+                            if (string1.isEmpty()) {
+                                continue;
                             }
+                                if (!booldate) {
+                                    stringBuilder.append(string1);
+                                    stringBuilder.append(" ");
+                                } else {
+                                    stringBuilder.append(string1);
+                                }
+
                             // Your code here
+                        }else {
+                            continue;
                         }
                     }
+
                     booldate = false;
                     arrayListFromXlsFile.add(stringBuilder.toString());
                     stringBuilder.setLength(0);
@@ -100,15 +109,17 @@ public class File_XLS_Reader extends MainActivity {
                     //Раздел Custom
 
 
-
-
-
                 }
             }
             workBook.close();
             poi_FileReader.close();
+            for (int i = 0; i < arrayListFromXlsFile.size(); i++) {
+                if (arrayListFromXlsFile.get(i).isEmpty()){
+                    arrayListFromXlsFile.remove(i);
+                }
+            }
         } catch (IOException e) {
-            handler.sendEmptyMessage(13);// 13 выводит тост об ошибке чтения файла
+            handler.sendEmptyMessage(hSetErrorFileReading);// 13 выводит тост об ошибке чтения файла
             e.printStackTrace();
         }
 
