@@ -1,13 +1,12 @@
 package com.example.android.sqlitekod_dev_test;
 
-import static com.example.android.sqlitekod_dev_test.R.color.valmis;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,6 +23,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
     ArrayList<String> backSearchlist = new ArrayList<>();
     volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться значально тексты с файла а потом с него загружаем в Базу
-    ArrayList<Integer> positionofIndex = new ArrayList<>(); // Используеться в LoadCheckedItems для обозначения позиций.
 
     //ниже 3 листа ипользуемые в методе onQueryTextSubmit для поиска.
     //Примечание: mainlist и foundlist основные.В list_of_View отбражаться всё что есть в mainlist или foundlist с помощью  adapter1.
@@ -79,17 +78,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static String name = "";
     HashSet<String> HashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
     int backcounter = 0;  //backcounter - работает с backSearchlist
-    int requestCode1 = 1;
+    final int requestCode1 = 1;
+    Thread thread;
 
 
     public static volatile String fileName;
     volatile ProgressBar progressBar;
-    static volatile boolean bool_fileOfNameReady, bool_fileNotChoosed, bool_isSaved, bool_permisionGranted, bool_prepereDeleteRow = false;
-    //Выше созданная permisionGranted специальная переменная для удаленя файла на носителе.
-    //isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
+    static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved,
+            bool_deleteFile_checkBox_isActivated, bool_prepereDeleteRow,bool_onSaveReady,bool_xlsColumnsWasChosen,
+            bool_xlsExecutorCanceled= false;
+    //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //fileNotChoosed переменная служит для остановки потока который хочет считать имя файла работает в паре fileOfNameReady. Приобретает свойсва true  в методе onRestart()
-
+    //bool_prepereDeleteRow - для контекстной функции Delete row.
+    //bool_isSaved - используется в RestCreating. Что бы прога не удалила план пока не завершится сохранение остатка.
+    //bool_onSaveReady - для контекстной функции Delete All checked.
+    //bool_deleteFile_checkBox_isActivated специальная переменная для удаленя файла на носителе.
+    //isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
     volatile static int mProgresscounter = 0;
+    volatile static int mColumnmax = 0;
+    volatile static int mColumnmin = 0;
     //2,3,9 - зарезирвированы в DialogClass
     final static int hSetToastErrorOfFileReading = 1;
     final static int hSetbtnReadFileEnabledFalse = 4;
@@ -98,15 +105,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static int hSetProgressBarGone = 7;
     final static int hSetLoadingListOfView_fromAdapter1 = 11;
     final static int hSetToastErrorfromReadingAdditionalLoad = 12;
-    final static int hSetErrorFileReading = 13;
+    final static int hSetCreateDialogError = 13;
+    final static int hSetDeleteFileCheckBoxIsActivated = 14;
+    final static int hSetDeleteFileCheckBoxDiactivated = 15;
+    final static int hSetCreateDialogFromWhichToWhich = 16;
+    final static int hSetRestoreMainViewElements = 17;
 
 
     Toast toast;
     SharedPreferences sPref;
     final String TAG = "mylogs";
     public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
-
-    volatile File_XLS_Reader file_xls_reader;
 
     Cursor cursor;
     ContentValues contentValues = new ContentValues();
@@ -167,22 +176,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 switch (msg.what) {
                     case 1:
-                        toast = Toast.makeText(MainActivity.this, "Ошибка при чтении файла!", Toast.LENGTH_LONG);
+                        toast = Toast.makeText(MainActivity.this, "File reading Error!", Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
                         toast.show();
                         break;
                     case 2:
                         createRestWithSave();
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                while (!bool_isSaved) {
-                                    SystemClock.sleep(1000);
-                                    Log.i(TAG, "run: :Ждём пока isSave , будет true " + bool_isSaved);
-                                }
-                                Log.i(TAG, "isSave = " + bool_isSaved + "      run: пошло удаление");
-                                btnDeleteAll.callOnClick();
+                        handler.post(() -> {
+                            while (!bool_isSaved) {
+                                SystemClock.sleep(1000);
+                                Log.i(TAG, "run: :Ждём пока isSave , будет true " + bool_isSaved);
                             }
+                            Log.i(TAG, "isSave = " + bool_isSaved + "      run: пошло удаление");
+                            btnDeleteAll.callOnClick();
                         });
                         break;
                     case 3:
@@ -213,12 +219,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         toast.show();
                         break;
                     case 13:
-                        // используеться в классе FileXlsReader
-                        toast = Toast.makeText(MainActivity.this, "File reading Error!", Toast.LENGTH_LONG);
+                        toast = Toast.makeText(MainActivity.this, "Create Dialog Error!", Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
                         toast.show();
                         break;
+                    case 14:
+                        bool_deleteFile_checkBox_isActivated = true;
+                        break;
+                    case 15:
+                        bool_deleteFile_checkBox_isActivated = false;
+                        break;
+                    case 16:
+                        LayoutInflater inflater = MainActivity.this.getLayoutInflater();
+                        DialogClass dialogClass = new DialogClass(MainActivity.this,
+                                null,
+                                inflater,
+                                null
+                        );
+                        dialogClass.createCustomNewDialogFromWhichTowhich();
+                        dialogClass.dialog.show();
+                        break;
+                    case 17:
 
+                        break;
                 }
             }
         };
@@ -230,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         contentValues.put(DBHelper.KEY_NAME, changeAbleString);
         if (!found_List.isEmpty() || !foundAccurateList.isEmpty()) {    //Если Пойсковый лист не пустой то данные заменяються и запускаеться обновление
-            int upadateCount = sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
+            sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
             Log.i(TAG, "prepareTochange: Изменение с сторией поиска");
             btnSave.callOnClick();
             try {
@@ -275,10 +298,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 toast.show();
                 e.printStackTrace();
             }
-        }else {
+        } else {
             try {
-                int upadateCount1 = sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{becomeDeleteString});
-                Toast.makeText(MainActivity.this, "Row is deleted " + upadateCount1, Toast.LENGTH_SHORT).show();
+                sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{becomeDeleteString});
                 btnSave.callOnClick();
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Error deleted", Toast.LENGTH_SHORT).show();
@@ -336,6 +358,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     try {
                         TimeUnit.MILLISECONDS.sleep(50);
                         //Log.i(TAG, "Sleep 50");
+                        handler.post(runnableIncrementProgressbar);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -344,17 +367,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         TimeUnit.MILLISECONDS.sleep(35);
                         //Log.i(TAG, "Sleep 35");
                         if (mProgresscounter % 2 == 0) {
-                            handler.post(incrementProgressbar);
+                            handler.post(runnableIncrementProgressbar);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 } else if (progressBar.getMax() > 150 && progressBar.getMax() <= 400) {
                     try {
-                        TimeUnit.MILLISECONDS.sleep(30);
+                        TimeUnit.MILLISECONDS.sleep(20);
                         //Log.i(TAG, "Sleep 30");
-                        if (mProgresscounter % 3 == 0) {
-                            handler.post(incrementProgressbar);
+                        if (mProgresscounter % 4 == 0) {
+                            handler.post(runnableIncrementProgressbar);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -364,7 +387,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         TimeUnit.MILLISECONDS.sleep(12);
                         //Log.i(TAG, "Sleep 12");
                         if (mProgresscounter % 7 == 0) {
-                            handler.post(incrementProgressbar);
+                            handler.post(runnableIncrementProgressbar);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -374,7 +397,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         TimeUnit.MILLISECONDS.sleep(5);
                         //Log.i(TAG, "Sleep 5");
                         if (mProgresscounter % 10 == 0) {
-                            handler.post(incrementProgressbar);
+                            handler.post(runnableIncrementProgressbar);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -436,27 +459,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean("permission", bool_permisionGranted);
+        // View элементы у которых есть ID они сами востанавливают своё значение. Так же как Элементы Final.
+        // А все другие нужно сохранять тут. А востанавливать в onRestoreInstanceState.
+        outState.putBoolean("permission", bool_deleteFile_checkBox_isActivated);
         outState.putBoolean("val1", bool_fileOfNameReady);
-        outState.putBoolean("val2", bool_fileNotChoosed);
+        outState.putBoolean("val2", bool_fileNotChosen);
         outState.putBoolean("val3", bool_isSaved);
+        outState.putBoolean("val4", bool_xlsExecutorCanceled);
+        outState.putBoolean("val5", bool_xlsColumnsWasChosen);
 
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        bool_permisionGranted = savedInstanceState.getBoolean("permission");
+        bool_deleteFile_checkBox_isActivated = savedInstanceState.getBoolean("permission");
         bool_fileOfNameReady = savedInstanceState.getBoolean("val1");
-        bool_fileNotChoosed = savedInstanceState.getBoolean("val2");
+        bool_fileNotChosen = savedInstanceState.getBoolean("val2");
         bool_isSaved = savedInstanceState.getBoolean("val3");
+        bool_xlsExecutorCanceled = savedInstanceState.getBoolean("val4");
+        bool_xlsColumnsWasChosen = savedInstanceState.getBoolean("val5");
+        if (dbHelper == null) dbHelper = new DBHelper(this);
+        if (contentValues == null) contentValues = new ContentValues();
+        if (handler == null) onHandlerCreate();
 
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i(TAG, "onPause: Вызвана пауза  permisionGranted: " + bool_permisionGranted);
     }
 
     @Override
@@ -476,7 +507,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onRestart();
         //isSaved = false;
         if (!bool_fileOfNameReady) {
-            bool_fileNotChoosed = true;
+            bool_fileNotChosen = true;
         }
         Log.i(TAG, "onRestart");
     }
@@ -515,6 +546,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 //Обновить
             case R.id.btnSave:
+                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()){
+                    Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                bool_onSaveReady = false;
                 //contentValues.put(DBHelper.KEY_NAME, hideName); //шаг 3
                 if (etName.length() == 0) {
                     //Если все значения были пустыми то чистим все листы и обновляем основной с проставлением checked
@@ -523,7 +559,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     mainList.clear();
                     viewData(); // - В этом методе востанавливаться mainList
 
-                    LoadCheckedItems(mainList); // Загрузка
+                    loadCheckedItems(mainList); // Загрузка
 
                     if (HashSetMainCollectorItems.isEmpty()) {
                         //востановления hashset листа
@@ -532,6 +568,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     choosen_ItemInClickmethod = "";
                     showListIsReadyPercent();
+                    bool_onSaveReady = true;
                 } else {
                     etName.setText("");
                     Toast.makeText(this, "Clear Object", Toast.LENGTH_SHORT).show();
@@ -540,14 +577,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //Удаление
             case R.id.btnDeleteAll:
+                if (mainList.isEmpty()){
+                    Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                    break;
+                }
                 Log.i(TAG, "onClick: Была нажата кнопка удалить");
                 String del = etName.getText().toString();
                 String delete = "Delete";
                 if (del.equals(delete)) { // Если Ввёл в строку Delete
-                    //permisionGranted = true;
                     try {
-                       /* ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                        sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);*/
+                        if (bool_deleteFile_checkBox_isActivated) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                            sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);
+
+                        }
 
                         File file = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser");
                         File file2 = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser-journal");
@@ -581,23 +624,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     Toast.makeText(MainActivity.this, "Deleted is successfully", Toast.LENGTH_SHORT).show();
                 } else {
-
+                    LayoutInflater inflater = this.getLayoutInflater();
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
-                            "We can put unselected items in memory. And load them with the next loading Data.",
-                            "How Delete",
-                            "Delete",
-                            "Delete with Rest",
-                            "Cancel");
-                    dialogClass.createStandartNewDialogOKCancelNetral();
+                            null,
+                            inflater,
+                            null
+                    );
+                    dialogClass.createCustomNewDialogDeleteFile();
                     dialogClass.dialog.show();
                     etName.setText("Delete");
-                    //Toast.makeText(this, "Press Delete last one", Toast.LENGTH_SHORT).show();
                 }
                 break;
 //Загрузка
             case R.id.loadtext:
                 if (!bool_fileOfNameReady) {
-                    bool_fileNotChoosed = false;
+                    bool_fileNotChosen = false;
                 }
                 if (!mainList.isEmpty() || !found_List.isEmpty()) {
                     Toast.makeText(MainActivity.this, "List is already full", Toast.LENGTH_SHORT).show();
@@ -606,29 +647,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     intent.setType("*/*");
                     setResult(RESULT_OK, intent);
                     startActivityForResult(intent, requestCode1);
-                    Thread t = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            while (!bool_fileOfNameReady || Thread.currentThread().isInterrupted()) {
-                                if (bool_fileNotChoosed) {
-                                    //if функция служит если файл не был выбран, включаться автоматом в onRestart
-                                    break;
-                                }
-                                try {
-                                    Log.i(TAG, "run: Зашли в режим сна, fileOfnameReady:  " + bool_fileOfNameReady);
-                                    Thread.sleep(3300);
-                                } catch (InterruptedException e) {
-                                    Log.i(TAG, "run: ошибка в новой нити: " + e.getMessage());
-                                    e.printStackTrace();
-                                }
+                    Thread t = new Thread(() -> {
+                        while (!bool_fileOfNameReady || Thread.currentThread().isInterrupted()) {
+                            if (bool_fileNotChosen) {
+                                //if функция служит если файл не был выбран, включаться автоматом в onRestart
+                                break;
                             }
-                            if (!bool_fileNotChoosed && bool_fileOfNameReady) { // если файл
-                                Log.i(TAG, "run: Получили имя файла идём в загрузку,fileOfNameReady: " + bool_fileOfNameReady);
-                                ActivityCompat.requestPermissions(MainActivity.this,
-                                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                            } else {
-                                handler.sendEmptyMessage(hSetErrorFileReading);
+                            try {
+                                Log.i(TAG, "run: Зашли в режим сна, fileOfnameReady:  " + bool_fileOfNameReady);
+                                TimeUnit.SECONDS.sleep(3);
+                                //Thread.sleep(3300);
+                            } catch (InterruptedException e) {
+                                Log.i(TAG, "run: ошибка в новой нити: " + e.getMessage());
+                                e.printStackTrace();
                             }
+                        }
+                        if (!bool_fileNotChosen && bool_fileOfNameReady) { // если файл
+                            Log.i(TAG, "run: Получили имя файла идём в загрузку,fileOfNameReady: " + bool_fileOfNameReady);
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                        } else {
+                            handler.sendEmptyMessage(hSetToastErrorOfFileReading);
                         }
                     });
                     t.start();
@@ -636,7 +675,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 //поиск
             case R.id.btnSearch:
-                if (name == null || name.length() == 0) {
+                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()){
+                    Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                if (name == null || name.length() == 0 ) {
                     Toast.makeText(this, "Write something in the place \"Type item\" ", Toast.LENGTH_LONG).show();
                 } else {
                     String et = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
@@ -657,6 +700,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //История поиска
             case R.id.IdBackSearch:
+                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()){
+                    Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                    break;
+                }
                 btnSave.callOnClick();
                 if (backSearchlist.isEmpty()) { //Если чист то прерываем сеанс
                     break;
@@ -692,7 +739,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mainList.clear();
         viewData();
         restCreating();
-        etName.setText("");
     }
 
     public void createUncheckedViewList() {
@@ -704,6 +750,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }
+        adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
+        list_of_View.setAdapter(adapter1);
     }
 
     private void restCreating() {
@@ -735,109 +783,120 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override //после получения доступа Загружаем базу данных
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.i(TAG, "onRequestPermissionsResult: Переменная для удаления файла permisionGranted: " + bool_permisionGranted);
-        if (bool_permisionGranted) { // permisionGranted специальная переменная для удаления файла на носителе.
+        Log.i(TAG, "onRequestPermissionsResult: Переменная для удаления файла bool_deleteFile_checkBox_isActivated: " + bool_deleteFile_checkBox_isActivated);
+        if (bool_deleteFile_checkBox_isActivated) { // bool_deleteFile_checkBox_isActivated специальная переменная для удаления файла на носителе.
             Log.i(TAG, "onRequestPermissionsResult:  Зашли в метод удаления файла.");
 
             sPref = getSharedPreferences("FILENAME", MODE_PRIVATE); // получаем имя файла, которое сохранили при загрузке
             fileName = sPref.getString("keyFileName", "");
 
-        /*    if (fileName == null || fileName.equals("")) { // это должно пойти на удаление
-                fileName = "Plan.txt";
-            }*/
+            try {
+                PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
+                String version = pInfo.versionName;
+                Log.i(TAG, "onRequestPermissionsResult: versionName: " + version);
+                if (version.equals("1.0")) {
+                    fileName = "Plan.txt";
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                Toast.makeText(MainActivity.this, "File version error", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
 
-            switch (requestCode) {
-                case 1: // подготовка к удалению файла
-                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (requestCode == 1) { // подготовка к удалению файла
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    try {
                         File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                         File file = new File(sdCard, fileName);
-                        try {
-                            if (file.delete()) {
-                                Log.d(TAG, "onRequestPermissionsResult:  deleted");
-                                sPref.edit().clear().apply();
-                            } else {
-                                Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
-                            }
-                        } catch (Exception e) {
-                            Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
-                            Toast.makeText(MainActivity.this, "File doesn't Deleted", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
-                    }
 
+                        if (file.delete()) {
+                            Log.d(TAG, "onRequestPermissionsResult:  deleted");
+                            sPref.edit().clear().apply();
+                        } else {
+                            Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
+                        }
+                    } catch (Exception e) {
+                        Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
+                        Toast.makeText(MainActivity.this, "File doesn't Deleted", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
+                }
             }
         }//Логика удаления файла на носителе закончена.
         //далее начинаеться логика загрузки файла
-        else if (!bool_permisionGranted) {
+        else if (!bool_deleteFile_checkBox_isActivated) {
             Log.i(TAG, "onRequestPermissionsResult: Загрузка файла : " + fileName);
             if (fileName == null) {
                 return;
             }
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.i(TAG, "run: Поток закачки был запущен");
-                    if (fileName.substring(fileName.length() - 3, fileName.length()).equals("txt")) {
-                        Log.i(TAG, "run: File был распознан как txt");
-                        switch (requestCode) {
-                            case 1:
-                                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                                    if (!mainList.isEmpty()) {
-                                        Toast.makeText(MainActivity.this, "DataBase is full", Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
-                                        handler.sendEmptyMessage(hSetProgressBarVisible);
-                                        loadingRest();
-                                        mainloading();
-                                    }
-                                } else {
-                                    Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
-                                }
-                        }
-                    } else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
-                        Log.i(TAG, "run: File был распознан как xls");
-                        try {
-                            handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
-                            handler.sendEmptyMessage(hSetProgressBarVisible); // Диактивируем кнопку и Активируем прогресс бар
-
-                            Log.i(TAG, "run: Передаём имя файла, файлу который считывает");
-
-                            File_XLS_Reader file_xls_reader = new File_XLS_Reader(fileName); // передаём имя файла в наш Класс, который читает его.
-                            downloadList = file_xls_reader.readingXLS();
-                            Log.i(TAG, "run: Получили считанный лист. Его размер: " + downloadList.size());
-                            loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
-
-                            int j = downloadList.size() + mProgresscounter;
-                            progressBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
-                            Log.i(TAG, "mainloading: progress bar MAX = " + j);
-
-                            for (int i = 0; i < downloadList.size(); i++) {
-                                //начал добавлять сразу в базу что бы не нагружать main.
-                                dbHelper.insertData(downloadList.get(i));
+            thread = new Thread(() -> {
+                Log.i(TAG, "run: Поток закачки был запущен");
+                //if (fileName.substring(fileName.length() - 3, fileName.length()).equals("txt")) {
+                if (fileName.contains(".txt")) {
+                    Log.i(TAG, "run: File был распознан как txt");
+                    if (requestCode == 1) {
+                        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                            if (!mainList.isEmpty()) {
+                                Toast.makeText(MainActivity.this, "DataBase is full", Toast.LENGTH_SHORT).show();
+                            } else {
+                                handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
+                                handler.sendEmptyMessage(hSetProgressBarVisible);
+                                loadingRest();
+                                mainloading();
                             }
-                            viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
-                            downloadList.clear();
-                            //Востанавливаем кнопку и убирает прогресс бар.
-                            handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
-                            handler.sendEmptyMessage(hSetProgressBarGone);
-                            mProgresscounter = 0;
-                            progressBar.setProgress(0);
-
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
                         }
+                    }
+                    //} else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
+                } else if (fileName.contains(".xls")) {
+                    Log.i(TAG, "run: File был распознан как xls");
+                    try {
+                        handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
+                        handler.sendEmptyMessage(hSetProgressBarVisible); // Диактивируем кнопку и Активируем прогресс бар
+
+                        Log.i(TAG, "run: Передаём имя файла, файлу который считывает");
+
+                        File_XLS_Reader file_xls_reader = new File_XLS_Reader(fileName); // передаём имя файла в наш Класс, который читает его.
+                        downloadList = file_xls_reader.readingXLS();
+                        Log.i(TAG, "run: Получили считанный лист. Его размер: " + downloadList.size());
+                        loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
+
+                        int j = downloadList.size() + mProgresscounter;
+                        progressBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
+                        Log.i(TAG, "mainloading: progress bar MAX = " + j);
+
+                        for (int i = 0; i < downloadList.size(); i++) {
+                            //начал добавлять сразу в базу что бы не нагружать main.
+                            dbHelper.insertData(downloadList.get(i));
+                        }
+                        viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
+                        downloadList.clear();
+                        //Востанавливаем кнопку и убирает прогресс бар.
+                        handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
+                        handler.sendEmptyMessage(hSetProgressBarGone);
+                        mProgresscounter = 0;
+
+                    } catch (Exception e) {
+                        Log.i(TAG, "onRequestPermissionsResult: Поток был прерван в main");
+                        handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
+                        handler.sendEmptyMessage(hSetProgressBarGone);
+                        mProgresscounter = 0;
+                        bool_xlsExecutorCanceled = false;
+                        bool_xlsColumnsWasChosen = false;
+                        e.printStackTrace();
                     }
                 }
             });
             thread.start();
         }
-        bool_permisionGranted = false;//для удаления файла на устройстве
+        bool_deleteFile_checkBox_isActivated = false;//для удаления файла на устройстве
+        progressBar.setProgress(0);
+        mProgresscounter = 0;
         bool_fileOfNameReady = false;
     }
 
-    Runnable incrementProgressbar = new Runnable() {
+    Runnable runnableIncrementProgressbar = new Runnable() {
         @Override
         public void run() {
             Log.i(TAG, "run: зашли в в увеличение progressbar mProgresscounter = " + mProgresscounter);
@@ -855,7 +914,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             BufferedReader reader = new BufferedReader(fileReader);
 
             // Начало основной загрузки
-            String line = "";
+            String line;
             int j = 1;
 
             while ((line = reader.readLine()) != null) { //Считываем список с файла в Лист.
@@ -870,7 +929,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     downloadList.add(line);
                 }
             }
-            j = downloadList.size() + mProgresscounter;
+            j = (downloadList.size() + mProgresscounter);
+            mProgresscounter = 0;
             progressBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
             Log.i(TAG, "mainloading: progress bar MAX = " + j);
             for (int i = 0; i < downloadList.size(); i++) {
@@ -884,8 +944,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
             handler.sendEmptyMessage(hSetProgressBarGone);
             mProgresscounter = 0;
-            progressBar.setProgress(0);
-
 
         } catch (IOException e) {
             // Если ошибка, то все востанавливаем кнопки. и убираем видимость progressBar.
@@ -899,20 +957,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void loadingRest() {
         try {
+            // 1 - считываем всё что было сохраненно
             sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
             Log.i(TAG, "loadingRest: sPref = " + sPref);
             int luk = sPref.getInt("Kol-jaak", 0);
             if (luk > 0) {
                 for (int i = 0; i < luk; i++) {
                     String s = sPref.getString("Rest" + i, "");
-                    downloadList.add(s + "The_Rest");
+                    downloadList.add(s + " - *");
                 }
-                sPref.edit().clear().apply();
+                sPref.edit().clear().apply(); // Чистим наше сохранения
+
                 for (int i = 0; i < downloadList.size(); i++) {
-                    dbHelper.insertData(downloadList.get(i));
+                    dbHelper.insertData(downloadList.get(i));// загружаем в базу всё что считали
                 }
                 mProgresscounter = downloadList.size();
-                downloadList.clear();
+                downloadList.clear(); // Чистим лист, он будет нужен в считывании main list.
                 Log.i(TAG, "Считал данные с доп загрузки");
             } else sPref = null;
         } catch (Exception e) {
@@ -970,9 +1030,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        switch (v.getId()) {
-            case R.id.list_item_model:
-                getMenuInflater().inflate(R.menu.menuitem, menu);
+        if (v.getId() == R.id.list_item_model) {
+            getMenuInflater().inflate(R.menu.menuitem, menu);
         }
 
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -982,84 +1041,104 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         int position1 = info.position; // находи позицию
-        //на рассмотрении
-        switch (item.getItemId()) {
-            case R.id.menuitemChageRow:
-                choosen_ItemInClickmethod = list_of_View.getItemAtPosition(position1).toString();
-                //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
-                if (list_of_View.isItemChecked(position1)) {
-                    list_of_View.setItemChecked(position1, false);
-                    checkedItemsReloadInfo();
-                }
-                //Создаём диалог
-                LayoutInflater inflater = this.getLayoutInflater();
-                DialogClass dialogClass = new DialogClass(MainActivity.this,
-                        "Lets change row",
-                        inflater,
-                        choosen_ItemInClickmethod
-                );
-                dialogClass.createCustomNewDialogChageItem();
-                dialogClass.dialog.show();
-                break;
 
-            case R.id.menuitemDeleteRow:
-                bool_prepereDeleteRow = false;
-                choosen_ItemInClickmethod = list_of_View.getItemAtPosition(position1).toString();
-                //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
-                if (list_of_View.isItemChecked(position1)) {
-                    list_of_View.setItemChecked(position1, false);
-                    checkedItemsReloadInfo();// в конце метода checkedItemsReloadInfo(), bool_prepereDeleteRow должна стать true.
-                }else {
-                    bool_prepereDeleteRow = true;
-                }
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        while (!bool_prepereDeleteRow){ //Если до сих пор false то спим.
-                            try {
-                                Log.i(TAG, "run: Данные не подготовленны, спим");
-                                TimeUnit.MILLISECONDS.sleep(100);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        handler.post(runnableToDelete);
-
-                    }
-                });
-                thread.start();
-                // handler запуститься через пол секунды
-                //handler.postAtTime(runnableToDelete,(SystemClock.uptimeMillis()+300));
-                break;
-            case R.id.menuUncheckedItems:
-                createUncheckedViewList();
-                break;
+        int itemId = item.getItemId();
+//Изменить строку
+        if (itemId == R.id.menuitemChageRow) {
+            choosen_ItemInClickmethod = list_of_View.getItemAtPosition(position1).toString();
+            //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
+            if (list_of_View.isItemChecked(position1)) {
+                list_of_View.setItemChecked(position1, false);
+                checkedItemsReloadInfo();
+            }
+            //Создаём диалог
+            LayoutInflater inflater = this.getLayoutInflater();
+            DialogClass dialogClass = new DialogClass(MainActivity.this,
+                    "Lets change row",
+                    inflater,
+                    choosen_ItemInClickmethod
+            );
+            dialogClass.createCustomNewDialogChageItem();
+            dialogClass.dialog.show();
         }
+//Удаляем строку
+        else if (itemId == R.id.menuitemDeleteRow) {
+            bool_prepereDeleteRow = false;
+            choosen_ItemInClickmethod = list_of_View.getItemAtPosition(position1).toString();
+            //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
+            if (list_of_View.isItemChecked(position1)) {
+                list_of_View.setItemChecked(position1, false);
+                checkedItemsReloadInfo();// в конце метода checkedItemsReloadInfo(), bool_prepereDeleteRow должна стать true.
+            } else {
+                bool_prepereDeleteRow = true;
+            }
+            Thread thread = new Thread(() -> {
+                while (!bool_prepereDeleteRow) { //Если до сих пор false то спим.
+                    try {
+                        Log.i(TAG, "run: Данные не подготовленны, спим");
+                        TimeUnit.MILLISECONDS.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                handler.post(runnableToDelete);
+
+            });
+            thread.start();
+            // handler запуститься через пол секунды
+            //handler.postAtTime(runnableToDelete,(SystemClock.uptimeMillis()+300));
+        }
+//Выводим на экран неотмеченные items
+        else if (itemId == R.id.menuUncheckedItems) {
+            createUncheckedViewList();
+        }
+//Удаления отмеченных позиций
+        else if (itemId == R.id.menuitemDeleteAllCheckedItems){
+          /*  sparseBooleanArray.keyAt(i));//получение позиции
+             list_of_View.getItemAtPosition( sparseBooleanArray.keyAt(i))); // получение имени по позиции.
+            */
+            btnSave.callOnClick();
+            sqLiteDatabase = dbHelper.getWritableDatabase();
+            SparseBooleanArray sparseBooleanArray = list_of_View.getCheckedItemPositions();//получаем все cheked elements
+            for (int i = 0; i < sparseBooleanArray.size(); i++) {
+                Log.i(TAG, "onContextItemSelected: " + list_of_View.getItemAtPosition(sparseBooleanArray.keyAt(i)));
+                String toDeleteString = (String) list_of_View.getItemAtPosition(sparseBooleanArray.keyAt(i));// получаем строку
+                //list_of_View.setItemChecked(sparseBooleanArray.keyAt(i),false);
+                sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{toDeleteString});
+                //dbHelper.uninsertData(toDeleteString);
+            }
+            dbHelper.close();
+            HashSetMainCollectorItems.clear();
+            sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+            sPref.edit().clear().apply();
+            btnSave.callOnClick();
+
+        }
+
         return super.onContextItemSelected(item);
     }
 
-    Runnable runnableToDelete = new Runnable() {
-        @Override
-        public void run() {
-            prepareToDelete(choosen_ItemInClickmethod);
-        }
-    };
+
+
+    Runnable runnableToDelete = () -> prepareToDelete(choosen_ItemInClickmethod);
+
+
 
     //для поиска
     public void onmyQueryTextSubmit(String s) { //метод для поиска слова (присвоил к кнопке)
         try {
             //Тут начинаеться прыжки между двумя if else, если поиск продолжаться с уже найденного листа
             if (!found_List.isEmpty()) {
-                ToAppointSearchList(found_List, foundAccurateList, s);
+                toAppointSearchList(found_List, foundAccurateList, s);
                 supportRequestHistoryForChangeStrings.add(s);
                 Log.d(TAG, "Из found_List в foundAccurateList");
                 //ToAppointSearchList(C какого листа идёт выборка, в какой лист переносяться найденные строки,Поисковое слово)
             } else if (!foundAccurateList.isEmpty()) {
-                ToAppointSearchList(foundAccurateList, found_List, s);
+                toAppointSearchList(foundAccurateList, found_List, s);
                 supportRequestHistoryForChangeStrings.add(s);
                 Log.d(TAG, "Из foundAccurateList в found_List");
             } else {
-                ToAppointSearchList(mainList, found_List, s);
+                toAppointSearchList(mainList, found_List, s);
                 if (!supportRequestHistoryForChangeStrings.isEmpty()) {
                     supportRequestHistoryForChangeStrings.clear();
                     supportRequestHistoryForChangeStrings.add(s);
@@ -1078,7 +1157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void ToAppointSearchList(ArrayList<String> fromWhereSearchlist, ArrayList<String> toWhereList, String searchWord) {
+    public void toAppointSearchList(ArrayList<String> fromWhereSearchlist, ArrayList<String> toWhereList, String searchWord) {
 
         try {
             for (String name : fromWhereSearchlist) {
@@ -1086,11 +1165,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     toWhereList.add(name);
                 }
             }
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_checked, toWhereList);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_checked, toWhereList);
             list_of_View.setAdapter(adapter);
             fromWhereSearchlist.clear();
 
-            LoadCheckedItems(toWhereList);
+            loadCheckedItems(toWhereList);
             etName.setText("");
         } catch (Exception e) {
             toast = Toast.makeText(MainActivity.this, "Error ToAppointSearchList", Toast.LENGTH_LONG);
@@ -1101,7 +1180,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }// для поиска
 
-    public void LoadCheckedItems(ArrayList<String> list) {
+    public void loadCheckedItems(ArrayList<String> list) {
+        //метод используеться в btn Save\Update
+        // И когда обновляет данные checked позиции в found листах.
         try {
             listFromSharedPreference.clear();
             //UP-date Main

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NEISER Plan   © Stas.Omelchenko</string>
+    <string name="app_name">Plan Creator</string>
     <string name="Download">Download</string>
     <string name="search">Search</string>
     <string name="Typeitem">Type Item name and press search</string>
@@ -23,5 +23,11 @@
     <string name="Change_Row">Change this String</string>
     <string name="Delete_Row">Delete this String</string>
     <string name="ShowUnchekedItems">Show unchecked items</string>
+    <string name="TextForDelete">We can put unselected items in memory.\n And load them with the next loading Data.</string>
+    <string name="Deletewithrest">Delete with Rest</string>
+    <string name="Delete">Delete</string>
+    <string name="Delete_Checked_rows">Delete all checked</string>
+    <string name="From_which_to_which">From which to which column to read ?</string>
+    <string name="Accept">Accept</string>
 
 </resources>

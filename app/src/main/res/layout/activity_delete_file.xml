@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="210dp">
+
+
+    <CheckBox
+        android:id="@+id/ID_checkBoxDeleteFile"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:text="Delete with file?"
+        app:layout_constraintBottom_toTopOf="@+id/ID_btn_DeleteFile_Dialog_DeleteWithRest"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.16"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintWidth_percent="0.6" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:text="How Delete?"
+        android:textSize="23sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/textView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:text="@string/TextForDelete"
+        android:textSize="12sp"
+        app:autoSizeMaxTextSize="13sp"
+        app:autoSizeMinTextSize="10sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toTopOf="@+id/ID_checkBoxDeleteFile"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintWidth_percent="0.9" />
+
+    <Button
+        android:id="@+id/ID_btn_DeleteFile_Dialog_Cancel"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="12dp"
+        android:text="@string/cancel"
+        android:textSize="10sp"
+        app:autoSizeMaxTextSize="12sp"
+        app:autoSizeMinTextSize="8sp"
+        app:layout_constraintEnd_toStartOf="@+id/ID_btn_DeleteFile_Dialog_DeleteWithRest"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ID_checkBoxDeleteFile"
+        app:layout_constraintWidth_percent="0.22" />
+
+    <Button
+        android:id="@+id/ID_btn_DeleteFile_Dialog_DeleteWithRest"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="@string/Deletewithrest"
+        android:textSize="9sp"
+        app:autoSizeMaxTextSize="10sp"
+        app:autoSizeMinTextSize="8sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintEnd_toStartOf="@+id/ID_btn_DeleteFile_Dialog_Delete"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/ID_btn_DeleteFile_Dialog_Cancel"
+        app:layout_constraintTop_toBottomOf="@+id/ID_checkBoxDeleteFile"
+        app:layout_constraintWidth_percent="0.4" />
+
+    <Button
+        android:id="@+id/ID_btn_DeleteFile_Dialog_Delete"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="3dp"
+        android:text="@string/Delete"
+        android:textSize="10sp"
+        app:autoSizeMaxTextSize="12sp"
+        app:autoSizeMinTextSize="8sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/ID_btn_DeleteFile_Dialog_DeleteWithRest"
+        app:layout_constraintTop_toBottomOf="@+id/ID_checkBoxDeleteFile"
+        app:layout_constraintWidth_percent="0.22" />
+</android.support.constraint.ConstraintLayout>

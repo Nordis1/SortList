@@ -20,4 +20,10 @@
 
     </item>
 
+    <item
+        android:id="@+id/menuitemDeleteAllCheckedItems"
+        android:title="@string/Delete_Checked_rows">
+
+    </item>
+
 </menu>

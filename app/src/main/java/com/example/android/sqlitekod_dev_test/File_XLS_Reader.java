@@ -1,6 +1,9 @@
 package com.example.android.sqlitekod_dev_test;
 
+import android.Manifest;
 import android.os.Environment;
+import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -14,9 +17,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class File_XLS_Reader extends MainActivity {
     String filename;
+    static int maxUsedColumnIs = 1;
+    static int minUsedColumnIs = 1;
     static int firstUsedColumnIs;
     static int lastUsedColumnIs;
     static boolean booldate = false;
@@ -46,7 +52,7 @@ public class File_XLS_Reader extends MainActivity {
             HSSFCell cell;// Клетка
             Log.i(TAG, "readingXLS: Получилось получить лист");
 
-            if (!arrayListFromXlsFile.isEmpty()){
+            if (!arrayListFromXlsFile.isEmpty()) {
                 arrayListFromXlsFile.clear();
             }
 
@@ -54,11 +60,49 @@ public class File_XLS_Reader extends MainActivity {
 
             //rows = sheet.getPhysicalNumberOfRows();
 
-            if(sheet.getPhysicalNumberOfRows()>0)
+            if (sheet.getPhysicalNumberOfRows() > 0)
                 rows = sheet.getLastRowNum() - sheet.getFirstRowNum();
 
             Log.i(TAG, "readingXLS: Кол-во рядов: " + rows);
             StringBuilder stringBuilder = new StringBuilder();
+            //Ряд и колонна
+
+            for (int r = 0; r < rows; r++) { // Высчитываем максимальную
+                row = sheet.getRow(r);
+                if (row != null) {
+                    lastUsedColumnIs = row.getLastCellNum(); //получаем последнюю и первую клетку в ряду.
+                    firstUsedColumnIs = row.getFirstCellNum();
+                    if (lastUsedColumnIs > maxUsedColumnIs) maxUsedColumnIs = lastUsedColumnIs;
+                    if (firstUsedColumnIs < minUsedColumnIs) minUsedColumnIs = firstUsedColumnIs;
+                }
+            }
+            mColumnmax = maxUsedColumnIs;
+            mColumnmin = minUsedColumnIs;
+            handler.sendEmptyMessage(hSetCreateDialogFromWhichToWhich);
+
+            while (!bool_xlsColumnsWasChosen ) {
+                try {
+                    if (bool_xlsExecutorCanceled){
+                        thread.interrupt();
+                    }
+                    Log.i(TAG, "readingXLS:  Ждём Когда bool_xlsColumnsWasChosen будет true: " + bool_xlsColumnsWasChosen);
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (InterruptedException e) {
+                    Log.i(TAG, "readingXLS: Поток был прерван");
+                    bool_xlsExecutorCanceled = false;
+                    bool_xlsColumnsWasChosen = false;
+                    handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
+                    handler.sendEmptyMessage(hSetProgressBarGone);
+                    mProgresscounter = 0;
+                    e.printStackTrace();
+                }
+            }
+
+            //$$$--  Выше мы обрабатывали значения Ниже мы их применяем Логика похожа будь акуратен ---$$$$
+            bool_xlsColumnsWasChosen = false;
+            Log.i(TAG, "readingXLS:   Внимание!!! Поток идёт дальше! ");
+            maxUsedColumnIs = mColumnmax;
+            minUsedColumnIs = mColumnmin;
 
             for (int r = 0; r < rows; r++) {
                 row = sheet.getRow(r);
@@ -66,66 +110,76 @@ public class File_XLS_Reader extends MainActivity {
                     lastUsedColumnIs = row.getLastCellNum(); //получаем последнюю и первую клетку в ряду.
                     firstUsedColumnIs = row.getFirstCellNum();
 
-/*                    for (int c = firstUsedColumnIs; c < lastUsedColumnIs; c++) {
+                    if (lastUsedColumnIs > maxUsedColumnIs) lastUsedColumnIs = maxUsedColumnIs;
+                    if (firstUsedColumnIs < minUsedColumnIs) firstUsedColumnIs = minUsedColumnIs;
+
+                    for (int c = firstUsedColumnIs; c < lastUsedColumnIs; c++) {
                         cell = row.getCell(c); // Тут начинаем считывать все ячейки с лева на право, или с первой по последнюю
+
                         if (cell != null) {
-                            stringBuilder.append(cell + " ");
+                            String string1 = cell.toString();
+                            if (string1.isEmpty()) {
+                                continue;
+                            }
+                            stringBuilder.append(string1);
                         }
                     }
-                    arrayListFromXlsFile.add(stringBuilder.toString());
-                    stringBuilder.setLength(0);*/
 
-                    //Это раздел  custom
-                    if (lastUsedColumnIs == 11) lastUsedColumnIs = 7; // Убираем лишние Колонны 4 штуки в Xls
-                    if (firstUsedColumnIs == 9) lastUsedColumnIs = 7; // убираем ненужную строку в 2 ряду в плане
+
+                    // Это раздел Neiser ###########################
+/*                    if (lastUsedColumnIs == 11)
+                        lastUsedColumnIs = 7; // Убираем лишние Колонны 4 штуки в Xls
+                    if (firstUsedColumnIs == 9)
+                        lastUsedColumnIs = 7; // убираем ненужную строку в 2 ряду в плане
                     if (lastUsedColumnIs == 1) booldate = true; // Для определения даты
 
 
                     for (int c = firstUsedColumnIs; c < lastUsedColumnIs; c++) {
                         cell = row.getCell(c); // Тут начинаем считывать все ячейки с лева на право, или с первой по последнюю
 
-                        if (cell != null ) {
+                        if (cell != null) {
                             String string1 = cell.toString();
                             if (string1.isEmpty()) {
                                 continue;
                             }
-                                if (!booldate) {
-                                    stringBuilder.append(string1);
-                                    stringBuilder.append(" ");
-                                } else {
-                                    stringBuilder.append(string1);
-                                }
+                            if (!booldate) {
+                                stringBuilder.append(string1);
+                                stringBuilder.append(" ");
+                            } else {
+                                stringBuilder.append(string1);
+                            }
 
                             // Your code here
-                        }else {
+                        } else {
                             continue;
                         }
                     }
 
                     booldate = false;
                     arrayListFromXlsFile.add(stringBuilder.toString());
-                    stringBuilder.setLength(0);
-                    //System.out.println();
-                    //Раздел Custom
+                    stringBuilder.setLength(0);*/
+                    //Раздел Neiser ##################################
 
+
+                    arrayListFromXlsFile.add(stringBuilder.toString());
+                    stringBuilder.setLength(0);
 
                 }
             }
             workBook.close();
             poi_FileReader.close();
             for (int i = 0; i < arrayListFromXlsFile.size(); i++) {
-                if (arrayListFromXlsFile.get(i).isEmpty()){
+                if (arrayListFromXlsFile.get(i).isEmpty()) {
                     arrayListFromXlsFile.remove(i);
                 }
             }
         } catch (IOException e) {
-            handler.sendEmptyMessage(hSetErrorFileReading);// 13 выводит тост об ошибке чтения файла
+            handler.sendEmptyMessage(hSetToastErrorOfFileReading);
             e.printStackTrace();
         }
 
         return arrayListFromXlsFile;
 
     }
-
 
 }
