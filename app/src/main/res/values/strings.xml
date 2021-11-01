@@ -1,12 +1,11 @@
 <resources>
-    <string name="app_name">Plan Creator</string>
+    <string name="app_name">List Manager</string>
     <string name="Download">Download</string>
     <string name="search">Search</string>
     <string name="Typeitem">Type Item name and press search</string>
     <string name="CorrectItem">Click "Change" to change item</string>
     <string name="Type">Type Item</string>
-    <string name="BackToMain">Return to main List
-    \nSave/Refresh</string>
+    <string name="BackToMain">Show full list</string>
     <string name="Change">Change</string>
     <string name="Rest">UnChecked</string>
     <string name="search_back">Search history</string>
@@ -17,17 +16,18 @@
     <string name="dialog_Hello">Is it all items done?</string>
     <string name="ok_accept">Put</string>
     <string name="cancel">Cancel</string>
-    <string name="load_db">Load file: txt, xls</string>
+    <string name="load_db">Load file\n ( txt, xls )</string>
     <string name="del_all">Del file and list</string>
-    <string name="del_allnormal">Del file \n and list</string>
+    <string name="del_allnormal">Delete file \n and list</string>
     <string name="Change_Row">Change this String</string>
     <string name="Delete_Row">Delete this String</string>
     <string name="ShowUnchekedItems">Show unchecked items</string>
-    <string name="TextForDelete">We can put unselected items in memory.\n And load them with the next loading Data.</string>
+    <string name="TextForDelete">We can put unselected items in memory.\n And Upload them with the next uploading file.</string>
     <string name="Deletewithrest">Delete with Rest</string>
     <string name="Delete">Delete</string>
     <string name="Delete_Checked_rows">Delete all checked</string>
     <string name="From_which_to_which">From which to which column to read ?</string>
     <string name="Accept">Accept</string>
+    <string name="Delete_with">Delete file from download folder?</string>
 
 </resources>

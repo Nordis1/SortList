@@ -3,11 +3,9 @@ package com.example.android.sqlitekod_dev_test;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -21,15 +19,13 @@ import android.widget.Toast;
 
 import com.edmodo.rangebar.RangeBar;
 
-import java.util.ArrayList;
-import java.util.zip.Inflater;
-
 public class DialogClass extends MainActivity implements View.OnClickListener, RangeBar.OnRangeBarChangeListener {
-    @Override
-    public void onIndexChangeListener(RangeBar rangeBar, int i, int i1) {
-        minValue.setText(String.valueOf(i));
-        maxValue.setText(String.valueOf(i1));
-    }
+
+    // Общие переменные
+    AlertDialog dialog;
+    AlertDialog.Builder alertBuilder;
+    Context context;
+    LayoutInflater inflater;
 
     // Переменные для  createCustomNewDialogFromWhichTowhich
     TextView minValue;
@@ -37,22 +33,21 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
     Button btnAccept;
     Button btnCancel;
 
-    AlertDialog dialog;
-    AlertDialog.Builder alertBuilder;
-    Context context;
-    String dialog_message, dialog_title, btnPositive, btnNegative, btnNetral;
-    LayoutInflater inflater;
-
-    final int deleteWithOut_rest = 3;
-    final int deleteWith_rest = 2;
-    final int deleteIsCanceled = 9;
-
-
-    Button btnDialogCancel, btnDialogChange1;
-    EditText editText;
-    CheckBox checkBox;
+    // Переменные для createCustomNewDialogChageItem()
+    Button btn_ChageItem_Cancel;
+    Button btn_ChageItem_Change;
+    EditText ChageItem_editText;
     String stringPrepareToChange;
-    final String TAG = "dialogclassTag";
+
+
+    // Переменные для createCustomNewDialogDeleteFile()
+    CheckBox DeleteFile_checkBox;
+
+    //Переменные для классического применения диалога.
+    String dialog_message, dialog_title, btnPositive, btnNegative, btnNetral;
+
+
+    final String TAG = "Dialog_class_Tag";
 
     public DialogClass(Context context, @Nullable String dialog_message, LayoutInflater inflater, @Nullable String stringPrepareToChange) {
         this.context = context;
@@ -76,28 +71,28 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
         Toast toast;
         switch (v.getId()) {
             case R.id.ID_btn_DeleteFile_Dialog_Cancel:
-                handler.sendEmptyMessage(deleteIsCanceled);
+                handler.sendEmptyMessage(hsetdelete_IsCanceled);
                 toast = Toast.makeText(context, "Cancel", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP, 0, 330);//250 //y - чем выше значение тем ниже элемент
                 toast.show();
                 dialog.cancel();
                 break;
             case R.id.ID_btn_DeleteFile_Dialog_DeleteWithRest:
-                handler.sendEmptyMessage(deleteWith_rest);
+                handler.sendEmptyMessage(hsetdelete_With_rest);
                 toast = Toast.makeText(context, "Deleted successfully, the rest is waiting for a new load.", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP, 0, 330);
                 toast.show();
                 dialog.cancel();
                 break;
             case R.id.ID_btn_DeleteFile_Dialog_Delete:
-                handler.sendEmptyMessage(deleteWithOut_rest);
+                handler.sendEmptyMessage(hsetdelete_WithOut_rest);
                 toast = Toast.makeText(context, "Deleted successfully", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP, 0, 330);//250
                 toast.show();
                 dialog.cancel();
                 break;
             case R.id.ID_checkBoxDeleteFile:
-                if (checkBox.isChecked()) {
+                if (DeleteFile_checkBox.isChecked()) {
                     handler.sendEmptyMessage(hSetDeleteFileCheckBoxIsActivated);
                 } else {
                     handler.sendEmptyMessage(hSetDeleteFileCheckBoxDiactivated);
@@ -122,11 +117,20 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
         }
     }
 
+    @Override
+    public void onIndexChangeListener(RangeBar rangeBar, int i, int i1) {
+        // rangeBar как и seekbar  только range bar можно регулировать с обеих сторон.
+        minValue.setText(String.valueOf(i));
+        maxValue.setText(String.valueOf(i1));
+    }
+
     public void createCustomNewDialogFromWhichTowhich() {
+        // Используеться при загрузке xls файла, что бы понять с какой по какую колонку загружать.
         try {
             alertBuilder = new AlertDialog.Builder(context);
             View layout = inflater.inflate(R.layout.resize_xls_reader, null);
             alertBuilder.setView(layout);
+            alertBuilder.setCancelable(false);
             TextView textView = layout.findViewById(R.id.ID_resizeText);//1
             ImageView imageView = layout.findViewById(R.id.ID_resize_xls_image);//2
             minValue = layout.findViewById(R.id.ID_resize_minValue);//3
@@ -136,7 +140,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
             maxValue.setText(String.valueOf(--max)); // тут вставил так, потому что в setTickCount значения считываються с нуля.
             RangeBar rangeBar = layout.findViewById(R.id.ID_resize_RangeBar);//5
             Log.i(TAG, "createCustomNewDialogFromWhichTowhich: mColumbmax = " + mColumnmax);
-            rangeBar.setTickCount(mColumnmax);
+            rangeBar.setTickCount(mColumnmax);//Внимание устанавливать кол-во нужно до установки нажатия.Иначе ошибка.
             rangeBar.setOnRangeBarChangeListener(this);
             btnAccept = layout.findViewById(R.id.ID_resize_btnAccept);//6
             btnCancel = layout.findViewById(R.id.ID_resize_btnCancel);//7
@@ -151,18 +155,20 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
     }
 
     public void createCustomNewDialogDeleteFile() {
+        //Используеться при нажатии кнопки удаления
         try {
             alertBuilder = new AlertDialog.Builder(context);
             View layout = inflater.inflate(R.layout.activity_delete_file, null);
             alertBuilder.setView(layout);
-            checkBox = layout.findViewById(R.id.ID_checkBoxDeleteFile);
+            alertBuilder.setCancelable(false);
+            DeleteFile_checkBox = layout.findViewById(R.id.ID_checkBoxDeleteFile);
             Button btnCancel = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Cancel);
             Button btnDeleteWithRest = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_DeleteWithRest);
             Button btnDelete = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Delete);
             btnCancel.setOnClickListener(this);
             btnDeleteWithRest.setOnClickListener(this);
             btnDelete.setOnClickListener(this);
-            checkBox.setOnClickListener(this);
+            DeleteFile_checkBox.setOnClickListener(this);
             dialog = alertBuilder.create();
         } catch (Exception e) {
             handler.sendEmptyMessage(hSetCreateDialogError);
@@ -172,22 +178,24 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
 
     }
 
-    public void createCustomNewDialogChageItem() { //
+    public void createCustomNewDialogChageItem() {
+        // Спользуеться через контексное меню , изменение строки.
         //Work Example from: https://stackoverflow.com/questions/22655599/alertdialog-builder-with-custom-layout-and-edittext-cannot-access-view
         try {
             alertBuilder = new AlertDialog.Builder(context);
             View layout = inflater.inflate(R.layout.activitychangeitem2, null);
             alertBuilder.setView(layout);
-            btnDialogChange1 = layout.findViewById(R.id.ID_btnChange_Dialog);
-            btnDialogCancel = layout.findViewById(R.id.ID_btnCancel_Dialog);
-            editText = layout.findViewById(R.id.ID_Edit_text_Dialog);
-            editText.setText(stringPrepareToChange);
+            alertBuilder.setCancelable(false);
+            btn_ChageItem_Change = layout.findViewById(R.id.ID_btnChange_Dialog);
+            btn_ChageItem_Cancel = layout.findViewById(R.id.ID_btnCancel_Dialog);
+            ChageItem_editText = layout.findViewById(R.id.ID_Edit_text_Dialog);
+            ChageItem_editText.setText(stringPrepareToChange);
 
-            btnDialogChange1.setOnClickListener(new View.OnClickListener() {
+            btn_ChageItem_Change.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Toast.makeText(context, "Yes", Toast.LENGTH_SHORT).show();
-                    String s = editText.getText().toString();
+                    String s = ChageItem_editText.getText().toString();
                     if (!s.isEmpty() && !s.equals(stringPrepareToChange)) {
                         Message msg = handler.obtainMessage();
                         Bundle bundle = new Bundle();
@@ -201,7 +209,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                     }
                 }
             });
-            btnDialogCancel.setOnClickListener(new View.OnClickListener() {
+            btn_ChageItem_Cancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Toast.makeText(context, "Cancel", Toast.LENGTH_SHORT).show();
@@ -228,7 +236,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                         public void onClick(DialogInterface dialogInterface, int i) {
                             //positive
                             Log.i(TAG, "Dialog onClick: Была нажата кнопка Позитив");
-                            handler.sendEmptyMessage(deleteWithOut_rest);
+                            handler.sendEmptyMessage(hsetdelete_WithOut_rest);
                             Toast toast = Toast.makeText(context, "Deleted successfully", Toast.LENGTH_LONG);
                             toast.setGravity(Gravity.TOP, 0, 330);//250
                             toast.show();
@@ -239,7 +247,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                 public void onClick(DialogInterface dialogInterface, int i) {
                     // Негатив
                     Log.i(TAG, "Dialog onClick: Была нажата кнопка Негатив");
-                    handler.sendEmptyMessage(deleteWith_rest);
+                    handler.sendEmptyMessage(hsetdelete_With_rest);
                     Toast toast = Toast.makeText(context, "Deleted successfully, the rest is waiting for a new load.", Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.TOP, 0, 330);
                     toast.show();
@@ -248,7 +256,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     Log.i(TAG, "Dialog onClick: Была нажата кнопка нетрал");
-                    handler.sendEmptyMessage(deleteIsCanceled);
+                    handler.sendEmptyMessage(hsetdelete_IsCanceled);
                     Toast toast = Toast.makeText(context, "Cancel", Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.TOP, 0, 330);//250 //y - чем выше значение тем ниже элемент
                     toast.show();

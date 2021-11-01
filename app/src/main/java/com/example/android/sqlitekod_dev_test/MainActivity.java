@@ -63,10 +63,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> listFromSharedPreference = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
     ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
     ArrayList<String> backSearchlist = new ArrayList<>();
-    volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться значально тексты с файла а потом с него загружаем в Базу
+    volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться изначально тексты с файла а потом с него загружаем в Базу
 
     //ниже 3 листа ипользуемые в методе onQueryTextSubmit для поиска.
-    //Примечание: mainlist и foundlist основные.В list_of_View отбражаться всё что есть в mainlist или foundlist с помощью  adapter1.
+    //Примечание: mainlist и foundlist и foundAccurateList основные.В list_of_View отбражаться всё что есть в mainlist или foundlist с помощью  adapter1.
     ArrayList<String> mainList; //основной лист
     ArrayList<String> found_List = new ArrayList<>();
     ArrayList<String> foundAccurateList = new ArrayList<>();// Используеться в более точном поиске
@@ -85,8 +85,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static volatile String fileName;
     volatile ProgressBar progressBar;
     static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved,
-            bool_deleteFile_checkBox_isActivated, bool_prepereDeleteRow,bool_onSaveReady,bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled= false;
+            bool_deleteFile_checkBox_isActivated, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
+            bool_xlsExecutorCanceled = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //fileNotChoosed переменная служит для остановки потока который хочет считать имя файла работает в паре fileOfNameReady. Приобретает свойсва true  в методе onRestart()
     //bool_prepereDeleteRow - для контекстной функции Delete row.
@@ -97,24 +97,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
-    //2,3,9 - зарезирвированы в DialogClass
+
+
     final static int hSetToastErrorOfFileReading = 1;
+    final static int hsetdelete_With_rest = 2;
+    final static int hsetdelete_WithOut_rest = 3;
     final static int hSetbtnReadFileEnabledFalse = 4;
     final static int hSetbtnReadFileEnabledTrue = 5;
     final static int hSetProgressBarVisible = 6;
     final static int hSetProgressBarGone = 7;
+    final static int hsetdelete_IsCanceled = 9;
     final static int hSetLoadingListOfView_fromAdapter1 = 11;
     final static int hSetToastErrorfromReadingAdditionalLoad = 12;
     final static int hSetCreateDialogError = 13;
     final static int hSetDeleteFileCheckBoxIsActivated = 14;
     final static int hSetDeleteFileCheckBoxDiactivated = 15;
     final static int hSetCreateDialogFromWhichToWhich = 16;
-    final static int hSetRestoreMainViewElements = 17;
-
 
     Toast toast;
     SharedPreferences sPref;
-    final String TAG = "mylogs";
+    final String TAG = "Main_Activity";
     public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
 
     Cursor cursor;
@@ -214,12 +216,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         list_of_View.setAdapter(adapter1);
                         break;
                     case 12:
-                        toast = Toast.makeText(MainActivity.this, "Ошибка при чтении доп-загрузки", Toast.LENGTH_LONG);
+                        toast = Toast.makeText(MainActivity.this, "Reading rest data Error!", Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
                         toast.show();
                         break;
                     case 13:
-                        toast = Toast.makeText(MainActivity.this, "Create Dialog Error!", Toast.LENGTH_LONG);
+                        toast = Toast.makeText(MainActivity.this, "Create dialog Error!", Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
                         toast.show();
                         break;
@@ -238,9 +240,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         );
                         dialogClass.createCustomNewDialogFromWhichTowhich();
                         dialogClass.dialog.show();
-                        break;
-                    case 17:
-
                         break;
                 }
             }
@@ -264,10 +263,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 loadhistory.clear();
             } catch (Exception e) {
-                toast = Toast.makeText(MainActivity.this, "Fail to come back", Toast.LENGTH_LONG);
+                toast = Toast.makeText(MainActivity.this, "Fail to restore previous searching", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP, 0, 330);//250
                 toast.show();
-
                 e.printStackTrace();
             }
 
@@ -293,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 loadhistory.clear();
             } catch (Exception e) {
-                toast = Toast.makeText(MainActivity.this, "Fail to come back", Toast.LENGTH_LONG);
+                toast = Toast.makeText(MainActivity.this, "Fail to restore previous searching", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP, 0, 330);//250
                 toast.show();
                 e.printStackTrace();
@@ -303,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{becomeDeleteString});
                 btnSave.callOnClick();
             } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Error deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Delete Error", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
         }
@@ -546,8 +544,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 //Обновить
             case R.id.btnSave:
-                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()){
-                    Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
+                    sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+                    int kol = sPref.getInt("Kolichesvo", 0);
+                    if (kol > 0){
+                        viewData();
+                        loadCheckedItems(mainList);
+                        if (HashSetMainCollectorItems.isEmpty()) {
+                            HashSetMainCollectorItems.addAll(listFromSharedPreference); // сохранённые значения которые были актуальны в момент нажатия обновить, передаём hset.
+                        }
+                        choosen_ItemInClickmethod = "";
+                        showListIsReadyPercent();
+                    }else Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
                     break;
                 }
                 bool_onSaveReady = false;
@@ -562,7 +570,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     loadCheckedItems(mainList); // Загрузка
 
                     if (HashSetMainCollectorItems.isEmpty()) {
-                        //востановления hashset листа
                         HashSetMainCollectorItems.addAll(listFromSharedPreference); // сохранённые значения которые были актуальны в момент нажатия обновить, передаём hset.
                     }
 
@@ -577,7 +584,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //Удаление
             case R.id.btnDeleteAll:
-                if (mainList.isEmpty()){
+                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
                     break;
                 }
@@ -601,7 +608,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     } catch (Exception e) {
                         Log.d(TAG, "Попытка удалить внутренние файлы DBNeiser и DBNeiser-journal " + e.getMessage());
-                        Toast.makeText(MainActivity.this, "File is not", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
                     }
 
                     try {
@@ -614,15 +621,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         listForSearch.clear();
                         mainList.clear();
                         found_List.clear();
+                        downloadList.clear();
+                        foundAccurateList.clear();
                         HashSetMainCollectorItems.clear();
                         choosen_ItemInClickmethod = null;
                         adapter1.clear();
+                        backcounter = 0;
+                        mColumnmax = 0;
+                        mColumnmin = 0;
                         name = null;
                         etName.setText("");
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                     }
-                    Toast.makeText(MainActivity.this, "Deleted is successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Deleted successfully", Toast.LENGTH_SHORT).show();
                 } else {
                     LayoutInflater inflater = this.getLayoutInflater();
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
@@ -675,24 +687,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 //поиск
             case R.id.btnSearch:
-                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()){
+                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
                     break;
                 }
-                if (name == null || name.length() == 0 ) {
+                if (name == null || name.length() == 0) {
                     Toast.makeText(this, "Write something in the place \"Type item\" ", Toast.LENGTH_LONG).show();
                 } else {
-                    String et = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
-                    onmyQueryTextSubmit(et);
+                    String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
+                    onmyQueryTextSubmit(searchWord);
 
                     //Далее Логика для истории поиска, сохранения 4 последних поисковых запросов
                     backcounter = 0;
-                    if (!backSearchlist.contains(et)) { // 1) Если в списке элемент не содержиться
+                    if (!backSearchlist.contains(searchWord)) { // 1) Если в списке элемент не содержиться
                         if (backSearchlist.size() >= 4) {  // 3) Если лист больше 4 значений то пересорировываем
-                            backSearchlist.add(0, et);
+                            backSearchlist.add(0, searchWord);
                             backSearchlist.remove(4);
                         } else {
-                            backSearchlist.add(et); // 2) Просто добавляем
+                            backSearchlist.add(searchWord); // 2) Просто добавляем
                         }
                     }
                 }
@@ -700,7 +712,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //История поиска
             case R.id.IdBackSearch:
-                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()){
+                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
                     break;
                 }
@@ -742,17 +754,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void createUncheckedViewList() {
+        if (!mainList.isEmpty()) {
+            createUncheckedViewListSupport(mainList);//В методе поддержка вычисляется с какого листа будет происходить показ Unchecked items/
+        } else if (!found_List.isEmpty()) {
+            createUncheckedViewListSupport(found_List);
+        } else if (!foundAccurateList.isEmpty()) {
+            createUncheckedViewListSupport(foundAccurateList);
+        }
+    }
+
+    public void createUncheckedViewListSupport(ArrayList<String> list) {
         ArrayList<String> jaak = new ArrayList<>(HashSetMainCollectorItems);
         for (int i = 0; i < jaak.size(); i++) {
-            for (int g = 0; g < mainList.size(); g++) {
-                if (jaak.get(i).equals(mainList.get(g))) {
-                    mainList.remove(mainList.get(g));// удаляем с основного листа все item которые были checked
+            for (int g = 0; g < list.size(); g++) {
+                if (jaak.get(i).equals(list.get(g))) {
+                    list.remove(list.get(g));// удаляем с основного листа все item которые были checked
                 }
             }
         }
-        adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
+        adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, list);
         list_of_View.setAdapter(adapter1);
     }
+
 
     private void restCreating() {
         //В этом методе main лист становиться меньше поэтому мы должны его востанавливать. что бы сново применять этот метод. Что бы работал корректно.
@@ -810,13 +833,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         if (file.delete()) {
                             Log.d(TAG, "onRequestPermissionsResult:  deleted");
+                            toast = Toast.makeText(MainActivity.this, "File deleted Successfully" + cursor.getInt(3), Toast.LENGTH_SHORT);
+                            toast.setGravity(Gravity.TOP, 0, 330);
+                            toast.show();
                             sPref.edit().clear().apply();
                         } else {
+                            toast = Toast.makeText(MainActivity.this, "File not found" + cursor.getInt(3), Toast.LENGTH_SHORT);
+                            toast.setGravity(Gravity.TOP, 0, 330);
+                            toast.show();
                             Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
                         }
                     } catch (Exception e) {
                         Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
-                        Toast.makeText(MainActivity.this, "File doesn't Deleted", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "File deleting Error", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
@@ -1093,7 +1122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             createUncheckedViewList();
         }
 //Удаления отмеченных позиций
-        else if (itemId == R.id.menuitemDeleteAllCheckedItems){
+        else if (itemId == R.id.menuitemDeleteAllCheckedItems) {
           /*  sparseBooleanArray.keyAt(i));//получение позиции
              list_of_View.getItemAtPosition( sparseBooleanArray.keyAt(i))); // получение имени по позиции.
             */
@@ -1119,9 +1148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
     Runnable runnableToDelete = () -> prepareToDelete(choosen_ItemInClickmethod);
-
 
 
     //для поиска
@@ -1150,7 +1177,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // ToAppointSearchList(C какого листа идёт выборка, в какой лист переносяться найденные строки,Поисковое слово)
             }
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "Error onmyQueryTextSubmit", Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, "Search Error", Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 340);//250
             toast.show();
             e.printStackTrace();
@@ -1172,7 +1199,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             loadCheckedItems(toWhereList);
             etName.setText("");
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "Error ToAppointSearchList", Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, "ToAppointSearchList Error", Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 340);//250
             toast.show();
             e.printStackTrace();
@@ -1203,7 +1230,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "Error LoadCheckedItems", Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, "LoadCheckedItems Error", Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 340);//250
             toast.show();
             e.printStackTrace();
