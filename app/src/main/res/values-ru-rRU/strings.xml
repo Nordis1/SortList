@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="Download">Скачать</string>
+    <string name="search">Поиск</string>
+    <string name="Typeitem">Поисковое слово</string>
+    <string name="CorrectItem">Click "Change" to change item</string>
+    <string name="Type">Type Item</string>
+    <string name="BackToMain">Основной лист</string>
+    <string name="Change">Изменить</string>
+    <string name="Rest">Неотмеченные</string>
+    <string name="search_back">История поиска</string>
+    <string name="search_back_normal">История</string>
+
+    <string name="dialog_message">We can put unselected items in memory.
+    And load it, when creating  a new list.</string>
+    <string name="dialog_Hello">Is it all items done?</string>
+    <string name="ok_accept">Добавить</string>
+    <string name="cancel">Отмена</string>
+    <string name="load_db">Загрузить файл\n ( txt, xls )</string>
+    <string name="del_all">Del file and list</string>
+    <string name="del_allnormal">Удалить файл\n очистить лист</string>
+    <string name="Change_Row">Изменить эту строку</string>
+    <string name="Delete_Row">Удалить эту строку</string>
+    <string name="ShowUnchekedItems">Показать неотмеченные строки</string>
+    <string name="TextForDelete">Мы можем сохранить неотмеченные строки.\n И подгрузить их вместе со следующим файлом.</string>
+    <string name="Deletewithrest">Удалить с остатком</string>
+    <string name="Delete">Удалить</string>
+    <string name="Delete_Checked_rows">Удалить все отмеченные</string>
+    <string name="From_which_to_which">Чтение xls столбцов от и до ?</string>
+    <string name="Accept">Принять</string>
+    <string name="Delete_with">Удалить файл из папки "Загрузки" ?</string>
+    <string name="file_deleted_successfully">Файл успешно удалён!</string>
+    <string name="file_not_found">Файл не найден!</string>
+    <string name="file_deleting_error">Ошибка удалия файла!</string>
+    <string name="permission_denied">Нет доступа!</string>
+    <string name="done"> Сделано</string>
+    <string name="search_error">Ошибка поиска!</string>
+    <string name="word_not_exist">Слово не найдено!</string>
+    <string name="toappoint_search_list_error">Ошибка назначенного листа!</string>
+    <string name="load_checked_items_error">Ошибка отмеченных строк</string>
+    <string name="data_base_is_full">Лист Заполнен!</string>
+    <string name="write_something_in_the_place">"Поисковое слово не определенно."</string>
+    <string name="list_is_already_full">Лист уже заполнен!</string>
+    <string name="deleted_successfully">Успешно удаленно!</string>
+    <string name="something_went_wrong">Что то пошло не так</string>
+    <string name="clear_object">Сброс поиского слова</string>
+    <string name="File_reading_Error">Ошибка чтения файла!</string>
+    <string name="Reading_rest_data_Error">Ошибка чтения остатка!</string>
+    <string name="Create_dialog_Error">Ошибка создания диалога!</string>
+    <string name="fail_to_restore_previous_searching">Неудалось восстанновить предыдущие запросы</string>
+    <string name="Delete_Error">Ошибка удаления!</string>
+    <string name="Not_data_to_show">Ошибка курсора,перезапустите программу!</string>
+    <string name="First_download_the_file">Сделайте закачку файла!</string>
+    <string name="file_version_error">Ошибка версии файла!</string>
+    <string name="how_delete">Удалить как?</string>
+    <string name="manual">Руководство пользователя.</string>
+    <string name="txt_xls">Загрузить ваш список txt или xls.</string>
+    <string name="check_new_position">Отмечай готовые позиции.</string>
+    <string name="easy_search_word">Легко найти позицию по поисковому слову.(Поиск производиться с основного листа).</string>
+    <string name="context_menu_options">При длительном нажатии на позицию, появляються доп функции.</string>
+    <string name="possibility_delete_with_rest">Возможность удалять список, сохраняя при этом неотмеченные позиции. Неотмеченные позиции автоматически догружаються с загрузкой нового файла.</string>
+    <string name="recomendation">Рекомендации</string>
+    <string name="string_lengh_limit_90">Для комфортного использования списка, длинна строки не должна привышать 90 символов.</string>
+
+
+</resources>

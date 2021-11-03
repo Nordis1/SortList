@@ -3,8 +3,10 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light">
         <!-- Primary theme color of the app (sets background color of app bar) -->
         <item name="actionBarSize">40dp</item>
-        <item name="colorPrimary">#03A9F4</item>
+        <item name="colorPrimary">#90C9E6F3</item>
         <!-- Background color of buttons in the app -->
-        <item name="colorButtonNormal">#F87C1D</item>
+        <!--<item name="colorButtonNormal">#F87C1D</item>-->
+        <!--<item name="colorButtonNormal">#659767A1</item>-->  +
+        <item name="colorButtonNormal">#659767A1</item>
     </style>
 </resources>

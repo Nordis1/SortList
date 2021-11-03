@@ -20,8 +20,10 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Layout;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
@@ -62,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button btnSave, btnReadFile, btnDeleteAll, btnSearch, btnBackSearch;
     ArrayList<String> listFromSharedPreference = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
     ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
-    ArrayList<String> backSearchlist = new ArrayList<>();
     volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться изначально тексты с файла а потом с него загружаем в Базу
 
     //ниже 3 листа ипользуемые в методе onQueryTextSubmit для поиска.
@@ -79,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     HashSet<String> HashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
     int backcounter = 0;  //backcounter - работает с backSearchlist
     final int requestCode1 = 1;
+    ConstraintLayout constraintLayoutManual;
+    ConstraintLayout constraintLayoutListview;
     Thread thread;
 
 
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static int hSetbtnReadFileEnabledTrue = 5;
     final static int hSetProgressBarVisible = 6;
     final static int hSetProgressBarGone = 7;
+    final static int hSetTurnManualOn = 8;
     final static int hsetdelete_IsCanceled = 9;
     final static int hSetLoadingListOfView_fromAdapter1 = 11;
     final static int hSetToastErrorfromReadingAdditionalLoad = 12;
@@ -131,6 +135,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        constraintLayoutManual = findViewById(R.id.ID_ConstraintManual);
+        constraintLayoutListview = findViewById(R.id.ID_ConstraintForListView);
 
         list_of_View = findViewById(R.id.list_item_model);
         list_of_View.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -178,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 switch (msg.what) {
                     case 1:
-                        toast = Toast.makeText(MainActivity.this, "File reading Error!", Toast.LENGTH_LONG);
+                        toast = Toast.makeText(MainActivity.this,(R.string.File_reading_Error), Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
                         toast.show();
                         break;
@@ -209,6 +215,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case 7:
                         progressBar.setVisibility(View.GONE);
                         break;
+                    case 8:
+                        constraintLayoutListview.setVisibility(View.GONE);
+                        constraintLayoutManual.setVisibility(View.VISIBLE);
+                        break;
                     case 9:
                         etName.setText("");
                         break;
@@ -216,12 +226,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         list_of_View.setAdapter(adapter1);
                         break;
                     case 12:
-                        toast = Toast.makeText(MainActivity.this, "Reading rest data Error!", Toast.LENGTH_LONG);
+                        toast = Toast.makeText(MainActivity.this, R.string.Reading_rest_data_Error, Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
                         toast.show();
                         break;
                     case 13:
-                        toast = Toast.makeText(MainActivity.this, "Create dialog Error!", Toast.LENGTH_LONG);
+                        toast = Toast.makeText(MainActivity.this, R.string.Create_dialog_Error, Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
                         toast.show();
                         break;
@@ -263,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 loadhistory.clear();
             } catch (Exception e) {
-                toast = Toast.makeText(MainActivity.this, "Fail to restore previous searching", Toast.LENGTH_LONG);
+                toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP, 0, 330);//250
                 toast.show();
                 e.printStackTrace();
@@ -291,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 loadhistory.clear();
             } catch (Exception e) {
-                toast = Toast.makeText(MainActivity.this, "Fail to restore previous searching", Toast.LENGTH_LONG);
+                toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP, 0, 330);//250
                 toast.show();
                 e.printStackTrace();
@@ -301,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{becomeDeleteString});
                 btnSave.callOnClick();
             } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Delete Error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.Delete_Error, Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
         }
@@ -345,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void viewDataForDownloading() {
         cursor = dbHelper.viewData(); // Курсор в данном этапе дейсвует как список в котором храняться все строки с Базы данных
         if (cursor.getCount() == 0) {
-            toast = Toast.makeText(MainActivity.this, "Not data to show" + cursor.getInt(3), Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, getString(R.string.Not_data_to_show) + cursor.getInt(3), Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 330);
             toast.show();
         } else {
@@ -414,7 +424,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void viewData() {
         cursor = dbHelper.viewData(); // Курсор в данном этапе дейсвует как список в котором храняться все строки с Базы данных
         if (cursor.getCount() == 0) {
-            Toast.makeText(this, "Not data to show", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.Not_data_to_show), Toast.LENGTH_SHORT).show();
         } else {
             while (cursor.moveToNext()) { // тут мы его считываем
                 mainList.add(cursor.getString(0));
@@ -555,7 +565,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         choosen_ItemInClickmethod = "";
                         showListIsReadyPercent();
-                    }else Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                    }else Toast.makeText(MainActivity.this, R.string.First_download_the_file, Toast.LENGTH_SHORT).show();
                     break;
                 }
                 bool_onSaveReady = false;
@@ -578,14 +588,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     bool_onSaveReady = true;
                 } else {
                     etName.setText("");
-                    Toast.makeText(this, "Clear Object", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.clear_object, Toast.LENGTH_SHORT).show();
                 }
                 break;
 
 //Удаление
             case R.id.btnDeleteAll:
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
                     break;
                 }
                 Log.i(TAG, "onClick: Была нажата кнопка удалить");
@@ -614,11 +624,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     try {
                         sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
                         sPref.edit().clear().apply();
-                        sqLiteDatabase.close();
-                        dbHelper.close();
                         cursor.close();
                         listFromSharedPreference.clear();
                         listForSearch.clear();
+                        list_of_View.setAdapter(null);
                         mainList.clear();
                         found_List.clear();
                         downloadList.clear();
@@ -632,9 +641,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         name = null;
                         etName.setText("");
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.something_went_wrong, Toast.LENGTH_SHORT).show();
                     }
-                    Toast.makeText(MainActivity.this, "Deleted successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.deleted_successfully, Toast.LENGTH_SHORT).show();
                 } else {
                     LayoutInflater inflater = this.getLayoutInflater();
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
@@ -653,7 +662,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     bool_fileNotChosen = false;
                 }
                 if (!mainList.isEmpty() || !found_List.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "List is already full", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.list_is_already_full, Toast.LENGTH_SHORT).show();
                 } else {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("*/*");
@@ -688,56 +697,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //поиск
             case R.id.btnSearch:
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
                     break;
                 }
                 if (name == null || name.length() == 0) {
-                    Toast.makeText(this, "Write something in the place \"Type item\" ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, R.string.write_something_in_the_place, Toast.LENGTH_LONG).show();
                 } else {
                     String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
                     onmyQueryTextSubmit(searchWord);
-
-                    //Далее Логика для истории поиска, сохранения 4 последних поисковых запросов
-                    backcounter = 0;
-                    if (!backSearchlist.contains(searchWord)) { // 1) Если в списке элемент не содержиться
-                        if (backSearchlist.size() >= 4) {  // 3) Если лист больше 4 значений то пересорировываем
-                            backSearchlist.add(0, searchWord);
-                            backSearchlist.remove(4);
-                        } else {
-                            backSearchlist.add(searchWord); // 2) Просто добавляем
-                        }
-                    }
                 }
                 break;
 
 //История поиска
             case R.id.IdBackSearch:
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "First, download the file ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
                     break;
                 }
-                btnSave.callOnClick();
-                if (backSearchlist.isEmpty()) { //Если чист то прерываем сеанс
-                    break;
-                }
-                if (backcounter >= 4) {
-                    backcounter = 0; // что бы получаемый контент не ушёл за рамки возможного
-                }
-
-                try {
-                    etName.setText(backSearchlist.get(backcounter));// тут применяем
-                } catch (Exception e) {
-                    Log.d(TAG, "onClick: ERROR - " + e.getMessage());
-                }
-
-                if (backSearchlist.size() > ++backcounter) {
-                    //Ничего не делаем тк переменная backcounter уже увеличилась в if позиции.
-                    //Тут идёт очередная проверка что бы переменная далеко не ушла, иначе скидываем на ноль.
-                    Log.d(TAG, "onClick: btnbackSearch зашли в увеличение Counter. " +
-                            "List size: " + backSearchlist.size() +
-                            "  backcounterValue is: " + backcounter);
-                } else {
-                    backcounter = 0;
+                if (supportRequestHistoryForChangeStrings.size() >= 2 ){
+                    btnSave.callOnClick();
+                    try {
+                        ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
+                        // supportRequestHistoryForChangeStrings чистить не нужно так как чистица автоматом в поиске.
+                        for (int i = 0; i < loadhistory.size()-1; i++) {
+                            etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
+                            btnSearch.callOnClick();
+                        }
+                        loadhistory.clear();
+                    } catch (Exception e) {
+                        toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.TOP, 0, 330);//250
+                        toast.show();
+                        e.printStackTrace();
+                    }
+                }else {
+                    btnSave.callOnClick();
                 }
                 break;
 
@@ -821,7 +815,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     fileName = "Plan.txt";
                 }
             } catch (PackageManager.NameNotFoundException e) {
-                Toast.makeText(MainActivity.this, "File version error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.file_version_error, Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
 
@@ -833,27 +827,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         if (file.delete()) {
                             Log.d(TAG, "onRequestPermissionsResult:  deleted");
-                            toast = Toast.makeText(MainActivity.this, "File deleted Successfully" + cursor.getInt(3), Toast.LENGTH_SHORT);
+                            toast = Toast.makeText(MainActivity.this, getString(R.string.file_deleted_successfully) + cursor.getInt(3), Toast.LENGTH_SHORT);
                             toast.setGravity(Gravity.TOP, 0, 330);
                             toast.show();
                             sPref.edit().clear().apply();
                         } else {
-                            toast = Toast.makeText(MainActivity.this, "File not found" + cursor.getInt(3), Toast.LENGTH_SHORT);
+                            toast = Toast.makeText(MainActivity.this, getString(R.string.file_not_found) + cursor.getInt(3), Toast.LENGTH_SHORT);
                             toast.setGravity(Gravity.TOP, 0, 330);
                             toast.show();
                             Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
                         }
                     } catch (Exception e) {
                         Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
-                        Toast.makeText(MainActivity.this, "File deleting Error", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.file_deleting_error, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
                 }
             }
         }//Логика удаления файла на носителе закончена.
         //далее начинаеться логика загрузки файла
         else if (!bool_deleteFile_checkBox_isActivated) {
+            constraintLayoutManual.setVisibility(View.GONE);
+            constraintLayoutListview.setVisibility(View.VISIBLE);
             Log.i(TAG, "onRequestPermissionsResult: Загрузка файла : " + fileName);
             if (fileName == null) {
                 return;
@@ -866,7 +862,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (requestCode == 1) {
                         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                             if (!mainList.isEmpty()) {
-                                Toast.makeText(MainActivity.this, "DataBase is full", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, R.string.data_base_is_full, Toast.LENGTH_SHORT).show();
                             } else {
                                 handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
                                 handler.sendEmptyMessage(hSetProgressBarVisible);
@@ -874,7 +870,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 mainloading();
                             }
                         } else {
-                            Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.permission_denied), Toast.LENGTH_SHORT).show();
                         }
                     }
                     //} else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
@@ -910,6 +906,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.i(TAG, "onRequestPermissionsResult: Поток был прерван в main");
                         handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
                         handler.sendEmptyMessage(hSetProgressBarGone);
+                        handler.sendEmptyMessage(hSetTurnManualOn);
                         mProgresscounter = 0;
                         bool_xlsExecutorCanceled = false;
                         bool_xlsColumnsWasChosen = false;
@@ -1036,11 +1033,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             double countReady = HashSetMainCollectorItems.size();
             double persent = countReady * 100 / countMain;
             String persentString = String.valueOf(persent);
-            toast = Toast.makeText(MainActivity.this, persentString.substring(0, 4) + " done", Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, persentString.substring(0, 4) + getString(R.string.done), Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 400);
             toast.show();
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "0.0 done", Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, "0.0"+ getString(R.string.done), Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 350);
             toast.show();
         }
@@ -1177,7 +1174,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // ToAppointSearchList(C какого листа идёт выборка, в какой лист переносяться найденные строки,Поисковое слово)
             }
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "Search Error", Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, R.string.search_error, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 340);//250
             toast.show();
             e.printStackTrace();
@@ -1185,13 +1182,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void toAppointSearchList(ArrayList<String> fromWhereSearchlist, ArrayList<String> toWhereList, String searchWord) {
-
         try {
-            for (String name : fromWhereSearchlist) {
-                if (name.toLowerCase().contains(searchWord.toLowerCase())) { // загружаем слова которые нашли в лист
-                    toWhereList.add(name);
+            while (true){
+                for (String name : fromWhereSearchlist) {
+                    if (name.toLowerCase().contains(searchWord.toLowerCase())) { // загружаем слова которые нашли в лист
+                        toWhereList.add(name);
+                    }
                 }
+                if (!toWhereList.isEmpty()){
+                    Log.i(TAG, "toAppointSearchList: list не пустой");
+                    break;
+                }else if (searchWord.length() <= 2){
+                    Log.i(TAG, "toAppointSearchList: Слово слишкок мало уходим от сюда");
+                    etName.setText("");
+                    Toast.makeText(MainActivity.this, R.string.word_not_exist,Toast.LENGTH_LONG).show();
+                    return;
+                }else if (toWhereList.isEmpty()){
+                    Log.i(TAG, "toAppointSearchList: Уменьшаем слово");
+                    searchWord = searchWord.substring(0,searchWord.length()-1);
+                }
+
+
             }
+
             ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_checked, toWhereList);
             list_of_View.setAdapter(adapter);
             fromWhereSearchlist.clear();
@@ -1199,7 +1212,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             loadCheckedItems(toWhereList);
             etName.setText("");
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "ToAppointSearchList Error", Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, R.string.toappoint_search_list_error, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 340);//250
             toast.show();
             e.printStackTrace();
@@ -1230,7 +1243,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "LoadCheckedItems Error", Toast.LENGTH_LONG);
+            toast = Toast.makeText(MainActivity.this, R.string.load_checked_items_error, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 340);//250
             toast.show();
             e.printStackTrace();
