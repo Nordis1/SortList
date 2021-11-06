@@ -5,24 +5,22 @@
     <string name="Typeitem">Поисковое слово</string>
     <string name="CorrectItem">Click "Change" to change item</string>
     <string name="Type">Type Item</string>
-    <string name="BackToMain">Основной лист</string>
-    <string name="Change">Изменить</string>
+    <string name="ShowAll">Показать всё</string>
+    <string name="Save">Сохранить</string>
     <string name="Rest">Неотмеченные</string>
     <string name="search_back">История поиска</string>
     <string name="search_back_normal">История</string>
 
     <string name="dialog_message">We can put unselected items in memory.
     And load it, when creating  a new list.</string>
-    <string name="dialog_Hello">Is it all items done?</string>
     <string name="ok_accept">Добавить</string>
     <string name="cancel">Отмена</string>
-    <string name="load_db">Загрузить файл\n ( txt, xls )</string>
+    <string name="load_db">Загрузить\n( txt, xls )</string>
     <string name="del_all">Del file and list</string>
-    <string name="del_allnormal">Удалить файл\n очистить лист</string>
-    <string name="Change_Row">Изменить эту строку</string>
-    <string name="Delete_Row">Удалить эту строку</string>
+    <string name="Change_Row">Изменить позицию</string>
+    <string name="Delete_Row">Удалить позицию</string>
     <string name="ShowUnchekedItems">Показать неотмеченные строки</string>
-    <string name="TextForDelete">Мы можем сохранить неотмеченные строки.\n И подгрузить их вместе со следующим файлом.</string>
+    <string name="TextForDelete">Удалить с остатком это:\n\nсохранить неотмеченные позиции.\nИ подгрузить их вместе со следующим файлом.</string>
     <string name="Deletewithrest">Удалить с остатком</string>
     <string name="Delete">Удалить</string>
     <string name="Delete_Checked_rows">Удалить все отмеченные</string>
@@ -52,15 +50,16 @@
     <string name="Not_data_to_show">Ошибка курсора,перезапустите программу!</string>
     <string name="First_download_the_file">Сделайте закачку файла!</string>
     <string name="file_version_error">Ошибка версии файла!</string>
-    <string name="how_delete">Удалить как?</string>
-    <string name="manual">Руководство пользователя.</string>
-    <string name="txt_xls">Загрузить ваш список txt или xls.</string>
-    <string name="check_new_position">Отмечай готовые позиции.</string>
-    <string name="easy_search_word">Легко найти позицию по поисковому слову.(Поиск производиться с основного листа).</string>
-    <string name="context_menu_options">При длительном нажатии на позицию, появляються доп функции.</string>
-    <string name="possibility_delete_with_rest">Возможность удалять список, сохраняя при этом неотмеченные позиции. Неотмеченные позиции автоматически догружаються с загрузкой нового файла.</string>
+    <string name="how_delete">Варианты удаления</string>
+    <string name="manual">РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ</string>
+    <string name="one">Загружайте список в *.txt или *.xls формате</string>
+    <string name="check_new_position">Отмечайте, изменяйте или удаляйте позиции.</string>
+    <string name="easy_search_word">Возможен поиск позиций по ключевому слову в открытом списке.</string>
+    <string name="context_menu_options">При длительном нажатии на позицию появляются дополнительные функции.</string>
+    <string name="possibility_delete_with_rest">При "удалении с остатком" неотмеченные позиции автоматически сохраняются и добавляются к новому списку при загрузке нового файла.</string>
     <string name="recomendation">Рекомендации</string>
     <string name="string_lengh_limit_90">Для комфортного использования списка, длинна строки не должна привышать 90 символов.</string>
+    <string name="Name">Name</string>
 
 
 </resources>

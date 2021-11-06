@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int backcounter = 0;  //backcounter - работает с backSearchlist
     final int requestCode1 = 1;
     ConstraintLayout constraintLayoutManual;
-    ConstraintLayout constraintLayoutListview;
     Thread thread;
 
 
@@ -111,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static int hSetProgressBarGone = 7;
     final static int hSetTurnManualOn = 8;
     final static int hsetdelete_IsCanceled = 9;
+    final static int hsetlistView_Onvisible = 10;
     final static int hSetLoadingListOfView_fromAdapter1 = 11;
     final static int hSetToastErrorfromReadingAdditionalLoad = 12;
     final static int hSetCreateDialogError = 13;
@@ -136,7 +136,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         constraintLayoutManual = findViewById(R.id.ID_ConstraintManual);
-        constraintLayoutListview = findViewById(R.id.ID_ConstraintForListView);
 
         list_of_View = findViewById(R.id.list_item_model);
         list_of_View.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -171,6 +170,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Нажатие на Item
         list_of_View.setOnItemClickListener(this);
         onHandlerCreate();
+        if (!mainList.isEmpty() || !found_List.isEmpty() || !foundAccurateList.isEmpty()){
+            constraintLayoutManual.setVisibility(View.GONE);
+            list_of_View.setVisibility(View.VISIBLE);
+
+        }else {
+            list_of_View.setVisibility(View.GONE);
+            constraintLayoutManual.setVisibility(View.VISIBLE);
+        }
     }
 
     public void onHandlerCreate() {
@@ -216,11 +223,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         progressBar.setVisibility(View.GONE);
                         break;
                     case 8:
-                        constraintLayoutListview.setVisibility(View.GONE);
                         constraintLayoutManual.setVisibility(View.VISIBLE);
                         break;
                     case 9:
                         etName.setText("");
+                        break;
+                    case 10:
+                        list_of_View.setVisibility(View.VISIBLE);
                         break;
                     case 11:
                         list_of_View.setAdapter(adapter1);
@@ -640,6 +649,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         mColumnmin = 0;
                         name = null;
                         etName.setText("");
+                        constraintLayoutManual.setVisibility(View.VISIBLE);
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, R.string.something_went_wrong, Toast.LENGTH_SHORT).show();
                     }
@@ -849,7 +859,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //далее начинаеться логика загрузки файла
         else if (!bool_deleteFile_checkBox_isActivated) {
             constraintLayoutManual.setVisibility(View.GONE);
-            constraintLayoutListview.setVisibility(View.VISIBLE);
             Log.i(TAG, "onRequestPermissionsResult: Загрузка файла : " + fileName);
             if (fileName == null) {
                 return;
@@ -900,6 +909,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         //Востанавливаем кнопку и убирает прогресс бар.
                         handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
                         handler.sendEmptyMessage(hSetProgressBarGone);
+                        handler.sendEmptyMessage(hsetlistView_Onvisible);
                         mProgresscounter = 0;
 
                     } catch (Exception e) {
@@ -915,6 +925,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
             thread.start();
+
         }
         bool_deleteFile_checkBox_isActivated = false;//для удаления файла на устройстве
         progressBar.setProgress(0);
@@ -1023,6 +1034,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menuID_USER_GUIDE){
+
+
+        }
         return super.onOptionsItemSelected(item);
     }
 

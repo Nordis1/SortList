@@ -1,28 +1,26 @@
 <resources>
-    <string name="app_name" translatable="false">Easy list</string>
+    <string name="app_name" translatable="false">Check List</string>
     <string name="Download">Download</string>
     <string name="search">Search</string>
     <string name="Typeitem">Type Item name and press search</string>
     <string name="CorrectItem">Click "Change" to change item</string>
     <string name="Type">Type Item</string>
-    <string name="BackToMain">Show full list</string>
-    <string name="Change">Change</string>
+    <string name="ShowAll">Show full list</string>
+    <string name="Save">Save</string>
     <string name="Rest">UnChecked</string>
     <string name="search_back">Search history</string>
     <string name="search_back_normal">History</string>
 
     <string name="dialog_message">We can put unselected items in memory.
     And load it, when creating  a new list.</string>
-    <string name="dialog_Hello">Is it all items done?</string>
     <string name="ok_accept">Put</string>
     <string name="cancel">Cancel</string>
     <string name="load_db">Load file\n( txt, xls )</string>
     <string name="del_all">Del file and list</string>
-    <string name="del_allnormal">Delete file\nclear List</string>
     <string name="Change_Row">Change this String</string>
     <string name="Delete_Row">Delete this String</string>
     <string name="ShowUnchekedItems">Show unchecked items</string>
-    <string name="TextForDelete">We can put unselected items in memory.\n And Upload them with the next uploading file.</string>
+    <string name="TextForDelete">Delete with Rest is:\npossible save unchecked positions and combine them with a new file uploading.</string>
     <string name="Deletewithrest">Delete with Rest</string>
     <string name="Delete">Delete</string>
     <string name="Delete_Checked_rows">Delete all checked</string>
@@ -55,13 +53,14 @@
     <string name="something_went_wrong">Something went wrong</string>
     <string name="clear_object">Clear Object</string>
     <string name="how_delete">How Delete?</string>
-    <string name="manual">Manual</string>
-    <string name="txt_xls">Загрузить ваш список txt или xls.</string>
-    <string name="check_new_position">Отмечай готовые позиции.</string>
-    <string name="easy_search_word">Легко найти позицию по поисковому слову.(Поиск производиться с основного листа).</string>
-    <string name="context_menu_options">При длительном нажатии на позицию, появляються доп функции.</string>
-    <string name="possibility_delete_with_rest">Возможность удалять список, сохраняя при этом неотмеченные позиции. Неотмеченные позиции автоматически догружаються с загрузкой нового файла.</string>
-    <string name="recomendation">Рекомендации</string>
-    <string name="string_lengh_limit_90">Для комфортного использования списка, длинна строки не должна привышать 90 символов.</string>
+    <string name="manual">USER GUIDE</string>
+    <string name="one">Upload the list in *.txt or *.xls extention.</string>
+    <string name="check_new_position">You can mark, modify or delete position.</string>
+    <string name="easy_search_word">It is possible to search for positions\nby using keywords in the open list.</string>
+    <string name="context_menu_options">Long pressing on the position\ncall additional functions.</string>
+    <string name="possibility_delete_with_rest">When deleting a list, you can save unchecked positions and combine them with another list when loading a new file.</string>
+    <string name="recomendation">Recommendation</string>
+    <string name="string_lengh_limit_90">The app is made for managing lists.\nFor comfortable use, the line length\nshould not exceed 90 characters.</string>
+    <string name="Name">Name</string>
 
 </resources>

@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-<!--    <item
-        android:id="@+id/item_ready"
+    <item
+        android:id="@+id/menuID_USER_GUIDE"
         android:icon="@mipmap/persent1"
-        android:title="persent"
+        android:title="@string/manual"
         app:showAsAction="never">
 
-    </item>-->
+    </item>
 
 <!--    <item
         android:id="@+id/item_menu"

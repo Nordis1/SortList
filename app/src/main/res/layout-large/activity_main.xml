@@ -68,7 +68,7 @@
             android:layout_marginRight="3dp"
             android:drawableLeft="@drawable/ic_autorenew_black_24dp"
             android:onClick="btnSave"
-            android:text="@string/BackToMain"
+            android:text="@string/ShowAll"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:autoSizeMaxTextSize="14sp"

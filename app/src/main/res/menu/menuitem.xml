@@ -8,17 +8,17 @@
     </item>
 
     <item
+        android:id="@+id/menuitemDeleteRow"
+        android:title="@string/Delete_Row">
+
+    </item>
+
+    <item
         android:id="@+id/menuUncheckedItems"
         android:title="@string/ShowUnchekedItems">
 
     </item>
 
-
-    <item
-        android:id="@+id/menuitemDeleteRow"
-        android:title="@string/Delete_Row">
-
-    </item>
 
     <item
         android:id="@+id/menuitemDeleteAllCheckedItems"

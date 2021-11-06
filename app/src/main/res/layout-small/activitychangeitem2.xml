@@ -12,7 +12,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="20dp"
         android:ems="10"
-        android:text="Name"
+        android:text="@string/Name"
         android:textSize="15sp"
         app:autoSizeMaxTextSize="19sp"
         app:autoSizeMinTextSize="11sp"
@@ -29,11 +29,12 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="20dp"
-        android:text="@string/Change"
+        android:text="@string/Save"
+        android:textAllCaps="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintTop_toBottomOf="@+id/ID_Edit_text_Dialog"
-        app:layout_constraintWidth_percent="0.33" />
+        app:layout_constraintWidth_percent="0.35" />
 
     <Button
         android:id="@+id/ID_btnCancel_Dialog"
@@ -42,8 +43,9 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="8dp"
         android:text="@string/cancel"
+        android:textAllCaps="true"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ID_Edit_text_Dialog"
-        app:layout_constraintWidth_percent="0.33" />
+        app:layout_constraintWidth_percent="0.35" />
 </android.support.constraint.ConstraintLayout>

@@ -194,7 +194,6 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
             btn_ChageItem_Change.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Toast.makeText(context, "Yes", Toast.LENGTH_SHORT).show();
                     String s = ChageItem_editText.getText().toString();
                     if (!s.isEmpty() && !s.equals(stringPrepareToChange)) {
                         Message msg = handler.obtainMessage();
@@ -205,6 +204,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                         handler.sendMessage(msg);
                         dialog.cancel();
                     } else {
+                        Toast.makeText(context, "Nothing to change", Toast.LENGTH_SHORT).show();
                         dialog.cancel();
                     }
                 }
