@@ -8,19 +8,26 @@
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/ic_clear_black_24dp.xml" value="0.31197916666666664" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/ic_cloud_download_black_24dp.xml" value="0.40260416666666665" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/ic_launcher_background.xml" value="0.31197916666666664" />
+        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/ic_round_arrow_back_12.xml" value="0.3515625" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/ic_round_arrow_back_24.xml" value="0.40260416666666665" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/ic_search_black_24dp.xml" value="0.4083333333333333" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/ic_twotone_delete_forever_24.xml" value="0.19166666666666668" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/logo_del_12.xml" value="0.14895833333333333" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/menuicon_24.xml" value="0.31197916666666664" />
+        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/mybtnstyle.xml" value="0.1" />
+        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/drawable/mybutton.xml" value="0.1" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout-large/activity_main.xml" value="0.33" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout-ru-large/activity_main.xml" value="0.33" />
-        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout-ru/activity_main.xml" value="0.35786802030456855" />
+        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout-ru/activity_main.xml" value="0.33" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout-small/activitychangeitem2.xml" value="0.25" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/activity_delete_file.xml" value="0.33" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/activity_main.xml" value="0.33" />
+        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/activity_user_guide.xml" value="0.33" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/activitychageitem.xml" value="0.2078125" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/activitydeleteitem.xml" value="0.5" />
+        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/fragment_first.xml" value="0.2397875816993464" />
+        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/fragment_main.xml" value="0.23161764705882354" />
+        <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/fragment_second.xml" value="0.16510416666666666" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/list_adapter_view.xml" value="0.32864583333333336" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/newlayout.xml" value="0.25" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/SQL Test_DEV-/app/src/main/res/layout/resize_xls_reader.xml" value="0.29322916666666665" />

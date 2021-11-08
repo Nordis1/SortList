@@ -4,7 +4,6 @@
 
     <item
         android:id="@+id/menuID_USER_GUIDE"
-        android:icon="@mipmap/persent1"
         android:title="@string/manual"
         app:showAsAction="never">
 

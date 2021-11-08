@@ -19,11 +19,11 @@
 
     </item>
 
-
     <item
-        android:id="@+id/menuitemDeleteAllCheckedItems"
-        android:title="@string/Delete_Checked_rows">
+        android:id="@+id/menuCheckAllPositions"
+        android:title="@string/checkallpositions">
 
     </item>
+
 
 </menu>

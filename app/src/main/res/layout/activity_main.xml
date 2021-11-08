@@ -32,10 +32,9 @@
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_regular"
             android:hint="@string/Typeitem"
-            android:textStyle="bold"
-            android:textSize="12sp"
-            app:autoSizeMaxTextSize="15sp"
-            app:autoSizeMinTextSize="10sp"
+            android:textSize="16sp"
+            app:autoSizeMaxTextSize="19sp"
+            app:autoSizeMinTextSize="14sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/IdBackSearch"
@@ -214,13 +213,13 @@
             android:layout_marginBottom="1dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.99"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
 
-            app:layout_constraintHeight_percent="0.99"
-            app:layout_constraintWidth_percent="0.99"
-            app:layout_constraintVertical_bias="0.0">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintWidth_percent="0.99">
 
             <TextView
                 android:id="@+id/textView15"
@@ -247,7 +246,7 @@
                 android:id="@+id/textView16"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_marginBottom="40dp"
+                android:layout_marginBottom="20dp"
                 android:fontFamily="@font/roboto_regular"
                 android:gravity="center"
                 android:text="@string/string_lengh_limit_90"
@@ -283,22 +282,41 @@
                 app:layout_constraintWidth_percent="0.8" />
 
             <TextView
-                android:id="@+id/textView8"
+                android:id="@+id/textView3"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:fontFamily="@font/roboto_bold"
+                android:gravity="center"
+                android:text="@string/manual"
+                android:textSize="20sp"
+                app:autoSizeMaxTextSize="25sp"
+                app:autoSizeMinTextSize="15sp"
+                app:autoSizeTextType="uniform"
+                app:layout_constraintBottom_toTopOf="@+id/textView5"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_percent="0.09"
+                app:layout_constraintHorizontal_bias="0.49"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.75" />
+
+            <TextView
+                android:id="@+id/textView5"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:fontFamily="@font/roboto_regular"
                 android:gravity="center_vertical"
-                android:text="@string/easy_search_word"
+                android:text="@string/one"
                 android:textSize="15sp"
                 app:autoSizeMaxTextSize="17sp"
                 app:autoSizeMinTextSize="10sp"
                 app:autoSizeTextType="uniform"
-                app:layout_constraintBottom_toTopOf="@+id/textView9"
+                app:layout_constraintBottom_toTopOf="@+id/textView7"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_percent="0.09"
-                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHeight_percent="0.08"
+                app:layout_constraintHorizontal_bias="0.49"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView7"
+                app:layout_constraintTop_toBottomOf="@+id/textView3"
                 app:layout_constraintWidth_percent="0.75" />
 
             <TextView
@@ -312,12 +330,31 @@
                 app:autoSizeMaxTextSize="17sp"
                 app:autoSizeMinTextSize="10sp"
                 app:autoSizeTextType="uniform"
+                app:layout_constraintBottom_toTopOf="@+id/textView19"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_percent="0.08"
+                app:layout_constraintHorizontal_bias="0.49"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView8"
+                app:layout_constraintWidth_percent="0.75" />
+
+            <TextView
+                android:id="@+id/textView19"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:fontFamily="@font/roboto_regular"
+                android:gravity="center_vertical"
+                android:text="@string/backarrow"
+                android:textSize="14sp"
+                app:autoSizeMaxTextSize="15sp"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView10"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.08"
-                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_bias="0.49"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView8"
+                app:layout_constraintTop_toBottomOf="@+id/textView9"
                 app:layout_constraintWidth_percent="0.75" />
 
             <TextView
@@ -332,31 +369,31 @@
                 app:autoSizeMaxTextSize="17sp"
                 app:autoSizeMinTextSize="10sp"
                 app:autoSizeTextType="uniform"
-                app:layout_constraintBottom_toTopOf="@id/barrier"
+                app:layout_constraintBottom_toTopOf="@+id/textView15"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.15"
-                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_bias="0.49"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView9"
+                app:layout_constraintTop_toBottomOf="@+id/textView19"
                 app:layout_constraintWidth_percent="0.75" />
 
             <TextView
-                android:id="@+id/textView3"
+                android:id="@+id/textView8"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:fontFamily="@font/roboto_bold"
-                android:gravity="center"
-                android:text="@string/manual"
-                android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                android:fontFamily="@font/roboto_regular"
+                android:gravity="center_vertical"
+                android:text="@string/easy_search_word"
+                android:textSize="15sp"
+                app:autoSizeMaxTextSize="17sp"
+                app:autoSizeMinTextSize="10sp"
                 app:autoSizeTextType="uniform"
-                app:layout_constraintBottom_toTopOf="@+id/textView5"
+                app:layout_constraintBottom_toTopOf="@+id/textView9"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.09"
-                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_bias="0.49"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView7"
                 app:layout_constraintWidth_percent="0.75" />
 
             <TextView
@@ -382,7 +419,7 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="7dp"
                 android:gravity="center"
-                android:text="5."
+                android:text="6."
                 android:textSize="20sp"
                 app:autoSizeMaxTextSize="25sp"
                 app:autoSizeMinTextSize="15sp"
@@ -409,9 +446,26 @@
                 app:layout_constraintWidth_percent="0.06" />
 
             <TextView
+                android:id="@+id/textView20"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginEnd="7dp"
+                android:gravity="center"
+                android:text="5."
+                android:textSize="20sp"
+                app:autoSizeMaxTextSize="25sp"
+                app:autoSizeMinTextSize="15sp"
+                app:autoSizeTextType="uniform"
+                app:layout_constraintEnd_toStartOf="@+id/textView19"
+                app:layout_constraintHeight_percent="0.08"
+                app:layout_constraintTop_toTopOf="@+id/textView19"
+                app:layout_constraintWidth_percent="0.06" />
+
+            <TextView
                 android:id="@+id/textView13"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
+                android:layout_marginTop="2dp"
                 android:layout_marginEnd="7dp"
                 android:gravity="center"
                 android:text="3."
@@ -439,25 +493,6 @@
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView7"
                 app:layout_constraintWidth_percent="0.06" />
-
-            <TextView
-                android:id="@+id/textView5"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:fontFamily="@font/roboto_regular"
-                android:gravity="center_vertical"
-                android:text="@string/one"
-                android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
-                app:autoSizeTextType="uniform"
-                app:layout_constraintBottom_toTopOf="@+id/textView7"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_percent="0.08"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView3"
-                app:layout_constraintWidth_percent="0.75" />
 
             <android.support.constraint.Barrier
                 android:id="@+id/barrier"
