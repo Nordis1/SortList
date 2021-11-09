@@ -633,10 +633,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     try {
                         if (bool_deleteFile_checkBox_isActivated) {
                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                            sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);
-
                         }
-
+                        sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);
                         File file = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser");
                         File file2 = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser-journal");
                         Log.i(TAG, "onClick: Попытка удалить файлы Data base. Файл сущестует?" + file.exists());
@@ -650,8 +648,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     try {
+                        Log.i(TAG, "onClick: Зашли в чистку всех елементов");
                         sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+                        Log.i(TAG, "onClick: sPref:" + sPref);
                         sPref.edit().clear().apply();
+                        Log.i(TAG, "onClick: sPref после удалениея:" + sPref);
                         cursor.close();
                         listFromSharedPreference.clear();
                         listForSearch.clear();
@@ -874,7 +875,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         if (file.delete()) {
                             Log.d(TAG, "onRequestPermissionsResult:  deleted");
-                            toast = Toast.makeText(MainActivity.this, getString(R.string.file_deleted_successfully) + cursor.getInt(3), Toast.LENGTH_SHORT);
+                            toast = Toast.makeText(MainActivity.this, getString(R.string.file_deleted_successfully), Toast.LENGTH_SHORT);
                             toast.setGravity(Gravity.TOP, 0, 330);
                             toast.show();
                             sPref.edit().clear().apply();
@@ -885,6 +886,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                         Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
                         Toast.makeText(MainActivity.this, R.string.file_deleting_error, Toast.LENGTH_SHORT).show();
                     }
