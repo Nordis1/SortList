@@ -1185,27 +1185,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 //Отметить все элементы в листе
         else if (itemId == R.id.menuCheckAllPositions) { // Меню отмечаем все елементы.
-            btnSave.callOnClick();
+            if (!mainList.isEmpty()) {
+                btnSave.callOnClick();
+                sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sPref.edit();
+                sPref.edit().clear().apply();
 
-            sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sPref.edit();
-            sPref.edit().clear().apply();
-
-            hashSetMainCollectorItems.clear();
-            hashSetMainCollectorItems.addAll(mainList);
-            ArrayList<String> gap = new ArrayList<>(hashSetMainCollectorItems);
-            for (int i = 0; i < hashSetMainCollectorItems.size(); i++) {
-                editor.putString("Keyg" + i, gap.get(i));
+                hashSetMainCollectorItems.clear();
+                hashSetMainCollectorItems.addAll(mainList);
+                ArrayList<String> gap = new ArrayList<>(hashSetMainCollectorItems);
+                for (int i = 0; i < hashSetMainCollectorItems.size(); i++) {
+                    editor.putString("Keyg" + i, gap.get(i));
+                }
+                editor.putInt("Kolichesvo", hashSetMainCollectorItems.size());// Заливаем новые данные в SharedPreferences
+                editor.apply();
+                gap.clear();
+                hashSetMainCollectorItems.clear();// Чистим его тут что бы он обновился с новыми данными в btnSave.
+                btnSave.callOnClick();
+            }else if (!found_List.isEmpty()){
+                getAllListItemsIsCheched(found_List);
+            }else if (!foundAccurateList.isEmpty()){
+                getAllListItemsIsCheched(foundAccurateList);
             }
-            editor.putInt("Kolichesvo", hashSetMainCollectorItems.size());// Заливаем новые данные в SharedPreferences
-            editor.apply();
-            gap.clear();
-            hashSetMainCollectorItems.clear();// Чистим его тут что бы он обновился с новыми данными в btnSave.
-            btnSave.callOnClick();
 
         }
 
         return super.onContextItemSelected(item);
+    }
+
+
+    public void getAllListItemsIsCheched(ArrayList<String> arrayList){
+        sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sPref.edit();
+        sPref.edit().clear().apply();
+
+        hashSetMainCollectorItems.addAll(arrayList);
+        ArrayList<String> gap = new ArrayList<>(hashSetMainCollectorItems);
+        for (int i = 0; i < hashSetMainCollectorItems.size(); i++) {
+            editor.putString("Keyg" + i, gap.get(i));
+        }
+        editor.putInt("Kolichesvo", hashSetMainCollectorItems.size());// Заливаем новые данные в SharedPreferences
+        editor.apply();
+        gap.clear();
+        hashSetMainCollectorItems.clear();// Чистим его тут что бы он обновился с новыми данными в btnSave.
+        btnSave.callOnClick();
+        try {
+            ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
+            for (int i = 0; i < loadhistory.size(); i++) {
+                etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
+                btnSearch.callOnClick();
+            }
+            loadhistory.clear();
+        } catch (Exception e) {
+            toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.TOP, 0, 330);//250
+            toast.show();
+            e.printStackTrace();
+        }
+
     }
 
     public void deleteCheckedItems() {
