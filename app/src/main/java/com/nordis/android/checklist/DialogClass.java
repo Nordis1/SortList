@@ -20,6 +20,8 @@ import android.widget.Toast;
 import com.edmodo.rangebar.RangeBar;
 import com.example.android.checklist.R;
 
+import java.util.concurrent.TimeUnit;
+
 public class DialogClass extends MainActivity implements View.OnClickListener, RangeBar.OnRangeBarChangeListener {
 
     // Общие переменные
@@ -42,8 +44,8 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
 
 
     // Переменные для createCustomNewDialogDeleteFile()
-    CheckBox DeleteFile_checkBox;
-    CheckBox saveCheched_checkbox;
+    CheckBox checkBox_DeleteFile;
+    CheckBox checkbox_saveCheched;
 
     //Переменные для классического применения диалога.
     String dialog_message, dialog_title, btnPositive, btnNegative, btnNetral;
@@ -77,6 +79,13 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                 dialog.cancel();
                 break;
             case R.id.ID_btn_DeleteFile_Dialog_DeleteAllChecked:
+                bool_deleteFile_checkBox_isActivated = false;
+                handler.sendEmptyMessage(hSetDeleteRest);
+                try {
+                    TimeUnit.MILLISECONDS.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 handler.sendEmptyMessage(hSetDeleteChekedPositions);
                 dialog.cancel();
                 break;
@@ -85,7 +94,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                 dialog.cancel();
                 break;
             case R.id.ID_checkBoxDeleteFile:
-                if (DeleteFile_checkBox.isChecked()) {
+                if (checkBox_DeleteFile.isChecked()) {
                     bool_deleteFile_checkBox_isActivated = true;
                 } else {
                     bool_deleteFile_checkBox_isActivated = false;
@@ -104,7 +113,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                 dialog.cancel();
                 break;
             case R.id.ID_saveUncheckedPositions:
-                if (saveCheched_checkbox.isChecked()) {
+                if (checkbox_saveCheched.isChecked()) {
                     handler.sendEmptyMessage(hSetDoRest);
                 }else {
                     handler.sendEmptyMessage(hSetDeleteRest);
@@ -161,16 +170,16 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
             View layout = inflater.inflate(R.layout.activity_delete_file, null);
             alertBuilder.setView(layout);
             alertBuilder.setCancelable(false);
-            DeleteFile_checkBox = layout.findViewById(R.id.ID_checkBoxDeleteFile);
-            saveCheched_checkbox = layout.findViewById(R.id.ID_saveUncheckedPositions);
+            checkBox_DeleteFile = layout.findViewById(R.id.ID_checkBoxDeleteFile);
+            checkbox_saveCheched = layout.findViewById(R.id.ID_saveUncheckedPositions);
             Button btnCancel = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Cancel);
             Button btnDeleteAllChecked = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_DeleteAllChecked);
             Button btnDelete = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Delete);
-            saveCheched_checkbox.setOnClickListener(this);
+            checkbox_saveCheched.setOnClickListener(this);
             btnCancel.setOnClickListener(this);
             btnDeleteAllChecked.setOnClickListener(this);
             btnDelete.setOnClickListener(this);
-            DeleteFile_checkBox.setOnClickListener(this);
+            checkBox_DeleteFile.setOnClickListener(this);
             dialog = alertBuilder.create();
         } catch (Exception e) {
             handler.sendEmptyMessage(hSetCreateDialogError);

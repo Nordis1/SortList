@@ -47,6 +47,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -349,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         //int green = getResources().getColor(valmis);
         choosen_ItemInClickmethod = ((TextView) view).getText().toString(); // Кликнутая строка в данный момент
-        Thread  thread = new Thread(this::checkedItemsReloadInfo);
+        Thread thread = new Thread(this::checkedItemsReloadInfo);
         thread.start();
         //checkedItemsReloadInfo();
 
@@ -390,43 +391,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mProgresscounter++;
                 if (progressBar.getMax() <= 40) {// В зависимости от объёма данных увеличиваем скорость загрузки
                     try {
-                        TimeUnit.MILLISECONDS.sleep(50);
+                        TimeUnit.MILLISECONDS.sleep(70); //0.7 - 2.8 sec
                         //Log.i(TAG, "Sleep 50");
                         handler.post(runnableIncrementProgressbar);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else if (progressBar.getMax() > 40 && progressBar.getMax() <= 150) {
+                } else if (progressBar.getMax() > 40 && progressBar.getMax() <= 100) { //1.4 - 3.5 sec
                     try {
                         TimeUnit.MILLISECONDS.sleep(35);
                         //Log.i(TAG, "Sleep 35");
-                        if (mProgresscounter % 2 == 0) {
-                            handler.post(runnableIncrementProgressbar);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } else if (progressBar.getMax() > 150 && progressBar.getMax() <= 400) {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(20);
-                        //Log.i(TAG, "Sleep 30");
                         if (mProgresscounter % 4 == 0) {
                             handler.post(runnableIncrementProgressbar);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else if (progressBar.getMax() > 400 && progressBar.getMax() <= 600) {
+                } else if (progressBar.getMax() > 100 && progressBar.getMax() <= 350) { //1.3 - 4.5 sec
                     try {
-                        TimeUnit.MILLISECONDS.sleep(12);
-                        //Log.i(TAG, "Sleep 12");
-                        if (mProgresscounter % 7 == 0) {
+                        TimeUnit.MILLISECONDS.sleep(13);
+                        //Log.i(TAG, "Sleep 30");
+                        if (mProgresscounter % 5 == 0) {
                             handler.post(runnableIncrementProgressbar);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else if (progressBar.getMax() > 600) {
+                } else if (progressBar.getMax() > 350 && progressBar.getMax() <= 600) { // 2.4 - 4.2
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(7);
+                        //Log.i(TAG, "Sleep 12");
+                        if (mProgresscounter % 8 == 0) {
+                            handler.post(runnableIncrementProgressbar);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else if (progressBar.getMax() > 600) { // 3 sec
                     try {
                         TimeUnit.MILLISECONDS.sleep(5);
                         //Log.i(TAG, "Sleep 5");
@@ -767,7 +768,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else if (!firstWordSearchingList.isEmpty()) {
                     //firstWordCounter = firstWordSearchingList.size()-1;
                     btnSave.callOnClick();
-                    if (firstWordCounter <= -1) firstWordCounter = firstWordSearchingList.size()-1;
+                    if (firstWordCounter <= -1)
+                        firstWordCounter = firstWordSearchingList.size() - 1;
                     Log.i(TAG, "onClick: firstWordSearchingList.size = " + firstWordSearchingList.size());
                     Log.i(TAG, "onClick: firstWordCounter = " + firstWordCounter);
                     etName.setText(firstWordSearchingList.get(firstWordCounter));
@@ -995,8 +997,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Начало основной загрузки
             String line;
             int j = 1;
+            downloadList.add(fileName.substring(0, fileName.length() - 4));
 
             while ((line = reader.readLine()) != null) { //Считываем список с файла в Лист.
+                byte[] bytes = line.getBytes();
+                line = new String(bytes,StandardCharsets.UTF_8);
                 if (line.isEmpty() || line.equals(" ")) { // если строка пустая , то пропускаем её.
                     continue;
                 }
@@ -1177,7 +1182,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Выводим на экран неотмеченные items
         else if (itemId == R.id.menuUncheckedItems) {
             createUncheckedViewList();
-        } else if (itemId == R.id.menuCheckAllPositions) { // Меню отмечаем все елементы.
+        }
+//Отметить все элементы в листе
+        else if (itemId == R.id.menuCheckAllPositions) { // Меню отмечаем все елементы.
             btnSave.callOnClick();
 
             sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
@@ -1251,7 +1258,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     //для поискового листа первого слово(Постредственный)
                     firstWordSearchingList.remove(0);
                     firstWordSearchingList.add(s);
-                }else {
+                } else {
                     if (!firstWordSearchingList.contains(s)) firstWordSearchingList.add(s);
                 }
 
