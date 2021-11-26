@@ -3,7 +3,9 @@ package com.nordis.android.checklist;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -17,12 +19,12 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
@@ -41,6 +43,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.example.android.checklist.R;
 
 import java.io.BufferedReader;
@@ -50,7 +57,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
@@ -1087,6 +1096,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(MainActivity.this, UserGuideActivity.class);
             startActivity(intent);
 
+        }else if (item.getItemId() == R.id.menuID_ToSubscribe){
+            Intent intent = new Intent(MainActivity.this,SubcribeClass.class);
+            startActivity(intent);
+        }else if (item.getItemId() == R.id.menuID_ToSubscribe1){
+            Intent intent = new Intent(MainActivity.this,SubcribeClass1.class);
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -1388,6 +1403,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     }
+
+
+
+
+
 
 
 }

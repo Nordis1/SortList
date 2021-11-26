@@ -8,13 +8,18 @@
         app:showAsAction="never">
 
     </item>
+    <item
+        android:id="@+id/menuID_ToSubscribe1"
+        android:title="@string/GetSubscribe1"
+        app:showAsAction="never">
 
-<!--    <item
-        android:id="@+id/item_menu"
-        android:icon="@drawable/menuicon_24"
-        android:title="menu"
-        app:showAsAction="always|collapseActionView">
+    </item>
+    <item
+        android:id="@+id/menuID_ToSubscribe"
+        android:title="@string/GetSubscribe"
+        app:showAsAction="never">
 
-    </item>-->
+    </item>
+
 
 </menu>

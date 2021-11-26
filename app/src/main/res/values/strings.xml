@@ -68,7 +68,25 @@
     <string name="DeleteCheked">Delete checked positions successfully</string>
     <string name="deleted_success">Deleted successfully</string>
     <string name="title_activity_user_guide">UserGuide</string>
+    <string name="title_activity_user_subscribe">User Subscribe</string>
     <string name="checkallpositions">Check all positions</string>
     <string name="backarrow">Back arrow will return you to the previous search query.</string>
+    <string name="TextFor_itemOwned">Product already in action.</string>
+    <string name="TextFor_itemBillingUnavailable">Subscribe is not available!</string>
+    <string name="TextFor_itemFeatureNotSupport">Subscribe is not available for this device!</string>
+    <string name="GetSubscribe">my Subscribe</string>
+    <string name="Go_Back">Back</string>
+    <string name="one_Yeard">Yeard</string>
+    <string name="Month">Month</string>
+    <string name="Sixmonths">6 Months</string>
+    <string name="checklistsubscribe">Check List Subscribe</string>
+    <string name="theneuro">10 Euro</string>
+    <string name="oneEuro">1 Euro</string>
+    <string name="fiveEuro">5.40 Euro</string>
+    <string name="tobuy">BUY</string>
+    <string name="tryforfree">Try Free</string>
+    <string name="choose_subscribe_plan">Choose subscribe plan</string>
+    <string name="or1">OR</string>
+    <string name="GetSubscribe1">Subscribe</string>
 
 </resources>

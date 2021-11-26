@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "605983851124",
+    "project_id": "checklist-nordis",
+    "storage_bucket": "checklist-nordis.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:605983851124:android:4efcc4d3408f2bd7628721",
+        "android_client_info": {
+          "package_name": "com.nordis.android.checklist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "605983851124-ai95a0evqdnb9to3gi2m5hlkkff1uf2u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nordis.android.checklist",
+            "certificate_hash": "e0879accb1a2ff645c92204709e2dbdd0e3a4624"
+          }
+        },
+        {
+          "client_id": "605983851124-p5kr512a1ea1gopj0qgru5njpu70hjs3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBO1FwxkpfuxNz-S8hT4xkcTcjFj39mIzA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "605983851124-p5kr512a1ea1gopj0qgru5njpu70hjs3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

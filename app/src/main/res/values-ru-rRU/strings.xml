@@ -66,8 +66,26 @@
     <string name="DeleteCheked">Удаление отмеченных позиций успешно.</string>
     <string name="deleted_success">Успешно удалено.</string>
     <string name="title_activity_user_guide">Руководство пользователя</string>
+    <string name="title_activity_user_subscribe">Подписка пользователя</string>
     <string name="checkallpositions">Отметить все позиции</string>
     <string name="backarrow">Кнопка стрелка назад вернёт вас к предыдущему поисковому запросу. </string>
+    <string name="TextFor_itemOwned">Продукт уже приобретён</string>
+    <string name="TextFor_itemBillingUnavailable">Подписка не досупна!</string>
+    <string name="TextFor_itemFeatureNotSupport">Подписка не доступна для этого устройства.</string>
+    <string name="GetSubscribe">моя Подписка</string>
+    <string name="Go_Back">Назад</string>
+    <string name="one_Yeard">1 год</string>
+    <string name="Month">1 месяц</string>
+    <string name="Sixmonths">6 месяцов</string>
+    <string name="checklistsubscribe">Check List, подписка</string>
+    <string name="theneuro">10 Euro</string>
+    <string name="oneEuro">1 Euro</string>
+    <string name="fiveEuro">5.40 Euro</string>
+    <string name="tobuy">Купить</string>
+    <string name="tryforfree">Попробовать бесплатно</string>
+    <string name="choose_subscribe_plan">Выберете срок подписки</string>
+    <string name="or1">Или</string>
+    <string name="GetSubscribe1">Подписка</string>
 
 
 </resources>
