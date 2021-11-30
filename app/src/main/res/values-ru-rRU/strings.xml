@@ -86,6 +86,7 @@
     <string name="choose_subscribe_plan">Выберете срок подписки</string>
     <string name="or1">Или</string>
     <string name="GetSubscribe1">Подписка</string>
+    <string name="SubscribeText">Цены указынны без учёта НДС. Подписку всегда и легко можно отменить в Google Play.</string>
 
 
 </resources>

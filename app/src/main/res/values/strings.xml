@@ -88,5 +88,6 @@
     <string name="choose_subscribe_plan">Choose subscribe plan</string>
     <string name="or1">OR</string>
     <string name="GetSubscribe1">Subscribe</string>
+    <string name="SubscribeText">Цены указынны без учёта НДС.Подписку всегда и легко можно отменить в Google Play.</string>
 
 </resources>

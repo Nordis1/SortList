@@ -26,8 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SubcribeClass extends AppCompatActivity implements View.OnClickListener {
-    Button btnSubcribeButton, btnYeardApplySubscribe, btnMonthApplySubscribe, btnSixMonthApplySubscribe;
+    Button btnYeardApplySubscribe, btnMonthApplySubscribe, btnSixMonthApplySubscribe;
     private BillingClient billingClient;
+    private BillingFlowParams billingFlowParams;
+    private ArrayList<SkuDetails> skuDetalsList123 = new ArrayList<>();
     private static final String TAG = "My_SubClass";
 
     @Override
@@ -35,7 +37,6 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.subscribe_layout);
 
-        btnSubcribeButton = findViewById(R.id.btntryForFree);
         btnYeardApplySubscribe = findViewById(R.id.btnYeardBuy);
         btnMonthApplySubscribe = findViewById(R.id.btn_Buy_month);
         btnSixMonthApplySubscribe = findViewById(R.id.btn_buy_sixmonth);
@@ -43,83 +44,144 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
         btnSixMonthApplySubscribe.setOnClickListener(this);
         btnYeardApplySubscribe.setOnClickListener(this);
         btnMonthApplySubscribe.setOnClickListener(this);
-        btnSubcribeButton.setOnClickListener(this);
 
+        //Initialize a BillingClient
         billingClient = BillingClient.newBuilder(this)
                 .setListener(new PurchasesUpdatedListener() {
                     @Override
                     public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> list) {
+                        // This listener receives updates for all purchases in your app.
+                        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && list != null){
+                            //To verify the purchases is real it requires two steps.
+                            //1. Make sure if the item is in purchase stay and it not acknowledged before
+                            //2. The second step to verify purchase in backend server, we will need to get to purchase token for each purchase and send it to
+                            // backend server and then check the token is never use. If the token is never use it means it is a valid token. We can store the purchase info
+                            // in online database.
+                            for (Purchase purchase : list){
+                                if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED &&
+                                        !purchase.isAcknowledged()){
+                                    String token = purchase.getPurchaseToken();
+
+                                }
+
+
+                            }
+
+                        }
 
                     }
                 })
                 .enablePendingPurchases()
                 .build();
 
+        connectToGooglePlayBilling();
+
 
     }
 
+    @Override
+    protected void onResume() {
+        //https://developer.android.com/google/play/billing/integrate#fetch
+        super.onResume();
+        connectToGooglePlayBilling();
+    }
 
 
     //использовать firebase cloud function as backend server. And firestore as the database.
     //Note: we use acknowledge purchase to sell product one-time. And we use consume async if the item purchase multiple times.
     @Override
     public void onClick(View v) {
+        int responseCode;
+        Activity activity = SubcribeClass.this;
         if (v.getId() == R.id.btn_Buy_month) {
-            connectToGooglePlayBilling(0);
+            billingFlowParams = BillingFlowParams.newBuilder()
+                    .setSkuDetails(skuDetalsList123.get(0))
+                    .build();
+            responseCode = billingClient.launchBillingFlow(activity, billingFlowParams).getResponseCode();
         } else if (v.getId() == R.id.btn_buy_sixmonth) {
-            connectToGooglePlayBilling(1);
-        }else if (v.getId() == R.id.btnYeardBuy) {
-            connectToGooglePlayBilling(2);
+
+            billingFlowParams = BillingFlowParams.newBuilder()
+                    .setSkuDetails(skuDetalsList123.get(1))
+                    .build();
+            responseCode = billingClient.launchBillingFlow(activity, billingFlowParams).getResponseCode();
+        } else if (v.getId() == R.id.btnYeardBuy) {
+
+            billingFlowParams = BillingFlowParams.newBuilder()
+                    .setSkuDetails(skuDetalsList123.get(2))
+                    .build();
+            responseCode = billingClient.launchBillingFlow(activity, billingFlowParams).getResponseCode();
         }
 
     }
 
-    private void connectToGooglePlayBilling(Integer whichSubType) {
+/*    public void areSubscriptionsSupported() {
+        String s = BillingClient.FeatureType.SUBSCRIPTIONS;
+        if (billingClient.isFeatureSupported(BillingClient.FeatureType.SUBSCRIPTIONS) == BillingClient.FeatureType.SUBSCRIPTIONS) {
 
-        billingClient.startConnection(new BillingClientStateListener() {
+        }
 
-            //Establish a connection to Google Play
 
-            @Override
-            public void onBillingSetupFinished(BillingResult billingResult) {
+        int responseCode = billingClient.isFeatureSupported(BillingClient.FeatureType.SUBSCRIPTIONS);
+        if (responseCode != BillingClient.BillingResponse.OK) {
+            Timber.w("Got an error response: " + responseCode);
+        }
+        return responseCode == BillingClient.BillingResponse.OK;
+    }*/
 
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                    // The BillingClient is ready. You can query purchases here.
 
-                    List<String> skuList = new ArrayList<>();
-                    skuList.add("checklist_app");
-                    skuList.add("checklist_app_six_month");
-                    skuList.add("checklist_app_yeard");
-                    SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-                    params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS);
+        private void connectToGooglePlayBilling () {
+            //To connect to Google Play, call startConnection().
+            billingClient.startConnection(new BillingClientStateListener() {
 
-                    Activity activity = SubcribeClass.this;
+                //Establish a connection to Google Play
+                //Подключение к Google Play
+                @Override
+                public void onBillingSetupFinished(BillingResult billingResult) {
 
-                    billingClient.querySkuDetailsAsync(params.build(),
-                            new SkuDetailsResponseListener() {
-                                @Override
-                                public void onSkuDetailsResponse(BillingResult billingResult, List<SkuDetails> skuDetailsList) {
-                                    BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
-                                            .setSkuDetails(skuDetailsList.get(whichSubType))
-                                            .build();
-                                    SkuDetails iteminfo = skuDetailsList.get(whichSubType);
-                                    Log.d(TAG, "onSkuDetailsResponse: iteminfo price: " + iteminfo.getPrice());
-                                    int responseCode = billingClient.launchBillingFlow(activity, billingFlowParams).getResponseCode();
-                                    Toast.makeText(activity, "responceCode: " + responseCode, Toast.LENGTH_LONG).show();
-                                    // Process the result.
-                                }
-                            });
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                        // The BillingClient is ready. You can query purchases here.
 
+                        List<String> skuList = new ArrayList<>();
+                        skuList.add("checklist_app");
+                        skuList.add("checklist_app_six_month");
+                        skuList.add("checklist_app_yeard");
+                        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+                        params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS);
+
+                        Activity activity = SubcribeClass.this;
+
+                        //To query Google Play for in-app product details, call querySkuDetailsAsync()
+                        billingClient.querySkuDetailsAsync(params.build(),
+                                new SkuDetailsResponseListener() {
+                                    @Override
+                                    public void onSkuDetailsResponse(BillingResult billingResult, List<SkuDetails> skuDetailsList) {
+                                        SkuDetails iteminfo = skuDetailsList.get(0);
+                                        SkuDetails iteminfo1 = skuDetailsList.get(1);
+                                        SkuDetails iteminfo2 = skuDetailsList.get(2);
+                                        btnMonthApplySubscribe.setText(iteminfo.getPrice());
+                                        btnSixMonthApplySubscribe.setText(iteminfo1.getPrice());
+                                        btnYeardApplySubscribe.setText(iteminfo2.getPrice());
+                                        skuDetalsList123.addAll(skuDetailsList);
+
+                                        //Log.d(TAG, "onSkuDetailsResponse: iteminfo price: " + iteminfo.getPrice());
+                                        /*int responseCode = billingClient.launchBillingFlow(activity, billingFlowParams).getResponseCode();*/
+                                        //Toast.makeText(activity, "responceCode: " + responseCode, Toast.LENGTH_LONG).show();
+                                        // Process the result.
+                                    }
+                                });
+
+                    }
                 }
-            }
 
-            @Override
-            public void onBillingServiceDisconnected() {
-                connectToGooglePlayBilling(whichSubType);
-                // Try to restart the connection on the next request to
-                // Google Play by calling the startConnection() method.
-            }
-        });
+                @Override
+                public void onBillingServiceDisconnected() {
+                    connectToGooglePlayBilling();
+                    // Try to restart the connection on the next request to
+                    // Google Play by calling the startConnection() method.
+                }
+            });
+
+        }
+
 
     }
-}

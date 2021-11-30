@@ -34,7 +34,6 @@ public class SubcribeClass1 extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.subscribe_layout);
 
-        btnSubcribeButton = findViewById(R.id.btntryForFree);
         btnYeardApplySubscribe = findViewById(R.id.btnYeardBuy);
         btnMonthApplySubscribe = findViewById(R.id.btn_Buy_month);
         btnSixMonthApplySubscribe = findViewById(R.id.btn_buy_sixmonth);
