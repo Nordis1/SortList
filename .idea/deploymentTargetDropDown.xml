@@ -7,11 +7,11 @@
         <deviceKey>
           <Key>
             <type value="VIRTUAL_DEVICE_PATH" />
-            <value value="C:\Users\Nordis\.android\avd\Pixel_2_API_28.avd" />
+            <value value="D:\Nordis\AppData\Local\Android\avd\MyDevice_with_4kMemory_API_30.avd" />
           </Key>
         </deviceKey>
       </Target>
     </targetSelectedWithDropDown>
-    <timeTargetWasSelectedWithDropDown value="2021-11-24T17:07:20.792225900Z" />
+    <timeTargetWasSelectedWithDropDown value="2021-12-30T00:43:48.650131600Z" />
   </component>
 </project>

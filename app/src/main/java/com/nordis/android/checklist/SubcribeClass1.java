@@ -41,13 +41,13 @@ public class SubcribeClass1 extends AppCompatActivity implements View.OnClickLis
         btnSixMonthApplySubscribe.setOnClickListener(this);
         btnYeardApplySubscribe.setOnClickListener(this);
         btnMonthApplySubscribe.setOnClickListener(this);
-        //btnSubcribeButton.setOnClickListener(this);
 
         billingClient = BillingClient.newBuilder(this)
                 .enablePendingPurchases()
                 .setListener(new PurchasesUpdatedListener() {
             @Override
             public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> list) {
+
 
             }
         }).build();
@@ -76,6 +76,7 @@ public class SubcribeClass1 extends AppCompatActivity implements View.OnClickLis
         );
     }
     private void getProductDetals(){
+
 
         List<String> productID = new ArrayList<>();
         productID.add("checklist_app_six_month");

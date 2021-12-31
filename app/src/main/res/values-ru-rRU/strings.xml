@@ -87,6 +87,8 @@
     <string name="or1">Или</string>
     <string name="GetSubscribe1">Подписка</string>
     <string name="SubscribeText">Цены указынны без учёта НДС. Подписку всегда и легко можно отменить в Google Play.</string>
+    <string name="title_activity_user_subscribe1">My user subscribe</string>
+    <string name="please_subscribe">Пожалуйста подпишитесь для продолжения.</string>
 
 
 </resources>

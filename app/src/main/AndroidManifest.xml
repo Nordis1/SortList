@@ -27,7 +27,7 @@
         <activity
             android:name="com.nordis.android.checklist.SubcribeClass"
             android:exported="true"
-            android:label="@string/title_activity_user_subscribe"
+            android:label="@string/title_activity_user_subscribe1"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name="com.nordis.android.checklist.SubcribeClass1"
@@ -48,7 +48,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.GET_CONTENT" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

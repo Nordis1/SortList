@@ -19,12 +19,14 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
@@ -55,11 +57,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
@@ -94,13 +100,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int requestCode1 = 1;
     ConstraintLayout constraintLayoutManual;
     Thread thread;
+    static Boolean isSubscribed = null;// для того что бы из subscribtion class получить инфу о подписке.
 
 
     public static volatile String fileName;
     volatile ProgressBar progressBar;
     static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved,
             bool_deleteFile_checkBox_isActivated, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled, bool_haveDeletingRight = false;
+            bool_xlsExecutorCanceled, bool_haveDeletingRight,bool_billingInitializeOk = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //fileNotChoosed переменная служит для остановки потока который хочет считать имя файла работает в паре fileOfNameReady. Приобретает свойсва true  в методе onRestart()
     //bool_prepereDeleteRow - для контекстной функции Delete row.
@@ -112,31 +119,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
     static int firstWordCounter = -1;
+    int searchRemain = 3;
 
 
-    final static int hSetToastErrorOfFileReading = 1;
-    final static int hsetdelete_With_rest = 2;
-    final static int hsetdelete_WithOut_rest = 3;
-    final static int hSetbtnReadFileEnabledFalse = 4;
-    final static int hSetbtnReadFileEnabledTrue = 5;
-    final static int hSetProgressBarVisible = 6;
-    final static int hSetProgressBarGone = 7;
-    final static int hSetTurnManualOn = 8;
-    final static int hsetdelete_IsCanceled = 9;
-    final static int hsetlistView_Onvisible = 10;
-    final static int hSetLoadingListOfView_fromAdapter1 = 11;
-    final static int hSetToastErrorfromReadingAdditionalLoad = 12;
-    final static int hSetCreateDialogError = 13;
-    final static int hSetDoRest = 14;
-    final static int hSetDeleteRest = 15;
-    final static int hSetCreateDialogFromWhichToWhich = 16;
-    final static int hSetDeleteChekedPositions = 17;
+    final int hSetToastErrorOfFileReading = 1;
+    final int hsetdelete_With_rest = 2;
+    final int hsetdelete_WithOut_rest = 3;
+    final int hSetbtnReadFileEnabledFalse = 4;
+    final int hSetbtnReadFileEnabledTrue = 5;
+    final int hSetProgressBarVisible = 6;
+    final int hSetProgressBarGone = 7;
+    final int hSetTurnManualOn = 8;
+    final int hsetdelete_IsCanceled = 9;
+    final int hsetlistView_Onvisible = 10;
+    final int hSetLoadingListOfView_fromAdapter1 = 11;
+    final int hSetToastErrorfromReadingAdditionalLoad = 12;
+    final int hSetCreateDialogError = 13;
+    final int hSetDoRest = 14;
+    final int hSetDeleteRest = 15;
+    final int hSetCreateDialogFromWhichToWhich = 16;
+    final int hSetDeleteChekedPositions = 17;
+    final static int hSetIsSubscribeTrue = 18;
+    final static int gethSetIsSubscribeFalse = 19;
+    final static int hBillingClientInitializeIsCorrect = 20;
 
     Toast toast;
-    volatile SharedPreferences sPref;
+    static volatile SharedPreferences sPref;
     final String TAG = "Main_Activity";
     public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
-
+    Executor executor;
     Cursor cursor;
     ContentValues contentValues = new ContentValues();
     static Handler handler;
@@ -149,6 +160,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        executor = Executors.newSingleThreadExecutor();
+
+
         constraintLayoutManual = findViewById(R.id.ID_ConstraintManual);
 
         list_of_View = findViewById(R.id.list_item_model);
@@ -192,6 +207,142 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             constraintLayoutManual.setVisibility(View.VISIBLE);
         }
         btnSave.callOnClick();
+
+        checkSub();
+
+    }
+
+    public void checkSub() {
+        SubcribeClass subcribeClass = new SubcribeClass();
+        try {
+            Log.d(TAG, "checkSub: BillingClient initialize begins...");
+            executor.execute(()->{
+                subcribeClass.initializeBillingClient(this);
+            });
+            //subcribeClass.initializeBillingClient(this);
+            Log.d(TAG, "checkSub: BillingClient initialize has been perfect ");
+
+        } catch (Exception e) {
+            //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
+            e.printStackTrace();
+            e.getMessage();
+            Log.d(TAG, "checkSub: error: " + e.getMessage());
+            Log.d(TAG, "checkSub: come error по видимости нет connections: " );
+            sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
+
+            String token = sPref.getString("Token", "");
+            String isValidTime = sPref.getString("Period&SubTime","");
+            Log.d(TAG, "checkSub: Purchase Time is : "+ isValidTime);
+
+            //Если токена нет, то загружаем сколько осталось поисковых кликов.
+            if (token == null || token.isEmpty()) {
+                sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
+                if (sPref != null){
+                    searchRemain = sPref.getInt("isRemain",3);
+                    Log.d(TAG, "checkSub: токен не получен загрузка цифр подсчёта: "+ searchRemain);
+                }
+
+                isSubscribed = false;
+            } else {
+                DateTimeFormatter ldFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                LocalDate localDateNow = LocalDate.now();
+                if (isValidTime != null || !isValidTime.isEmpty()){
+                    String [] ob = isValidTime.split("/");
+                    String subType = ob[0];
+                    String subDateStarts = ob[1];
+                    LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts,ldFormatter);
+                    if (subType.equals("P1M")){
+                        LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
+                        if (ldSubDateExpire.isAfter(localDateNow)){
+                            isSubscribed = false;
+                            return;
+                        }
+                    }else if (subType.equals("P6M")){
+                        LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
+                        if (ldSubDateExpire.isAfter(localDateNow)){
+                            isSubscribed = false;
+                            return;
+                        }
+                    }else if (subType.equals("P1Y")){
+                        LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
+                        if (ldSubDateExpire.isAfter(localDateNow)){
+                            isSubscribed = false;
+                            return;
+                        }
+
+                    }
+                    Log.d(TAG, "checkSub: ob0" + subType);
+                    Log.d(TAG, "checkSub: ob0" + subDateStarts);
+                }
+                Log.d(TAG, "checkSub: token получен всё хорошо.");
+                isSubscribed = true;
+            }
+            return;
+        }
+
+
+        sPref = getSharedPreferences("Tokens",MODE_PRIVATE);
+        String token = sPref.getString("Token","");
+
+        executor.execute(()->{
+            subcribeClass.checkThePurchases(token);
+
+            if (isSubscribed == null){
+                Log.d(TAG, "checkSub: isSubscribed равен null запускаем метод subConfidence");
+                subConfidence(3);
+            }
+        });
+        //subcribeClass.checkThePurchases(token);
+
+
+    }
+
+
+    public void subConfidence(Integer i){
+        executor.execute(new MyRunnable(i){
+            @Override
+            public void run() {
+                try {
+                    Log.d(TAG, "run: Ждём результата спим 2 сек");
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (isSubscribed == null){
+                    Log.d(TAG, "run: Результат не получен до сих пор null, вызываем заново");
+                    i--;
+                    if (i <= 0){
+                        Log.d(TAG, "run: i = 0 уходим от сюда.");
+                        return;
+                    }
+                    subConfidence(i);
+                }else if (!isSubscribed){
+
+                    sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
+                    searchRemain = sPref.getInt("isRemain",3);
+                    Log.d(TAG, "run: isSubscribed: "+ isSubscribed);
+                    Log.d(TAG, "run: результат получен отрицательный, загружаем сколько осталось нажатий: "+ searchRemain);
+
+                }
+                
+            }
+        });
+/*        executor.execute(()->{
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (isSubscribed == null){
+                i--;
+                subConfidence(y);
+            }else if (!isSubscribed){
+                sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
+                searchRemain = sPref.getInt("isRemain",0);
+            }
+
+        });*/
+
     }
 
     public void onHandlerCreate() {
@@ -285,6 +436,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         toast.setGravity(Gravity.TOP, 0, 330);
                         toast.show();
                         break;
+                    case hSetIsSubscribeTrue:
+                        isSubscribed = true;
+                        break;
+                    case gethSetIsSubscribeFalse:
+                        isSubscribed = false;
+                        break;
+                    case hBillingClientInitializeIsCorrect:
+                        bool_billingInitializeOk = true;
+                        break;
+
                 }
             }
         };
@@ -500,85 +661,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // View элементы у которых есть ID они сами востанавливают своё значение. Так же как Элементы Final.
-        // А все другие нужно сохранять тут. А востанавливать в onRestoreInstanceState.
-        outState.putBoolean("permission", bool_deleteFile_checkBox_isActivated);
-        outState.putBoolean("val1", bool_fileOfNameReady);
-        outState.putBoolean("val2", bool_fileNotChosen);
-        outState.putBoolean("val3", bool_isSaved);
-        outState.putBoolean("val4", bool_xlsExecutorCanceled);
-        outState.putBoolean("val5", bool_xlsColumnsWasChosen);
-
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        bool_deleteFile_checkBox_isActivated = savedInstanceState.getBoolean("permission");
-        bool_fileOfNameReady = savedInstanceState.getBoolean("val1");
-        bool_fileNotChosen = savedInstanceState.getBoolean("val2");
-        bool_isSaved = savedInstanceState.getBoolean("val3");
-        bool_xlsExecutorCanceled = savedInstanceState.getBoolean("val4");
-        bool_xlsColumnsWasChosen = savedInstanceState.getBoolean("val5");
-        if (dbHelper == null) dbHelper = new DBHelper(this);
-        if (contentValues == null) contentValues = new ContentValues();
-        if (handler == null) onHandlerCreate();
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        Log.i(TAG, "onPostCreate");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.i(TAG, "onStop");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        //isSaved = false;
-        if (!bool_fileOfNameReady) {
-            bool_fileNotChosen = true;
-        }
-        Log.i(TAG, "onRestart");
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.i(TAG, "onStart");
-    }
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        Log.i(TAG, "onPostResume");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(TAG, "onResume");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "onDestroy: Активити умерло.");
-    }
 
     @SuppressLint({"NonConstantResourceId", "SetTextI18n"})
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -740,6 +822,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 //поиск
             case R.id.btnSearch:
+                if (!isSubscribed){
+                    if (searchRemain <= 0) {
+                        Toast.makeText(this, R.string.please_subscribe, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    searchRemain--;
+                    Log.d(TAG, "onClick: Поисковых попыток осталось: "+ searchRemain);
+                    sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
+                    sPref.edit().putInt("isRemain",searchRemain).apply();
+
+                }
+
+
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
                     break;
@@ -1010,7 +1105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             while ((line = reader.readLine()) != null) { //Считываем список с файла в Лист.
                 byte[] bytes = line.getBytes();
-                line = new String(bytes,StandardCharsets.UTF_8);
+                line = new String(bytes, StandardCharsets.UTF_8);
                 if (line.isEmpty() || line.equals(" ")) { // если строка пустая , то пропускаем её.
                     continue;
                 }
@@ -1096,11 +1191,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(MainActivity.this, UserGuideActivity.class);
             startActivity(intent);
 
-        }else if (item.getItemId() == R.id.menuID_ToSubscribe){
-            Intent intent = new Intent(MainActivity.this,SubcribeClass.class);
+        } else if (item.getItemId() == R.id.menuID_ToSubscribe) {
+            Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
             startActivity(intent);
-        }else if (item.getItemId() == R.id.menuID_ToSubscribe1){
-            Intent intent = new Intent(MainActivity.this,SubcribeClass1.class);
+        } else if (item.getItemId() == R.id.menuID_ToSubscribe1) {
+            Intent intent = new Intent(MainActivity.this, SubcribeClass1.class);
             startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
@@ -1217,9 +1312,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 gap.clear();
                 hashSetMainCollectorItems.clear();// Чистим его тут что бы он обновился с новыми данными в btnSave.
                 btnSave.callOnClick();
-            }else if (!found_List.isEmpty()){
+            } else if (!found_List.isEmpty()) {
                 getAllListItemsIsCheched(found_List);
-            }else if (!foundAccurateList.isEmpty()){
+            } else if (!foundAccurateList.isEmpty()) {
                 getAllListItemsIsCheched(foundAccurateList);
             }
 
@@ -1229,7 +1324,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    public void getAllListItemsIsCheched(ArrayList<String> arrayList){
+    public void getAllListItemsIsCheched(ArrayList<String> arrayList) {
         sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
         SharedPreferences.Editor editor = sPref.edit();
         sPref.edit().clear().apply();
@@ -1405,9 +1500,85 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // View элементы у которых есть ID они сами востанавливают своё значение. Так же как Элементы Final.
+        // А все другие нужно сохранять тут. А востанавливать в onRestoreInstanceState.
+        outState.putBoolean("permission", bool_deleteFile_checkBox_isActivated);
+        outState.putBoolean("val1", bool_fileOfNameReady);
+        outState.putBoolean("val2", bool_fileNotChosen);
+        outState.putBoolean("val3", bool_isSaved);
+        outState.putBoolean("val4", bool_xlsExecutorCanceled);
+        outState.putBoolean("val5", bool_xlsColumnsWasChosen);
 
+    }
 
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        bool_deleteFile_checkBox_isActivated = savedInstanceState.getBoolean("permission");
+        bool_fileOfNameReady = savedInstanceState.getBoolean("val1");
+        bool_fileNotChosen = savedInstanceState.getBoolean("val2");
+        bool_isSaved = savedInstanceState.getBoolean("val3");
+        bool_xlsExecutorCanceled = savedInstanceState.getBoolean("val4");
+        bool_xlsColumnsWasChosen = savedInstanceState.getBoolean("val5");
+        if (dbHelper == null) dbHelper = new DBHelper(this);
+        if (contentValues == null) contentValues = new ContentValues();
+        if (handler == null) onHandlerCreate();
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        Log.i(TAG, "onPostCreate");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        //isSaved = false;
+        if (!bool_fileOfNameReady) {
+            bool_fileNotChosen = true;
+        }
+        Log.i(TAG, "onRestart");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart");
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        Log.i(TAG, "onPostResume");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy: Активити умерло.");
+    }
 
 
 }
