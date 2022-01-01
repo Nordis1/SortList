@@ -62,8 +62,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -151,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Cursor cursor;
     ContentValues contentValues = new ContentValues();
     static Handler handler;
+    final static CountDownLatch countDownLatch = new CountDownLatch(1);
 /*    работа с simple cursor adapter
     SimpleCursorAdapter scAdapter;
     String[] from = new String[] {DBHelper.KEY_NAME,DBHelper.KEY_MODEL,DBHelper.KEY_DATA};
@@ -161,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        executor = Executors.newSingleThreadExecutor();
+        executor = Executors.newCachedThreadPool();
 
 
         constraintLayoutManual = findViewById(R.id.ID_ConstraintManual);
@@ -215,135 +218,102 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void checkSub() {
         SubcribeClass subcribeClass = new SubcribeClass();
         try {
-            Log.d(TAG, "checkSub: BillingClient initialize begins...");
+            Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
+            subcribeClass.initializeBillingClient(this);
             executor.execute(()->{
-                subcribeClass.initializeBillingClient(this);
+                Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
+                subcribeClass.connectToGooglePlayBilling(false);
+                try {
+                    int i = 4;
+                    while (!subcribeClass.checkConnections()){
+                        if (i == 0){
+                            throw new InterruptedException(); 
+                        }
+                        i--;
+                        countDownLatch.await(2,TimeUnit.SECONDS);
+                    }
+                    //countDownLatch.await(1,TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Log.i(TAG, "checkSub: Запуск checkSubscribtionWithOutNet()");
+                    checkSubscribtionWithOutNet();
+                    e.printStackTrace();
+                    return;
+                }
+                Log.d(SubcribeClass.TAG, "From Main: we launch checkThePurchases method");
+                subcribeClass.checkThePurchases();
             });
-            //subcribeClass.initializeBillingClient(this);
-            Log.d(TAG, "checkSub: BillingClient initialize has been perfect ");
 
+            if (isSubscribed == null){
+                checkSubscribtionWithOutNet();
+            }
         } catch (Exception e) {
             //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
             e.printStackTrace();
-            e.getMessage();
             Log.d(TAG, "checkSub: error: " + e.getMessage());
-            Log.d(TAG, "checkSub: come error по видимости нет connections: " );
-            sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
-
-            String token = sPref.getString("Token", "");
-            String isValidTime = sPref.getString("Period&SubTime","");
-            Log.d(TAG, "checkSub: Purchase Time is : "+ isValidTime);
-
-            //Если токена нет, то загружаем сколько осталось поисковых кликов.
-            if (token == null || token.isEmpty()) {
-                sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
-                if (sPref != null){
-                    searchRemain = sPref.getInt("isRemain",3);
-                    Log.d(TAG, "checkSub: токен не получен загрузка цифр подсчёта: "+ searchRemain);
-                }
-
-                isSubscribed = false;
-            } else {
-                DateTimeFormatter ldFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-                LocalDate localDateNow = LocalDate.now();
-                if (isValidTime != null || !isValidTime.isEmpty()){
-                    String [] ob = isValidTime.split("/");
-                    String subType = ob[0];
-                    String subDateStarts = ob[1];
-                    LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts,ldFormatter);
-                    if (subType.equals("P1M")){
-                        LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
-                        if (ldSubDateExpire.isAfter(localDateNow)){
-                            isSubscribed = false;
-                            return;
-                        }
-                    }else if (subType.equals("P6M")){
-                        LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
-                        if (ldSubDateExpire.isAfter(localDateNow)){
-                            isSubscribed = false;
-                            return;
-                        }
-                    }else if (subType.equals("P1Y")){
-                        LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
-                        if (ldSubDateExpire.isAfter(localDateNow)){
-                            isSubscribed = false;
-                            return;
-                        }
-
-                    }
-                    Log.d(TAG, "checkSub: ob0" + subType);
-                    Log.d(TAG, "checkSub: ob0" + subDateStarts);
-                }
-                Log.d(TAG, "checkSub: token получен всё хорошо.");
-                isSubscribed = true;
-            }
+            checkSubscribtionWithOutNet();
             return;
         }
 
-
-        sPref = getSharedPreferences("Tokens",MODE_PRIVATE);
-        String token = sPref.getString("Token","");
-
-        executor.execute(()->{
-            subcribeClass.checkThePurchases(token);
-
-            if (isSubscribed == null){
-                Log.d(TAG, "checkSub: isSubscribed равен null запускаем метод subConfidence");
-                subConfidence(3);
-            }
-        });
-        //subcribeClass.checkThePurchases(token);
-
-
     }
+    public void checkSubscribtionWithOutNet(){
+        Log.d(TAG, "checkSubscribtionWithOutNet: Launch token initializations witOut Internet!");
+        sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
+        String token = sPref.getString("Token", "");
+        String isValidTime = sPref.getString("Period&SubTime","");
+        Log.d(TAG, "checkSub: Purchase Time is : "+ isValidTime);
 
-
-    public void subConfidence(Integer i){
-        executor.execute(new MyRunnable(i){
-            @Override
-            public void run() {
-                try {
-                    Log.d(TAG, "run: Ждём результата спим 2 сек");
-                    TimeUnit.SECONDS.sleep(2);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (isSubscribed == null){
-                    Log.d(TAG, "run: Результат не получен до сих пор null, вызываем заново");
-                    i--;
-                    if (i <= 0){
-                        Log.d(TAG, "run: i = 0 уходим от сюда.");
+        //Если токена нет, то загружаем сколько осталось поисковых кликов.
+        if (token == null || token.isEmpty()) {
+            sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
+            if (sPref != null){
+                searchRemain = sPref.getInt("isRemain",3);
+                Log.d(TAG, "checkSub: токен не получен, загрузка цифр подсчёта: "+ searchRemain);
+            }
+            isSubscribed = false;
+        } else {
+            Log.d(TAG, "checkSubscribtionWithOutNet: Токен получен, начинаем просмотр его Валидности");
+            DateTimeFormatter ldFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            LocalDate localDateNow = LocalDate.now();
+            if (isValidTime != null || !isValidTime.isEmpty()){
+                Log.d(TAG, "checkSubscribtionWithOutNet: Заходим в  проверку");
+                String [] ob = isValidTime.split("/");
+                String subType = ob[0];
+                String subDateStarts = ob[1];
+                LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts,ldFormatter);
+                if (subType.equals("P1M")){
+                    Log.d(TAG, "checkSubscribtionWithOutNet: подписка была 1 месяц, проверка годности.");
+                    LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
+                    //Log.d(TAG, "checkSubscribtionWithOutNet: дата подписки: "+ldSubDateStarts + "Дата истечения: "+ ldSubDateExpire + "дата сейчас: "+ localDateNow);
+                    if (localDateNow.isAfter(ldSubDateExpire)){
+                        Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
+                        isSubscribed = false;
                         return;
                     }
-                    subConfidence(i);
-                }else if (!isSubscribed){
-
-                    sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
-                    searchRemain = sPref.getInt("isRemain",3);
-                    Log.d(TAG, "run: isSubscribed: "+ isSubscribed);
-                    Log.d(TAG, "run: результат получен отрицательный, загружаем сколько осталось нажатий: "+ searchRemain);
-
+                }else if (subType.equals("P6M")){
+                    Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на 6 месяцов, проверка годности.");
+                    LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
+                    if (localDateNow.isAfter(ldSubDateExpire)){
+                        Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
+                        isSubscribed = false;
+                        return;
+                    }
+                }else if (subType.equals("P1Y")){
+                    Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на год,проверка годности.");
+                    LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
+                    if (localDateNow.isAfter(ldSubDateExpire)){
+                        Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
+                        isSubscribed = false;
+                        return;
+                    }
                 }
-                
-            }
-        });
-/*        executor.execute(()->{
-            try {
-                TimeUnit.SECONDS.sleep(2);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (isSubscribed == null){
-                i--;
-                subConfidence(y);
-            }else if (!isSubscribed){
-                sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
-                searchRemain = sPref.getInt("isRemain",0);
             }
 
-        });*/
+            Log.d(TAG, "checkSub: token получен всё хорошо. Подписка действительна");
+            isSubscribed = true;
+        }
 
     }
+
 
     public void onHandlerCreate() {
         handler = new Handler(getMainLooper()) {
@@ -672,6 +642,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 //Обновить
             case R.id.btnSave:
+                Log.d(TAG, "onClick: Status subscribe : "+ isSubscribed);
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
                     int kol = sPref.getInt("Kolichesvo", 0);

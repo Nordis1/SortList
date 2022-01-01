@@ -1,5 +1,8 @@
 package com.nordis.android.checklist;
 
+import static com.nordis.android.checklist.MainActivity.countDownLatch;
+import static com.nordis.android.checklist.MainActivity.handler;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -23,8 +26,6 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.ConsumeParams;
-import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
@@ -39,25 +40,25 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class SubcribeClass extends AppCompatActivity implements View.OnClickListener {
     Button btnYeardApplySubscribe, btnMonthApplySubscribe, btnSixMonthApplySubscribe;
-    private BillingClient billingClient;
+    private volatile BillingClient billingClient;
     private BillingFlowParams billingFlowParams;
     private ArrayList<SkuDetails> skuDetalsList123 = new ArrayList<>();
-    private static final String TAG = "My_SubClass";
+    public static final String TAG = "My_SubClass";
     DatabaseReference myRef;
     FirebaseDatabase database;
-    Boolean isValid = null;
-    Boolean checking = null;
     String currentPrice;
     static Handler handlerForSubscribtionClass;
     SharedPreferences sPref;
     String whatSubChosen;
-    Executor executor;
     Activity activity = SubcribeClass.this;
+
 
     String currentPurchaseToken;
     final int hSubISActivated = 2;
@@ -126,9 +127,8 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
         //Initialize a BillingClient
         initializeBillingClient(this);
-        initializeBillingClient(this);
 
-        connectToGooglePlayBilling(null,null);
+        connectToGooglePlayBilling(false);
 
 
     }
@@ -193,18 +193,23 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                 .enablePendingPurchases()
                 .build();
 
-        if (context.equals(MainActivity.class)){
-            MainActivity.handler.sendEmptyMessage(MainActivity.hBillingClientInitializeIsCorrect);
+        Log.d(TAG, "initializeBillingClient: Initialize was success!");
+    }
+    public Boolean checkConnections(){
+        if (billingClient.getConnectionState() == BillingClient.ConnectionState.CONNECTED){
+            Log.d(TAG, "checkConnections: true");
+            return true;
+        }else {
+            Log.d(TAG, "checkConnections: false");
+            return false;
         }
-
-
     }
 
     @Override
     protected void onResume() {
         //https://developer.android.com/google/play/billing/integrate#fetch
         super.onResume();
-        connectToGooglePlayBilling(null,null);
+        connectToGooglePlayBilling(false);
     }
 
 
@@ -336,26 +341,25 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
     }
 
 
-    public void checkThePurchases(String token) {
+    public void checkThePurchases() {
         billingClient.queryPurchasesAsync(BillingClient.SkuType.SUBS, new PurchasesResponseListener() {
             @Override
             public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list) {
-                connectionStateGeneration(billingClient.getConnectionState());
-                billingClientResponseCodeGenerated(billingResult.getResponseCode());
-                if (billingClient.getConnectionState() == 1){
+
+                if (billingClient.getConnectionState() == BillingClient.ConnectionState.CONNECTING){
                     try {
                         Log.d(TAG, "onQueryPurchasesResponse: State Connecting... wait a sec");
                         TimeUnit.SECONDS.sleep(1);
-                        checkThePurchases(token);
-                    } catch (InterruptedException e) {
+                        checkThePurchases();
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-                if (billingClient.getConnectionState() != 2 ){
+                if (billingClient.getConnectionState() != BillingClient.ConnectionState.CONNECTED){
                     //Если статус not connected то пробуем делать connect.
                     Log.d(TAG, "onQueryPurchasesResponse: Нет соединения, попытка повторного коннекта");
                     Thread thread = new Thread(()->{
-                        connectToGooglePlayBilling(true,token);
+                        connectToGooglePlayBilling(true);
                     });
                     thread.start();
                 }else {
@@ -387,14 +391,8 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
         });
 
     }
-
-    ;
-
-    private void connectToGooglePlayBilling(@Nullable Boolean checking, @Nullable String chekingToken) {
-        if (checking == null){
-            checking = false;
-        }
-        final boolean checkingg = checking;
+    public void connectToGooglePlayBilling(Boolean check) {
+        Log.d(TAG, "connectToGooglePlayBilling: We come in connectToGooglePlayBilling");
         //To connect to Google Play, call startConnection().
         billingClient.startConnection(new BillingClientStateListener() {
 
@@ -433,20 +431,20 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void onBillingServiceDisconnected() {
-                if(checkingg){
-                    connectToGooglePlayBilling(true,chekingToken);
+                if (check){
+                    checkThePurchases();
+                    //connectToGooglePlayBilling(true);
                 }else {
-                    connectToGooglePlayBilling(null,null);
+                    connectToGooglePlayBilling(false);
                 }
                 // Try to restart the connection on the next request to
                 // Google Play by calling the startConnection() method.
             }
         });
-        if(checkingg){
-            checkThePurchases(chekingToken);
+
+        if (check){
+            checkThePurchases();
         }
-
+        Log.d(TAG, "connectToGooglePlayBilling: We go out from connectToGooglePlayBilling");
     }
-
-
 }
