@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
         String token = sPref.getString("Token", "");
         String isValidTime = sPref.getString("Period&SubTime","");
-        Log.d(TAG, "checkSub: Purchase Time is : "+ isValidTime);
+        Log.d(TAG, "checkSub: We got data from Spref: Purchase Time is : "+ isValidTime);
 
         //Если токена нет, то загружаем сколько осталось поисковых кликов.
         if (token == null || token.isEmpty()) {
@@ -280,11 +280,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String subType = ob[0];
                 String subDateStarts = ob[1];
                 LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts,ldFormatter);
+
                 if (subType.equals("P1M")){
                     Log.d(TAG, "checkSubscribtionWithOutNet: подписка была 1 месяц, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
-                    //Log.d(TAG, "checkSubscribtionWithOutNet: дата подписки: "+ldSubDateStarts + "Дата истечения: "+ ldSubDateExpire + "дата сейчас: "+ localDateNow);
                     if (localDateNow.isAfter(ldSubDateExpire)){
+                        toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.TOP, 0, 330);
+                        toast.show();
                         Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
                         isSubscribed = false;
                         return;
@@ -293,6 +296,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на 6 месяцов, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
                     if (localDateNow.isAfter(ldSubDateExpire)){
+                        toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.TOP, 0, 330);
+                        toast.show();
                         Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
                         isSubscribed = false;
                         return;
@@ -301,6 +307,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на год,проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
                     if (localDateNow.isAfter(ldSubDateExpire)){
+                        toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.TOP, 0, 330);
+                        toast.show();
                         Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
                         isSubscribed = false;
                         return;
@@ -309,6 +318,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             Log.d(TAG, "checkSub: token получен всё хорошо. Подписка действительна");
+            toast = Toast.makeText(MainActivity.this, R.string.subscribe_is_valid, Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.TOP, 0, 330);//250
+            toast.show();
             isSubscribed = true;
         }
 

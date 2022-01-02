@@ -91,5 +91,7 @@
     <string name="SubscribeText">Цены указынны без учёта НДС.Подписку всегда и легко можно отменить в Google Play.</string>
     <string name="title_activity_user_subscribe1">My user subscribe</string>
     <string name="please_subscribe">Please subscribe to continue.</string>
+    <string name="subscribe_out">Subscription expired.</string>
+    <string name="subscribe_is_valid">"Subscription is valid "</string>
 
 </resources>
