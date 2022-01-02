@@ -144,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static int hSetIsSubscribeTrue = 18;
     final static int gethSetIsSubscribeFalse = 19;
     final static int hBillingClientInitializeIsCorrect = 20;
+    final int hcheckSubscribtionWithOutNet = 21;
 
     Toast toast;
     static volatile SharedPreferences sPref;
@@ -216,46 +217,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void checkSub() {
-        SubcribeClass subcribeClass = new SubcribeClass();
-        try {
-            Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
-            subcribeClass.initializeBillingClient(this);
-            executor.execute(()->{
-                Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
-                subcribeClass.connectToGooglePlayBilling(false);
-                try {
-                    int i = 4;
-                    while (!subcribeClass.checkConnections()){
-                        if (i == 0){
-                            throw new InterruptedException(); 
+        if (!checkSubscribtionWithOutNet()) {
+            SubcribeClass subcribeClass = new SubcribeClass();
+            try {
+                Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
+                subcribeClass.initializeBillingClient(this);
+                executor.execute(() -> {
+                    Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
+                    subcribeClass.connectToGooglePlayBilling(false);// false так как это обычное подсоединение.
+                    try {
+                        int i = 4;
+                        while (!subcribeClass.checkConnections()) {
+                            if (i == 0) {
+                                throw new InterruptedException();
+                            }
+                            i--;
+                            countDownLatch.await(2, TimeUnit.SECONDS);
                         }
-                        i--;
-                        countDownLatch.await(2,TimeUnit.SECONDS);
+                        //countDownLatch.await(1,TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Log.i(TAG, "checkSub: Запуск checkSubscribtionWithOutNet()");
+                        handler.sendEmptyMessage(hcheckSubscribtionWithOutNet);
+                        e.printStackTrace();
+                        return;
                     }
-                    //countDownLatch.await(1,TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    Log.i(TAG, "checkSub: Запуск checkSubscribtionWithOutNet()");
-                    checkSubscribtionWithOutNet();
-                    e.printStackTrace();
-                    return;
-                }
-                Log.d(SubcribeClass.TAG, "From Main: we launch checkThePurchases method");
-                subcribeClass.checkThePurchases();
-            });
+                    Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
+                    subcribeClass.checkThePurchases();
+                });
 
-            if (isSubscribed == null){
+                if (isSubscribed == null) {
+                    checkSubscribtionWithOutNet();
+                }
+            } catch (Exception e) {
+                //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
+                e.printStackTrace();
+                Log.d(TAG, "checkSub: error: " + e.getMessage());
                 checkSubscribtionWithOutNet();
+                return;
             }
-        } catch (Exception e) {
-            //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
-            e.printStackTrace();
-            Log.d(TAG, "checkSub: error: " + e.getMessage());
-            checkSubscribtionWithOutNet();
-            return;
         }
 
     }
-    public void checkSubscribtionWithOutNet(){
+    public boolean checkSubscribtionWithOutNet(){
         Log.d(TAG, "checkSubscribtionWithOutNet: Launch token initializations witOut Internet!");
         sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
         String token = sPref.getString("Token", "");
@@ -280,39 +283,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String subType = ob[0];
                 String subDateStarts = ob[1];
                 LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts,ldFormatter);
-
+                Log.d(TAG, "checkSubscribtionWithOutNet: SybType: "+ subType);
                 if (subType.equals("P1M")){
                     Log.d(TAG, "checkSubscribtionWithOutNet: подписка была 1 месяц, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
-                    if (localDateNow.isAfter(ldSubDateExpire)){
-                        toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);
-                        toast.show();
-                        Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
+                    if (!checkDateValid(localDateNow,ldSubDateExpire)){
                         isSubscribed = false;
-                        return;
+                        return isSubscribed;
                     }
                 }else if (subType.equals("P6M")){
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на 6 месяцов, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
-                    if (localDateNow.isAfter(ldSubDateExpire)){
-                        toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);
-                        toast.show();
-                        Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
+                    if (!checkDateValid(localDateNow,ldSubDateExpire)){
                         isSubscribed = false;
-                        return;
+                        return isSubscribed;
                     }
                 }else if (subType.equals("P1Y")){
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на год,проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
-                    if (localDateNow.isAfter(ldSubDateExpire)){
-                        toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);
-                        toast.show();
-                        Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
+                    if (!checkDateValid(localDateNow,ldSubDateExpire)){
                         isSubscribed = false;
-                        return;
+                        return isSubscribed;
                     }
                 }
             }
@@ -324,6 +315,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isSubscribed = true;
         }
 
+        return isSubscribed;
+    }
+
+
+    public Boolean checkDateValid(LocalDate now,LocalDate mustExpire){
+        Boolean isvalid = true;
+        Log.d(TAG, "checkDateValid: зашли в проверку валидности даты");
+
+        if (now.isAfter(mustExpire)){
+            toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.TOP, 0, 330);
+            toast.show();
+            Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
+            isSubscribed = false;
+            isvalid = false;
+            return isvalid;
+        }
+
+        return isvalid;
     }
 
 
@@ -422,10 +432,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         isSubscribed = true;
                         break;
                     case gethSetIsSubscribeFalse:
+                        sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
+                        sPref.edit().clear().apply();
                         isSubscribed = false;
                         break;
                     case hBillingClientInitializeIsCorrect:
                         bool_billingInitializeOk = true;
+                        break;
+                    case hcheckSubscribtionWithOutNet:
+                        checkSubscribtionWithOutNet();
                         break;
 
                 }

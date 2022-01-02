@@ -42,6 +42,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +59,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
     SharedPreferences sPref;
     String whatSubChosen;
     Activity activity = SubcribeClass.this;
+    ExecutorService executorServiceSubClass = Executors.newFixedThreadPool(2);
 
 
     String currentPurchaseToken;
@@ -126,6 +128,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
         btnMonthApplySubscribe.setOnClickListener(this);
 
         //Initialize a BillingClient
+        //Первое что нужно это. Инициализировать клиента, второе Подконектиться к Google Play.
         initializeBillingClient(this);
 
         connectToGooglePlayBilling(false);
@@ -358,10 +361,9 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                 if (billingClient.getConnectionState() != BillingClient.ConnectionState.CONNECTED){
                     //Если статус not connected то пробуем делать connect.
                     Log.d(TAG, "onQueryPurchasesResponse: Нет соединения, попытка повторного коннекта");
-                    Thread thread = new Thread(()->{
+                    executorServiceSubClass.execute(()->{
                         connectToGooglePlayBilling(true);
                     });
-                    thread.start();
                 }else {
                     Log.d(TAG, "onQueryPurchasesResponse: Соединение успешно, идём далее.");
                     if (!list.isEmpty()) {
@@ -376,7 +378,6 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                                 purchaseStateGeneration(purchase.getPurchaseState());
                                 MainActivity.handler.sendEmptyMessage(MainActivity.gethSetIsSubscribeFalse);
                             }
-                            billingClientResponseCodeGenerated(billingResult.getResponseCode());
                         }
                     } else {
                         Log.d(TAG, "onQueryPurchasesResponse: Лист пуст поэтому делаем False");
@@ -432,8 +433,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
             @Override
             public void onBillingServiceDisconnected() {
                 if (check){
-                    checkThePurchases();
-                    //connectToGooglePlayBilling(true);
+                    connectToGooglePlayBilling(check);
                 }else {
                     connectToGooglePlayBilling(false);
                 }
