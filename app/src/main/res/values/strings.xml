@@ -93,5 +93,17 @@
     <string name="please_subscribe">Please subscribe to continue.</string>
     <string name="subscribe_out">Subscription expired.</string>
     <string name="subscribe_is_valid">"Subscription is valid "</string>
+    <string name="charset_determinations">Encoding</string>
+    <string name="Windows1251" translatable="false">Windows -1251</string>
+    <string name="iso_8859_5" translatable="false">ISO 8859-5</string>
+    <string name="KOI8_R" translatable="false">KOI8 -R</string>
+    <string name="KOI8_U" translatable="false">KOI8 -U</string>
+    <string name="OEM_855" translatable="false">OEM 855</string>
+    <string name="OEM_866" translatable="false">OEM 866</string>
+    <string name="macintosh" translatable="false">Macintosh</string>
+    <string name="which">Choose which your file Encoding Type?</string>
+    <string name="Reason_for_encodin_choose">"In order to avoid unknown characters when loading a file in-app, it is advisable to select the file encoding."</string>
+    <string name="Cyrillic">Cyrillic</string>
+    <string name="Uncheckallpositions">Отменить все позиции</string>
 
 </resources>

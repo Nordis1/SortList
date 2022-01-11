@@ -20,6 +20,12 @@
         app:showAsAction="never">
 
     </item>
+    <item
+        android:id="@+id/menuID_Determination_Charset"
+        android:title="@string/charset_determinations"
+        app:showAsAction="never">
+
+    </item>
 
 
 </menu>

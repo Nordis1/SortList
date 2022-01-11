@@ -25,5 +25,11 @@
 
     </item>
 
+    <item
+        android:id="@+id/menuUnCheckAllPositions"
+        android:title="@string/Uncheckallpositions">
+
+    </item>
+
 
 </menu>

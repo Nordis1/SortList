@@ -5,9 +5,6 @@
         <item name="actionBarSize">40dp</item>
         <item name="colorPrimary">#90C9E6F3</item>
         <item name="colorButtonNormal">#660F76A6</item>
-
-        <!--<item name="colorButtonNormal">#546E7A</item>-->
+        <item name="colorPrimaryDark">#607D8B</item>
     </style>
-
-
 </resources>

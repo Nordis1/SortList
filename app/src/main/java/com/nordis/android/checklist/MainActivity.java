@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
@@ -54,8 +56,10 @@ import com.example.android.checklist.R;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -95,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile ListView list_of_View;   //Лист куда закидываеться основной или поисковые листы при помощи адаптера (adapter1). Для отображения.
     volatile ArrayAdapter adapter1;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
 
-
+    ArrayList<String> loadhistory = new ArrayList<>(); // Лист работает в история поиска.
     public static String name = "";
     volatile HashSet<String> hashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
     int backcounter = 0;  //backcounter - работает с backSearchlist
@@ -109,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile ProgressBar progressBar;
     static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved,
             bool_deleteFile_checkBox_isActivated, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled, bool_haveDeletingRight,bool_billingInitializeOk = false;
+            bool_xlsExecutorCanceled, bool_haveDeletingRight, bool_billingInitializeOk = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //fileNotChoosed переменная служит для остановки потока который хочет считать имя файла работает в паре fileOfNameReady. Приобретает свойсва true  в методе onRestart()
     //bool_prepereDeleteRow - для контекстной функции Delete row.
@@ -122,7 +126,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile static int mColumnmin = 0;
     static int firstWordCounter = -1;
     int searchRemain = 3;
-
+    Uri uri; // Получаем нахождение файла в OnActivityResult
+    String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
 
     final int hSetToastErrorOfFileReading = 1;
     final int hsetdelete_With_rest = 2;
@@ -258,50 +263,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
-    public boolean checkSubscribtionWithOutNet(){
+
+    public boolean checkSubscribtionWithOutNet() {
         Log.d(TAG, "checkSubscribtionWithOutNet: Launch token initializations witOut Internet!");
         sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
         String token = sPref.getString("Token", "");
-        String isValidTime = sPref.getString("Period&SubTime","");
-        Log.d(TAG, "checkSub: We got data from Spref: Purchase Time is : "+ isValidTime);
+        String isValidTime = sPref.getString("Period&SubTime", "");
+        Log.d(TAG, "checkSub: We got data from Spref: Purchase Time is : " + isValidTime);
 
         //Если токена нет, то загружаем сколько осталось поисковых кликов.
         if (token == null || token.isEmpty()) {
-            sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
-            if (sPref != null){
-                searchRemain = sPref.getInt("isRemain",3);
-                Log.d(TAG, "checkSub: токен не получен, загрузка цифр подсчёта: "+ searchRemain);
+            sPref = getSharedPreferences("SEARCH_REMAIN", MODE_PRIVATE);
+            if (sPref != null) {
+                searchRemain = sPref.getInt("isRemain", 3);
+                Log.d(TAG, "checkSub: токен не получен, загрузка цифр подсчёта: " + searchRemain);
             }
             isSubscribed = false;
         } else {
             Log.d(TAG, "checkSubscribtionWithOutNet: Токен получен, начинаем просмотр его Валидности");
             DateTimeFormatter ldFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             LocalDate localDateNow = LocalDate.now();
-            if (isValidTime != null || !isValidTime.isEmpty()){
+            if (isValidTime != null || !isValidTime.isEmpty()) {
                 Log.d(TAG, "checkSubscribtionWithOutNet: Заходим в  проверку");
-                String [] ob = isValidTime.split("/");
+                String[] ob = isValidTime.split("/");
                 String subType = ob[0];
                 String subDateStarts = ob[1];
-                LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts,ldFormatter);
-                Log.d(TAG, "checkSubscribtionWithOutNet: SybType: "+ subType);
-                if (subType.equals("P1M")){
+                LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts, ldFormatter);
+                Log.d(TAG, "checkSubscribtionWithOutNet: SybType: " + subType);
+                if (subType.equals("P1M")) {
                     Log.d(TAG, "checkSubscribtionWithOutNet: подписка была 1 месяц, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
-                    if (!checkDateValid(localDateNow,ldSubDateExpire)){
+                    if (!checkDateValid(localDateNow, ldSubDateExpire)) {
                         isSubscribed = false;
                         return isSubscribed;
                     }
-                }else if (subType.equals("P6M")){
+                } else if (subType.equals("P6M")) {
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на 6 месяцов, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
-                    if (!checkDateValid(localDateNow,ldSubDateExpire)){
+                    if (!checkDateValid(localDateNow, ldSubDateExpire)) {
                         isSubscribed = false;
                         return isSubscribed;
                     }
-                }else if (subType.equals("P1Y")){
+                } else if (subType.equals("P1Y")) {
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на год,проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
-                    if (!checkDateValid(localDateNow,ldSubDateExpire)){
+                    if (!checkDateValid(localDateNow, ldSubDateExpire)) {
                         isSubscribed = false;
                         return isSubscribed;
                     }
@@ -319,11 +325,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    public Boolean checkDateValid(LocalDate now,LocalDate mustExpire){
+    public Boolean checkDateValid(LocalDate now, LocalDate mustExpire) {
         Boolean isvalid = true;
         Log.d(TAG, "checkDateValid: зашли в проверку валидности даты");
 
-        if (now.isAfter(mustExpire)){
+        if (now.isAfter(mustExpire)) {
             toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 330);
             toast.show();
@@ -610,6 +616,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
             handler.sendEmptyMessage(hSetLoadingListOfView_fromAdapter1);
             cursor.close();
+            chosenCharset = null;
+            uri = null;
 
         }
     }
@@ -639,7 +647,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (data == null) {
                 return;
             }
-            Uri uri = data.getData();
+            uri = data.getData();
             fileName = BrowseTheFile.getRealPath(MainActivity.this, uri);
             //String path23 = BrowseTheFile.getRealPath(this, uri);
             Log.i(TAG, "onActivityResult: data String: " + fileName);
@@ -653,7 +661,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             editor1.putString("keyFileName", fileName);
             editor1.apply();
 
-
+        }
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            if (data == null) {
+                return;
+            }
+            chosenCharset = data.getStringExtra("nameOfCharset");
+            Log.d(TAG, "onActivityResult: Данные полученны: " + data.getStringExtra("nameOfCharset"));
+        }
+        if (requestCode == 2 && resultCode == RESULT_CANCELED) {
+            Log.d(TAG, "onActivityResult: Была отмена!");
         }
 
     }
@@ -669,7 +686,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 //Обновить
             case R.id.btnSave:
-                Log.d(TAG, "onClick: Status subscribe : "+ isSubscribed);
+                Log.d(TAG, "onClick: Status subscribe : " + isSubscribed);
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
                     int kol = sPref.getInt("Kolichesvo", 0);
@@ -701,8 +718,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         hashSetMainCollectorItems.addAll(listFromSharedPreference); // сохранённые значения которые были актуальны в момент нажатия обновить, передаём hset.
                     }
 
-                    choosen_ItemInClickmethod = "";
                     showListIsReadyPercent();
+                    choosen_ItemInClickmethod = "";
                     bool_onSaveReady = true;
                 } else {
                     etName.setText("");
@@ -820,7 +837,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 //поиск
             case R.id.btnSearch:
-                if (!isSubscribed){
+
+/*                if (!isSubscribed){
                     if (searchRemain <= 0) {
                         Toast.makeText(this, R.string.please_subscribe, Toast.LENGTH_LONG).show();
                         return;
@@ -830,13 +848,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
                     sPref.edit().putInt("isRemain",searchRemain).apply();
 
-                }
+                }*/
 
 
+                //Если все листы пусты то...
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
-                    break;
+                    return;
                 }
+                //Если поисковый запрос не был написан, поле пустое то.
                 if (name == null || name.length() == 0) {
                     Toast.makeText(this, R.string.write_something_in_the_place, Toast.LENGTH_LONG).show();
                 } else {
@@ -852,15 +872,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 }
                 if (supportRequestHistoryForChangeStrings.size() >= 2) {
-                    btnSave.callOnClick();
+                    Log.d(TAG, "onClick: зашли в историю поиска пунк 1");
                     try {
-                        ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
+                        loadhistory.addAll(supportRequestHistoryForChangeStrings);
+                        btnSave.callOnClick();
+                        String howDeepWeGo = "";
                         // supportRequestHistoryForChangeStrings чистить не нужно так как чистица автоматом в поиске.
                         for (int i = 0; i < loadhistory.size() - 1; i++) {
+                            if (i == loadhistory.size() - 2) {
+                                howDeepWeGo = howDeepWeGo + loadhistory.get(i);
+                                Log.d(TAG, "onClick: №1 "+ howDeepWeGo);
+                            } else {
+                                howDeepWeGo = howDeepWeGo + loadhistory.get(i);
+                                howDeepWeGo = howDeepWeGo + "->";
+                                Log.d(TAG, "onClick: №2 "+ howDeepWeGo );
+                            }
+
                             etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
                             btnSearch.callOnClick();
                         }
                         loadhistory.clear();
+                        Log.d(TAG, "onClick: вызываем тост");
+                        toast = Toast.makeText(this, howDeepWeGo, Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.TOP, 0, 0);
+                        toast.show();
                     } catch (Exception e) {
                         toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 330);//250
@@ -878,7 +913,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     firstWordCounter--;
                     btnSearch.callOnClick();
                 } else {
-                    Log.i(TAG, "onClick: firstWordSearchingList.size = " + firstWordSearchingList.size());
+                    Log.d(TAG, "onClick: зашли в историю поиска пунк 2");
                     btnSave.callOnClick();
                 }
                 break;
@@ -1091,24 +1126,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void mainloading() {
         try {
-            File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File file = new File(sdCard, fileName);
-            FileReader fileReader = new FileReader(file);
-            BufferedReader reader = new BufferedReader(fileReader);
+            // Open a specific media item using ParcelFileDescriptor.
+            ContentResolver resolver = getApplicationContext().getContentResolver();
+            String readOnlyMode = "r";
+            ParcelFileDescriptor parcelFile = resolver.openFileDescriptor(uri, readOnlyMode);
+
+            BufferedReader reader = null;
+            FileReader fileReader = null;
+            FileInputStream fileInputStream = null;
+            InputStreamReader isr = null;
+
+            if (chosenCharset != null && !chosenCharset.isEmpty()) {
+                fileInputStream = new FileInputStream(parcelFile.getFileDescriptor());
+                isr = new InputStreamReader(fileInputStream, chosenCharset);
+                reader = new BufferedReader(isr);
+
+            } else {
+                fileReader = new FileReader(parcelFile.getFileDescriptor());
+                reader = new BufferedReader(fileReader);
+            }
 
             // Начало основной загрузки
             String line;
             int j = 1;
             downloadList.add(fileName.substring(0, fileName.length() - 4));
 
-            while ((line = reader.readLine()) != null) { //Считываем список с файла в Лист.
-                byte[] bytes = line.getBytes();
-                line = new String(bytes, StandardCharsets.UTF_8);
+            while ((line = reader.readLine()) != null) {
+
                 if (line.isEmpty() || line.equals(" ")) { // если строка пустая , то пропускаем её.
                     continue;
                 }
                 if (downloadList.contains(line)) {
-
                     downloadList.add(line + j);
                     j++;
                 } else {
@@ -1123,14 +1171,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //начал добавлять сразу в базу что бы не нагружать main.
                 dbHelper.insertData(downloadList.get(i));
             }
-            reader.close();
-            fileReader.close();
+
+            if (isr != null) {
+                isr.close();
+                fileInputStream.close();
+            }
+            if (fileReader != null) {
+                reader.close();
+                fileReader.close();
+            }
             viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
             downloadList.clear();
             handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
             handler.sendEmptyMessage(hSetProgressBarGone);
-            mProgresscounter = 0;
-
         } catch (IOException e) {
             // Если ошибка, то все востанавливаем кнопки. и убираем видимость progressBar.
             handler.sendEmptyMessage(hSetToastErrorOfFileReading);
@@ -1195,7 +1248,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (item.getItemId() == R.id.menuID_ToSubscribe1) {
             Intent intent = new Intent(MainActivity.this, SubcribeClass1.class);
             startActivity(intent);
+        } else if (item.getItemId() == R.id.menuID_Determination_Charset) {
+            Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
+            startActivityForResult(intent, 2);
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -1316,9 +1373,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 getAllListItemsIsCheched(foundAccurateList);
             }
 
+        } else if (itemId == R.id.menuUnCheckAllPositions) {
+            if (!mainList.isEmpty()) {
+                btnSave.callOnClick();
+                sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+                sPref.edit().clear().apply();
+                hashSetMainCollectorItems.clear();
+                btnSave.callOnClick();
+            } else if (!found_List.isEmpty()) {
+                getAllListItemsIsUnCheched(found_List);
+            } else if (!foundAccurateList.isEmpty()) {
+                getAllListItemsIsUnCheched(foundAccurateList);
+            }
+
         }
 
         return super.onContextItemSelected(item);
+    }
+
+    public void getAllListItemsIsUnCheched(ArrayList<String> arrayList) {
+        sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sPref.edit();
+        sPref.edit().clear().apply();
+
+        hashSetMainCollectorItems.removeAll(arrayList);
+        ArrayList<String> gap = new ArrayList<>(hashSetMainCollectorItems);
+        for (int i = 0; i < hashSetMainCollectorItems.size(); i++) {
+            editor.putString("Keyg" + i, gap.get(i));
+        }
+        editor.putInt("Kolichesvo", hashSetMainCollectorItems.size());// Заливаем новые данные в SharedPreferences
+        editor.apply();
+        gap.clear();
+        hashSetMainCollectorItems.clear();// Чистим его тут что бы он обновился с новыми данными в btnSave.
+        btnSave.callOnClick();
+        try {
+            ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
+            for (int i = 0; i < loadhistory.size(); i++) {
+                etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
+                btnSearch.callOnClick();
+            }
+            loadhistory.clear();
+        } catch (Exception e) {
+            toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.TOP, 0, 330);//250
+            toast.show();
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -1343,7 +1444,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
                 btnSearch.callOnClick();
             }
-            loadhistory.clear();
         } catch (Exception e) {
             toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 0, 330);//250
@@ -1429,6 +1529,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void toAppointSearchList(ArrayList<String> fromWhereSearchlist, ArrayList<String> toWhereList, String searchWord) {
         try {
             while (true) {
+                //Note: В этом цикле пытаемся найти слово по запросу.Если слово не найденно то уменьшаем его длинну.
                 for (String name : fromWhereSearchlist) {
                     if (name.toLowerCase().contains(searchWord.toLowerCase())) { // загружаем слова которые нашли в лист
                         toWhereList.add(name);
@@ -1438,7 +1539,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.i(TAG, "toAppointSearchList: list не пустой");
                     break;
                 } else if (searchWord.length() <= 2) {
-                    Log.i(TAG, "toAppointSearchList: Слово слишкок мало уходим от сюда");
+                    Log.i(TAG, "toAppointSearchList: Слово уже слишком короткое уходим от сюда");
                     etName.setText("");
                     Toast.makeText(MainActivity.this, R.string.word_not_exist, Toast.LENGTH_LONG).show();
                     return;

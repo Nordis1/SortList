@@ -91,6 +91,10 @@
     <string name="please_subscribe">Пожалуйста подпишитесь для продолжения.</string>
     <string name="subscribe_out">Подписка закончилась.</string>
     <string name="subscribe_is_valid">"Дейсвует подписка. "</string>
-
+    <string name="charset_determinations">Кодировка</string>
+    <string name="which">Выберите какой кодировки ваш файл?</string>
+    <string name="Reason_for_encodin_choose">"Во избежании неизвестных символов при загрузке файла в приложение, желательно выбрать кодировку загружаемого файла."</string>
+    <string name="Cyrillic">Кириллица</string>
+    <string name="Uncheckallpositions">Отменить все позиции</string>
 
 </resources>
