@@ -74,7 +74,7 @@
     <string name="TextFor_itemOwned">Product already in action.</string>
     <string name="TextFor_itemBillingUnavailable">Subscribe is not available!</string>
     <string name="TextFor_itemFeatureNotSupport">Subscribe is not available for this device!</string>
-    <string name="GetSubscribe">my Subscribe</string>
+    <string name="GetSubscribe">Subscription</string>
     <string name="Go_Back">Back</string>
     <string name="one_Yeard">Yeard</string>
     <string name="Month">Month</string>
@@ -105,5 +105,5 @@
     <string name="Reason_for_encodin_choose">"In order to avoid unknown characters when loading a file in-app, it is advisable to select the file encoding."</string>
     <string name="Cyrillic">Cyrillic</string>
     <string name="Uncheckallpositions">Отменить все позиции</string>
-
+    <string name="ToSeeAds">Charge the battery</string>
 </resources>

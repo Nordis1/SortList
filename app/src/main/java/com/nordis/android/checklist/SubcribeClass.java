@@ -376,7 +376,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                             }else {
                                 Log.d(TAG, "onQueryPurchasesResponse: Лист не пустой, но ниже строка скажет почему");
                                 purchaseStateGeneration(purchase.getPurchaseState());
-                                MainActivity.handler.sendEmptyMessage(MainActivity.gethSetIsSubscribeFalse);
+                                MainActivity.handler.sendEmptyMessage(MainActivity.hcheckSubscribtionWithOutNet);
                             }
                         }
                     } else {

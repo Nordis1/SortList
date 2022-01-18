@@ -3,7 +3,6 @@ package com.nordis.android.checklist;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -13,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,14 +21,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
@@ -47,11 +39,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+
 import com.example.android.checklist.R;
 
 import java.io.BufferedReader;
@@ -60,17 +54,13 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 
@@ -149,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static int hSetIsSubscribeTrue = 18;
     final static int gethSetIsSubscribeFalse = 19;
     final static int hBillingClientInitializeIsCorrect = 20;
-    final int hcheckSubscribtionWithOutNet = 21;
+    final static int hcheckSubscribtionWithOutNet = 21;
 
     Toast toast;
     static volatile SharedPreferences sPref;
@@ -165,12 +155,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String[] from = new String[] {DBHelper.KEY_NAME,DBHelper.KEY_MODEL,DBHelper.KEY_DATA};
     int[] to  = new int[] {R.id.textFirstName,R.id.textModel,R.id.textData};*/
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        executor = Executors.newCachedThreadPool();
+        executor = Executors.newCachedThreadPool(); // With this method, the thread lives 60 sec if it done.
 
 
         constraintLayoutManual = findViewById(R.id.ID_ConstraintManual);
@@ -221,8 +212,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
-        if (!checkSubscribtionWithOutNet()) {
+        //Логика дейсвий:
+                            // part 1
+        //1 Проверяеться connection to PlayStore, если ошибка тогда checkSubscribtionWithOutNet
+        //2 Если connecting in correct. Then we have check subscription.
+        //3 If subscribe is correct: isSubscribe = true , else checkSubscribtionWithOutNet();
+                             //part 2
+        //4 In the checkSubscribtionWithOutNet() we have check token.
+        //5 If Token is, that we have check  is token valid.
+        //6 if valid  isSubscribed = true else isSubscribed = false with deleting relevant data.
+        //7 if Token  isn't , isSubscribed = false; and loading searchRemain count.
             SubcribeClass subcribeClass = new SubcribeClass();
             try {
                 Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
@@ -241,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         //countDownLatch.await(1,TimeUnit.SECONDS);
                     } catch (InterruptedException e) {
-                        Log.i(TAG, "checkSub: Запуск checkSubscribtionWithOutNet()");
+                        Log.i(TAG, "checkSub : Connecting to google play error try checkSubscribtionWithOutNet()");
                         handler.sendEmptyMessage(hcheckSubscribtionWithOutNet);
                         e.printStackTrace();
                         return;
@@ -260,10 +261,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 checkSubscribtionWithOutNet();
                 return;
             }
-        }
+
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean checkSubscribtionWithOutNet() {
         Log.d(TAG, "checkSubscribtionWithOutNet: Launch token initializations witOut Internet!");
         sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
@@ -275,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (token == null || token.isEmpty()) {
             sPref = getSharedPreferences("SEARCH_REMAIN", MODE_PRIVATE);
             if (sPref != null) {
-                searchRemain = sPref.getInt("isRemain", 3);
+                searchRemain = sPref.getInt("isRemain", 20);
                 Log.d(TAG, "checkSub: токен не получен, загрузка цифр подсчёта: " + searchRemain);
             }
             isSubscribed = false;
@@ -294,21 +296,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "checkSubscribtionWithOutNet: подписка была 1 месяц, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
                     if (!checkDateValid(localDateNow, ldSubDateExpire)) {
-                        isSubscribed = false;
                         return isSubscribed;
                     }
                 } else if (subType.equals("P6M")) {
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на 6 месяцов, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
                     if (!checkDateValid(localDateNow, ldSubDateExpire)) {
-                        isSubscribed = false;
                         return isSubscribed;
                     }
                 } else if (subType.equals("P1Y")) {
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на год,проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
                     if (!checkDateValid(localDateNow, ldSubDateExpire)) {
-                        isSubscribed = false;
                         return isSubscribed;
                     }
                 }
@@ -325,8 +324,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public Boolean checkDateValid(LocalDate now, LocalDate mustExpire) {
-        Boolean isvalid = true;
+        isSubscribed = true;
         Log.d(TAG, "checkDateValid: зашли в проверку валидности даты");
 
         if (now.isAfter(mustExpire)) {
@@ -335,16 +335,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             toast.show();
             Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
             isSubscribed = false;
-            isvalid = false;
-            return isvalid;
+            sPref.edit().clear().apply();
+            sPref = getSharedPreferences("SEARCH_REMAIN", MODE_PRIVATE);
+            searchRemain = sPref.getInt("isRemain", 20);
+            return isSubscribed;
         }
 
-        return isvalid;
+        return isSubscribed;
     }
 
 
     public void onHandlerCreate() {
         handler = new Handler(getMainLooper()) {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void handleMessage(@NonNull Message msg) {
                 String s = msg.getData().getString("changeString");
@@ -438,9 +441,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         isSubscribed = true;
                         break;
                     case gethSetIsSubscribeFalse:
-                        sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
+          /*              sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
                         sPref.edit().clear().apply();
-                        isSubscribed = false;
+                        sPref = getSharedPreferences("SEARCH_REMAIN", MODE_PRIVATE);
+                        searchRemain = sPref.getInt("isRemain", 20);*/
+                        checkSubscribtionWithOutNet();
                         break;
                     case hBillingClientInitializeIsCorrect:
                         bool_billingInitializeOk = true;
@@ -1245,12 +1250,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (item.getItemId() == R.id.menuID_ToSubscribe) {
             Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
             startActivity(intent);
-        } else if (item.getItemId() == R.id.menuID_ToSubscribe1) {
-            Intent intent = new Intent(MainActivity.this, SubcribeClass1.class);
-            startActivity(intent);
-        } else if (item.getItemId() == R.id.menuID_Determination_Charset) {
+        }else if (item.getItemId() == R.id.menuID_Determination_Charset) {
             Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
             startActivityForResult(intent, 2);
+        }else if (item.getItemId() == R.id.menuID_ViewAdForPoint){
+
         }
 
         return super.onOptionsItemSelected(item);

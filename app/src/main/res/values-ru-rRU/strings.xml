@@ -72,7 +72,7 @@
     <string name="TextFor_itemOwned">Продукт уже приобретён</string>
     <string name="TextFor_itemBillingUnavailable">Подписка не досупна!</string>
     <string name="TextFor_itemFeatureNotSupport">Подписка не доступна для этого устройства.</string>
-    <string name="GetSubscribe">моя Подписка</string>
+    <string name="GetSubscribe">Оформить подписку</string>
     <string name="Go_Back">Назад</string>
     <string name="one_Yeard">1 год</string>
     <string name="Month">1 месяц</string>
@@ -96,5 +96,5 @@
     <string name="Reason_for_encodin_choose">"Во избежании неизвестных символов при загрузке файла в приложение, желательно выбрать кодировку загружаемого файла."</string>
     <string name="Cyrillic">Кириллица</string>
     <string name="Uncheckallpositions">Отменить все позиции</string>
-
+    <string name="ToSeeAds">Пополнить заряд</string>
 </resources>
