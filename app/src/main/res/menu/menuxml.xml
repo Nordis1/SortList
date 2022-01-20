@@ -16,24 +16,17 @@
     </item>
     <item
         android:id="@+id/menuID_ToSubscribe"
-        android:title="@string/GetSubscribe"
+        android:title="@string/getSubscribe"
         app:showAsAction="never">
 
     </item>
     <item
         android:id="@+id/menuID_ViewAdForPoint"
-        android:title="@string/ToSeeAds"
+        android:title="@string/еoSeeAds"
         app:showAsAction="never">
 
     </item>
 
-    <item
-        android:id="@+id/menuID_Battery"
-        android:title="@string/ToSeeAds"
-        android:icon="@drawable/layer_list"
-        app:showAsAction="ifRoom">
-
-    </item>
 
 
 

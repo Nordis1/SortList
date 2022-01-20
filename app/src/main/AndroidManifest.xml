@@ -53,6 +53,7 @@
             android:name="com.nordis.android.checklist.MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustNothing"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>

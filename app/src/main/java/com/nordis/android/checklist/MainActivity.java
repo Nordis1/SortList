@@ -5,14 +5,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,6 +45,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 
 import com.example.android.checklist.R;
+import com.example.android.checklist.databinding.ActivityMainBinding;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -70,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 // Добавить возможность чтения xls файлов.
 // Не забыть включить удаление файла при удалении базы данных. По возможности сделать это изберательно.
 //Попробовать сделать огромный список на 600+ элементов, посмотреть как будет вести себя Listview.Будет ли лагать.
-        AdapterView.OnItemClickListener {
+        AdapterView.OnItemClickListener,AdapterView.OnItemSelectedListener {
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
     EditText etName;
@@ -86,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> foundAccurateList = new ArrayList<>();// Используеться в более точном поиске
     ArrayList<String> supportRequestHistoryForChangeStrings = new ArrayList<>();// Для изменения строки
     ArrayList<String> firstWordSearchingList = new ArrayList<>();// Для изменения строки
+    ArrayList<String> menuList = new ArrayList<String>();// Для отображения в спинере главного меню.
     volatile ListView list_of_View;   //Лист куда закидываеться основной или поисковые листы при помощи адаптера (adapter1). Для отображения.
     volatile ArrayAdapter adapter1;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
 
@@ -150,16 +150,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ContentValues contentValues = new ContentValues();
     static Handler handler;
     final static CountDownLatch countDownLatch = new CountDownLatch(1);
-/*    работа с simple cursor adapter
-    SimpleCursorAdapter scAdapter;
-    String[] from = new String[] {DBHelper.KEY_NAME,DBHelper.KEY_MODEL,DBHelper.KEY_DATA};
-    int[] to  = new int[] {R.id.textFirstName,R.id.textModel,R.id.textData};*/
+    /*    работа с simple cursor adapter
+        SimpleCursorAdapter scAdapter;
+        String[] from = new String[] {DBHelper.KEY_NAME,DBHelper.KEY_MODEL,DBHelper.KEY_DATA};
+        int[] to  = new int[] {R.id.textFirstName,R.id.textModel,R.id.textData};*/
+    ActivityMainBinding binding;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        menuList.add(getString(R.string.manual));
+        menuList.add(getString(R.string.charset_determinations));
+        menuList.add(getString(R.string.getSubscribe));
+        menuList.add(getString(R.string.еoSeeAds));
+        menuList.add("");
+        final int listsize = menuList.size()-1;
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,menuList){
+            @Override
+            public int getCount() {
+                return listsize;// Этот метод влияет на отображение в самом spinner
+            }
+        };
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        assert binding.menuSpiner != null;
+        binding.menuSpiner.setAdapter(adapter);
+        binding.menuSpiner.setSelection(listsize);
+        binding.menuSpiner.setOnItemSelectedListener(this);
+
+
+
 
         executor = Executors.newCachedThreadPool(); // With this method, the thread lives 60 sec if it done.
 
@@ -215,52 +237,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
         //Логика дейсвий:
-                            // part 1
+        // part 1
         //1 Проверяеться connection to PlayStore, если ошибка тогда checkSubscribtionWithOutNet
         //2 Если connecting in correct. Then we have check subscription.
         //3 If subscribe is correct: isSubscribe = true , else checkSubscribtionWithOutNet();
-                             //part 2
+        //part 2
         //4 In the checkSubscribtionWithOutNet() we have check token.
         //5 If Token is, that we have check  is token valid.
         //6 if valid  isSubscribed = true else isSubscribed = false with deleting relevant data.
         //7 if Token  isn't , isSubscribed = false; and loading searchRemain count.
-            SubcribeClass subcribeClass = new SubcribeClass();
-            try {
-                Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
-                subcribeClass.initializeBillingClient(this);
-                executor.execute(() -> {
-                    Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
-                    subcribeClass.connectToGooglePlayBilling(false);// false так как это обычное подсоединение.
-                    try {
-                        int i = 4;
-                        while (!subcribeClass.checkConnections()) {
-                            if (i == 0) {
-                                throw new InterruptedException();
-                            }
-                            i--;
-                            countDownLatch.await(2, TimeUnit.SECONDS);
+        SubcribeClass subcribeClass = new SubcribeClass();
+        try {
+            Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
+            subcribeClass.initializeBillingClient(this);
+            executor.execute(() -> {
+                Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
+                subcribeClass.connectToGooglePlayBilling(false);// false так как это обычное подсоединение.
+                try {
+                    int i = 4;
+                    while (!subcribeClass.checkConnections()) {
+                        if (i == 0) {
+                            throw new InterruptedException();
                         }
-                        //countDownLatch.await(1,TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        Log.i(TAG, "checkSub : Connecting to google play error try checkSubscribtionWithOutNet()");
-                        handler.sendEmptyMessage(hcheckSubscribtionWithOutNet);
-                        e.printStackTrace();
-                        return;
+                        i--;
+                        countDownLatch.await(2, TimeUnit.SECONDS);
                     }
-                    Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
-                    subcribeClass.checkThePurchases();
-                });
-
-                if (isSubscribed == null) {
-                    checkSubscribtionWithOutNet();
+                    //countDownLatch.await(1,TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Log.i(TAG, "checkSub : Connecting to google play error try checkSubscribtionWithOutNet()");
+                    handler.sendEmptyMessage(hcheckSubscribtionWithOutNet);
+                    e.printStackTrace();
+                    return;
                 }
-            } catch (Exception e) {
-                //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
-                e.printStackTrace();
-                Log.d(TAG, "checkSub: error: " + e.getMessage());
+                Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
+                subcribeClass.checkThePurchases();
+            });
+
+            if (isSubscribed == null) {
                 checkSubscribtionWithOutNet();
-                return;
             }
+        } catch (Exception e) {
+            //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
+            e.printStackTrace();
+            Log.d(TAG, "checkSub: error: " + e.getMessage());
+            checkSubscribtionWithOutNet();
+            return;
+        }
 
 
     }
@@ -886,11 +908,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         for (int i = 0; i < loadhistory.size() - 1; i++) {
                             if (i == loadhistory.size() - 2) {
                                 howDeepWeGo = howDeepWeGo + loadhistory.get(i);
-                                Log.d(TAG, "onClick: №1 "+ howDeepWeGo);
+                                Log.d(TAG, "onClick: №1 " + howDeepWeGo);
                             } else {
                                 howDeepWeGo = howDeepWeGo + loadhistory.get(i);
                                 howDeepWeGo = howDeepWeGo + "->";
-                                Log.d(TAG, "onClick: №2 "+ howDeepWeGo );
+                                Log.d(TAG, "onClick: №2 " + howDeepWeGo);
                             }
 
                             etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
@@ -1250,11 +1272,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (item.getItemId() == R.id.menuID_ToSubscribe) {
             Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
             startActivity(intent);
-        }else if (item.getItemId() == R.id.menuID_Determination_Charset) {
+        } else if (item.getItemId() == R.id.menuID_Determination_Charset) {
             Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
             startActivityForResult(intent, 2);
-        }else if (item.getItemId() == R.id.menuID_ViewAdForPoint){
-
         }
 
         return super.onOptionsItemSelected(item);
@@ -1684,4 +1704,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        Log.d(TAG, "onItemSelected: "+ parent.getAdapter().getItem(position).toString());
+        if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.manual))) {
+            Intent intent = new Intent(MainActivity.this, UserGuideActivity.class);
+            startActivity(intent);
+
+        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
+            Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
+            startActivity(intent);
+        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
+            Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
+            startActivityForResult(intent, 2);
+        }else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.еoSeeAds))) {
+            if (binding.menuViewBattery.getBackground().getLevel() == 5000){
+                binding.menuViewBattery.getBackground().setLevel(2000);
+            }else {
+                binding.menuViewBattery.getBackground().setLevel(5000);
+            }
+       /*     if (factor != 100){
+                level = 100*factor;
+                factor++;
+            }*/
+        }
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
 }

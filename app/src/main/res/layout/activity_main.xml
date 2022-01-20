@@ -7,6 +7,48 @@
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ID_ConstraintForMenuItems"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toTopOf="@id/ID_ConstraintForBTNRow1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.08"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <Spinner
+            android:id="@+id/menuSpiner"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/menuicon_24"
+            app:layout_constrainedHeight="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.95"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.13"
+            tools:layout_constrainedWidth="true" />
+
+        <View
+            android:id="@+id/menuViewBattery"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/layer_list"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_percent="0.95"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.6"
+            tools:layout_constraintLeft_toRightOf="@id/barrier5" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ID_ConstraintForBTNRow1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -17,7 +59,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.08"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/ID_ConstraintForMenuItems"
         app:layout_constraintVertical_chainStyle="packed">
 
         <EditText
@@ -110,7 +152,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.09"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow1">
+        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow1"
+        app:layout_constraintVertical_chainStyle="packed">
 
         <Button
             android:id="@+id/loadtext"
@@ -119,10 +162,10 @@
             android:layout_marginStart="2dp"
             android:layout_marginLeft="2dp"
             android:layout_marginBottom="1dp"
-            android:text="@string/load_db"
-            android:textStyle="normal"
             android:fontFamily="@font/roboto_regular"
+            android:text="@string/load_db"
             android:textSize="15sp"
+            android:textStyle="normal"
             app:autoSizeMaxTextSize="16sp"
             app:autoSizeMinTextSize="10sp"
             app:autoSizeTextType="uniform"
@@ -143,10 +186,10 @@
             android:layout_marginEnd="2dp"
             android:layout_marginRight="2dp"
             android:layout_marginBottom="1dp"
-            android:text="@string/Delete"
             android:fontFamily="@font/roboto_regular"
-            android:textStyle="normal"
+            android:text="@string/Delete"
             android:textSize="15sp"
+            android:textStyle="normal"
             app:autoSizeMaxTextSize="16sp"
             app:autoSizeMinTextSize="10sp"
             app:autoSizeTextType="uniform"
@@ -165,11 +208,11 @@
             android:layout_marginEnd="3dp"
             android:layout_marginRight="3dp"
             android:layout_marginBottom="1dp"
-            android:onClick="btnSave"
             android:fontFamily="@font/roboto_bold"
+            android:onClick="btnSave"
             android:text="@string/ShowAll"
-            android:textStyle="normal"
             android:textSize="14sp"
+            android:textStyle="normal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.8"
@@ -189,9 +232,10 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.82"
+        app:layout_constraintHeight_percent="0.6"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow3">
+        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow3"
+        app:layout_constraintVertical_chainStyle="packed">
 
 
         <ListView
