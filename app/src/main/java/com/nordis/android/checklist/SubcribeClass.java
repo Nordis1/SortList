@@ -370,7 +370,6 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                             } else if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
                                 //This for Pending and Unspecified state.
                                 Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: Лист не пустой, но в состоянии ожидания");
-                                purchaseStateGeneration(purchase.getPurchaseState());
                                 MainActivity.handler.sendEmptyMessage(MainActivity.hSetSubscribePending);
                             } else if (purchase.getPurchaseState() == Purchase.PurchaseState.UNSPECIFIED_STATE) {
                                 MainActivity.handler.sendEmptyMessage(MainActivity.hSetSubscribeUNSPECIFIED);
@@ -378,7 +377,6 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                         }
                     } else {
                         Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: Лист пуст поэтому делаем False");
-                        // Если подписка ставиться на паузу, то доступ отключаеться. и лист будет пуст.
                         MainActivity.handler.sendEmptyMessage(MainActivity.hSetSubscribeFalse);
                     }
 

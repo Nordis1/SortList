@@ -109,5 +109,8 @@
     <string name="xlarge">xlarge</string>
     <string name="large">Large</string>
     <string name="normal">Normal</string>
-    <string name="unspecified">Что то пошло не так!</string>
+    <string name="unspecified">Данные подписки не определенны!</string>
+    <string name="intializegettingFall">Проверьте Googleplay идентификацию</string>
+    <string name="lostConnection">Пожалуйста проверьте вход в GooglePlay аккаунт!</string>
+    <string name="connectionIssue">Потерянно соединение</string>
 </resources>

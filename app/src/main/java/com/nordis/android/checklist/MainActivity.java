@@ -64,6 +64,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -128,7 +129,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
     static int firstWordCounter = -1;
-    int reCheckSub = 3;
     final int menuSize = 4;
     Uri uri; // Получаем нахождение файла в OnActivityResult
     String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
@@ -153,11 +153,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static int hSetSubscribeTrue = 18;
     final static int hSetSubscribeFalse = 19;
     final static int hBillingClientInitializeIsCorrect = 20;
-    final static int hcheckSubscribtionWithOutNet = 21;
     final static int hShowAd = 22;
     final static int hSetSubscribePending = 23;
     final static int hSetSubscribeUNSPECIFIED = 24;
     final int hBatteryOn = 25;
+    final int hsetLostConnectionsWithGooglePlay = 26;
 
     static volatile SharedPreferences sPref;
     final String TAG = "Main_Activity";
@@ -174,6 +174,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ActivityMainBinding binding;
     private RewardedAd mRewardedAd;
     DialogClass newdialog;
+    DateTimeFormatter ldFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+    LocalDateTime localDateChecked;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -257,15 +259,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
         //Логика дейсвий:
-        // part 1
-        //1 Проверяеться connection to PlayStore, если ошибка тогда checkSubscribtionWithOutNet
+        //1 Проверяеться connection to PlayStore, если ошибка тогда оповещаем клиента что ошибка!
         //2 Если connecting in correct. Then we have check subscription.
-        //3 If subscribe is correct: isSubscribe = true , else checkSubscribtionWithOutNet();
-        //part 2
-        //4 In the checkSubscribtionWithOutNet() we have check token.
-        //5 If Token is, then we have check the token valid.
-        //6 if valid  isSubscribed = true else isSubscribed = false with deleting relevant data.
-        //7 if Token  isn't exist , isSubscribed = false; and loading batteryLvl count.
+        //3 If subscribe is correct: isSubscribe = true , else isSubscribe = false;
         SubcribeClass subcribeClass = new SubcribeClass();
         try {
             Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
@@ -283,116 +279,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         countDownLatch.await(2, TimeUnit.SECONDS);
                     }
                 } catch (InterruptedException e) {
-                    Log.i(TAG, "checkSub : Connecting to google play error try checkSubscribtionWithOutNet()");
-                    handler.sendEmptyMessage(hcheckSubscribtionWithOutNet);
                     e.printStackTrace();
+                    handler.sendEmptyMessage(hsetLostConnectionsWithGooglePlay);
                     return;
                 }
                 Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
                 subcribeClass.checkThePurchases();
-                //В этом методе будет либо isSubscribed true , либо вызоветься checkSubscribtionWithOutNet()
             });
         } catch (Exception e) {
             //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
             e.printStackTrace();
+            Toast.makeText(MainActivity.this, R.string.intializegettingFall, Toast.LENGTH_LONG).show();
             Log.d(TAG, "checkSub: error: " + e.getMessage());
-            checkSubscribtionWithOutNet(true);
-        }
-        // Итог, если будет в этом методе какая либо ошибка то будет  проверка без инета.
-        // А если соединение упешно, и выдан Purchasestate тогда он будет обрабатываться в handler несколькими способами в
-        //зависимости от state.
-
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public boolean checkSubscribtionWithOutNet(boolean isCheckFromMain) {
-        //В этом методе проверяем наличие Токена. Если есть и он актуален загружаем подписку.
-        //Если нет, загружаем батарею, заставляем смотреть рекламу.
-        Log.d(TAG, "checkSubscribtionWithOutNet: Launch token initializations witOut Internet!");
-        sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
-        token = sPref.getString("Token", "");
-        subscriptionTime = sPref.getString("Period&SubTime", "");
-        Log.d(TAG, "checkSub: We got data from Spref: Purchase Time is : " + subscriptionTime);
-
-        //Если токена нет, то загружаем сколько осталось поисковых кликов.
-        if (token == null || token.isEmpty()) {
-            sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-            if (sPref != null) {
-                batteryLvl = sPref.getInt("KeyBatterylvl", 25);
-                binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
-                Log.d(TAG, "checkSub: токен не получен, загрузка цифр подсчёта: " + batteryLvl);
-            }
-            isSubscribed = false;
-            regSubElements(isSubscribed);
-        } else {
-            Log.d(TAG, "checkSubscribtionWithOutNet: Токен получен, начинаем просмотр его Валидности");
-            DateTimeFormatter ldFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            LocalDate localDateNow = LocalDate.now();
-            if (subscriptionTime != null || !subscriptionTime.isEmpty()) {
-                Log.d(TAG, "checkSubscribtionWithOutNet: Заходим в  проверку");
-                String[] ob = subscriptionTime.split("/");
-                String subType = ob[0];
-                String subDateStarts = ob[1];
-                LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts, ldFormatter);
-                Log.d(TAG, "checkSubscribtionWithOutNet: SybType: " + subType);
-                if (subType.equals("P1M")) {
-                    Log.d(TAG, "checkSubscribtionWithOutNet: подписка была 1 месяц, проверка годности.");
-                    LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
-                    if (!checkDateValid(localDateNow, ldSubDateExpire, isCheckFromMain)) {
-                        return isSubscribed;
-                    }
-                } else if (subType.equals("P6M")) {
-                    Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на 6 месяцов, проверка годности.");
-                    LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
-                    if (!checkDateValid(localDateNow, ldSubDateExpire, isCheckFromMain)) {
-                        return isSubscribed;
-                    }
-                } else if (subType.equals("P1Y")) {
-                    Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на год,проверка годности.");
-                    LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
-                    if (!checkDateValid(localDateNow, ldSubDateExpire, isCheckFromMain)) {
-                        return isSubscribed;
-                    }
-                }
-            }
-
         }
 
-        return isSubscribed;
-    }
 
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public Boolean checkDateValid(LocalDate now, LocalDate mustExpire, boolean ischeckFromMain) {
-        isSubscribed = true;
-        Log.d(TAG, "checkDateValid: зашли в проверку валидности даты");
-
-        if (now.isAfter(mustExpire)) {
-            if (!ischeckFromMain){
-                Log.d(TAG, "checkDateValid: время подписки истекло, проверяем подписку он-лайн");
-                checkSub();
-                return false;
-            }else {
-                //Если при загрузке программы показывает что подписка есть , а через 10 кликов показывает что подписка закончилась
-                //Значит стоит неправильная дата на устройстве.
-                Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG).show();
-                Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
-                isSubscribed = false;
-                sPref.edit().clear().apply(); // тут чистим sPref  ("Tokens", MODE_PRIVATE);
-                sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                batteryLvl = sPref.getInt("KeyBatterylvl", 25);
-                binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
-                handler.sendEmptyMessage(hBatteryOn);
-                return isSubscribed;
-            }
-        }
-        Log.d(TAG, "checkSub: token получен всё хорошо. Подписка действительна");
-        if (ischeckFromMain) {
-            regSubElements(isSubscribed);
-            Toast.makeText(MainActivity.this, R.string.subscribe_is_valid, Toast.LENGTH_LONG).show();
-        }
-        return isSubscribed;
     }
 
 
@@ -474,7 +375,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case 9:
                         etName.setText("");
                         Toast.makeText(MainActivity.this, getString(R.string.cancel), Toast.LENGTH_LONG).show();
-
                         break;
                     case 10:
                         list_of_View.setVisibility(View.VISIBLE);
@@ -511,12 +411,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case hSetSubscribeTrue:
                         Toast.makeText(MainActivity.this, R.string.subscribe_is_valid, Toast.LENGTH_LONG).show();
                         isSubscribed = true;
-                        reCheckSub = 3;
                         regSubElements(isSubscribed);
+                        localDateChecked = LocalDateTime.now();
                         break;
                     case hSetSubscribeFalse:
-                        sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
-                        sPref.edit().clear().apply();
+                        Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG).show();
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
@@ -526,15 +425,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case hBillingClientInitializeIsCorrect:
                         bool_billingInitializeOk = true;
                         break;
-                    case hcheckSubscribtionWithOutNet:
-                        checkSubscribtionWithOutNet(true);
-                        break;
                     case hShowAd:
                         showAdExecute();
                         break;
                     case hSetSubscribePending:
-                        sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
-                        sPref.edit().clear().apply();
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
@@ -549,13 +443,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         newdialog.createDialogPendingState();
                         newdialog.dialog.show();
                         break;
-                    case hSetSubscribeUNSPECIFIED:
-                        Toast.makeText(MainActivity.this, R.string.unspecified, Toast.LENGTH_LONG).show();
-                        checkSubscribtionWithOutNet(true);
-                        break;
                     case hBatteryOn:
                         regSubElements(false);
                         break;
+                    case hSetSubscribeUNSPECIFIED:
+                        Toast.makeText(MainActivity.this, R.string.unspecified, Toast.LENGTH_LONG).show();
+                        break;
+                    case hsetLostConnectionsWithGooglePlay:
+                        isSubscribed = false;
+                        regSubElements(isSubscribed);
+                        sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 25);
+                        binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+
+                        newdialog = new DialogClass(MainActivity.this,
+                                getString(R.string.lostConnection),
+                                getString(R.string.connectionIssue),
+                                getString(R.string.understand),
+                                null, null);
+                        newdialog.createDialogPendingState();
+                        newdialog.dialog.show();
+                        break;
+
 
                 }
             }
@@ -1013,15 +922,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             onmyQueryTextSubmit(searchWord);
                         }
                     } else {
-                        if (reCheckSub == 0) {
-                            reCheckSub = 3;
-                            executor.execute(()->{
-                                checkSub();
 
-                            });
-                            //checkSubscribtionWithOutNet(false);
+                        if (LocalDateTime.now().isAfter(localDateChecked.plusMinutes(1))) {
+                            Log.d(TAG, "onClick: проходим дополнительную проверку.");
+                            checkSub();
+                            //executor.execute(this::checkSub);
                         }
-                        reCheckSub--;
                         String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
                         onmyQueryTextSubmit(searchWord);
                     }
@@ -1681,7 +1587,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
                 if (!toWhereList.isEmpty()) {
-                    Log.i(TAG, "toAppointSearchList: list не пустой");
+                    //Log.i(TAG, "toAppointSearchList: list не пустой");
                     break;
                 } else if (searchWord.length() <= 2) {
                     Log.i(TAG, "toAppointSearchList: Слово уже слишком короткое уходим от сюда");
@@ -1705,6 +1611,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //вычитаем point c батареи
 
             if (!isSubscribed) {
+                Log.d(TAG, "toAppointSearchList: Подписки нет, уменьшаем батарею");
                 batteryLvl--;
 
                 binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));

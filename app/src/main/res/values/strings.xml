@@ -119,4 +119,7 @@
     <string name="large">Large</string>
     <string name="normal">Normal</string>
     <string name="unspecified">Unspecified state</string>
+    <string name="intializegettingFall">Issue with identification</string>
+    <string name="lostConnection">Please check sing in  Google play account</string>
+    <string name="connectionIssue">Play store connections lost</string>
 </resources>
