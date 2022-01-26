@@ -241,16 +241,13 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
         try {
             alertBuilder = new AlertDialog.Builder(context);
             alertBuilder.setMessage(dialog_message).setTitle(dialog_title)
-                    .setCancelable(true)
+                    .setCancelable(false)
                     .setPositiveButton(btnPositive, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             //positive
                             Log.i(TAG, "Dialog onClick: Была нажата кнопка Позитив");
-                            handler.sendEmptyMessage(hsetdelete_WithOut_rest);
-                            Toast toast = Toast.makeText(context, "Deleted successfully", Toast.LENGTH_LONG);
-                            toast.setGravity(Gravity.TOP, 0, 330);//250
-                            toast.show();
+                            handler.sendEmptyMessage(hShowAd);
                             //finish(); use finish if you want the app  to be closed.
                         }
                     }).setNegativeButton(btnNegative, new DialogInterface.OnClickListener() {
@@ -258,22 +255,36 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                 public void onClick(DialogInterface dialogInterface, int i) {
                     // Негатив
                     Log.i(TAG, "Dialog onClick: Была нажата кнопка Негатив");
-                    handler.sendEmptyMessage(hsetdelete_With_rest);
-                    Toast toast = Toast.makeText(context, "Deleted successfully, the rest is waiting for a new load.", Toast.LENGTH_LONG);
-                    toast.setGravity(Gravity.TOP, 0, 330);
-                    toast.show();
+                    dialog.cancel();
                 }
             }).setNeutralButton(btnNetral, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     Log.i(TAG, "Dialog onClick: Была нажата кнопка нетрал");
-                    handler.sendEmptyMessage(hsetdelete_IsCanceled);
-                    Toast toast = Toast.makeText(context, "Cancel", Toast.LENGTH_LONG);
-                    toast.setGravity(Gravity.TOP, 0, 330);//250 //y - чем выше значение тем ниже элемент
-                    toast.show();
                     //Нетрал
                 }
             });
+            dialog = alertBuilder.create();
+        } catch (Exception e) {
+            Log.i(TAG, "createNewDialog: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
+
+    public void createDialogPendingState() {
+        try {
+            alertBuilder = new AlertDialog.Builder(context);
+            alertBuilder.setMessage(dialog_message).setTitle(dialog_title)
+                    .setCancelable(false)
+                    .setPositiveButton(btnPositive, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            //positive
+                            dialog.cancel();
+                            //finish(); use finish if you want the app  to be closed.
+                        }
+                    });
             dialog = alertBuilder.create();
         } catch (Exception e) {
             Log.i(TAG, "createNewDialog: " + e.getMessage());

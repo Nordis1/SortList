@@ -1,7 +1,6 @@
 package com.nordis.android.checklist;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -22,7 +21,6 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -46,6 +44,17 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.android.checklist.R;
 import com.example.android.checklist.databinding.ActivityMainBinding;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.OnUserEarnedRewardListener;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.rewarded.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -53,6 +62,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -69,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 // Добавить возможность чтения xls файлов.
 // Не забыть включить удаление файла при удалении базы данных. По возможности сделать это изберательно.
 //Попробовать сделать огромный список на 600+ элементов, посмотреть как будет вести себя Listview.Будет ли лагать.
-        AdapterView.OnItemClickListener,AdapterView.OnItemSelectedListener {
+        AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
     EditText etName;
@@ -94,9 +104,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile HashSet<String> hashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
     int backcounter = 0;  //backcounter - работает с backSearchlist
     final int requestCode1 = 1;
+    static int batteryLvl;
     ConstraintLayout constraintLayoutManual;
     Thread thread;
     static Boolean isSubscribed = null;// для того что бы из subscribtion class получить инфу о подписке.
+    static String token;
+    static String subscriptionTime;
 
 
     public static volatile String fileName;
@@ -115,7 +128,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
     static int firstWordCounter = -1;
-    int searchRemain = 3;
+    int reCheckSub = 3;
+    final int menuSize = 4;
     Uri uri; // Получаем нахождение файла в OnActivityResult
     String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
 
@@ -136,12 +150,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hSetDeleteRest = 15;
     final int hSetCreateDialogFromWhichToWhich = 16;
     final int hSetDeleteChekedPositions = 17;
-    final static int hSetIsSubscribeTrue = 18;
-    final static int gethSetIsSubscribeFalse = 19;
+    final static int hSetSubscribeTrue = 18;
+    final static int hSetSubscribeFalse = 19;
     final static int hBillingClientInitializeIsCorrect = 20;
     final static int hcheckSubscribtionWithOutNet = 21;
+    final static int hShowAd = 22;
+    final static int hSetSubscribePending = 23;
+    final static int hSetSubscribeUNSPECIFIED = 24;
+    final int hBatteryOn = 25;
 
-    Toast toast;
     static volatile SharedPreferences sPref;
     final String TAG = "Main_Activity";
     public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
@@ -155,6 +172,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String[] from = new String[] {DBHelper.KEY_NAME,DBHelper.KEY_MODEL,DBHelper.KEY_DATA};
         int[] to  = new int[] {R.id.textFirstName,R.id.textModel,R.id.textData};*/
     ActivityMainBinding binding;
+    private RewardedAd mRewardedAd;
+    DialogClass newdialog;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -162,25 +181,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        onAdCreate();
         menuList.add(getString(R.string.manual));
         menuList.add(getString(R.string.charset_determinations));
         menuList.add(getString(R.string.getSubscribe));
-        menuList.add(getString(R.string.еoSeeAds));
+        menuList.add(getString(R.string.toSeeAds));
         menuList.add("");
-        final int listsize = menuList.size()-1;
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,menuList){
+        //final int menuSize = menuList.size()-1;
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, menuList) {
             @Override
             public int getCount() {
-                return listsize;// Этот метод влияет на отображение в самом spinner
+                return menuSize;// Этот метод влияет на отображение в самом spinner
             }
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        assert binding.menuSpiner != null;
         binding.menuSpiner.setAdapter(adapter);
-        binding.menuSpiner.setSelection(listsize);
+        binding.menuSpiner.setSelection(menuSize);
         binding.menuSpiner.setOnItemSelectedListener(this);
 
-
+        binding.menuViewBattery.setOnClickListener(this);
 
 
         executor = Executors.newCachedThreadPool(); // With this method, the thread lives 60 sec if it done.
@@ -234,6 +253,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
         //Логика дейсвий:
@@ -243,9 +263,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //3 If subscribe is correct: isSubscribe = true , else checkSubscribtionWithOutNet();
         //part 2
         //4 In the checkSubscribtionWithOutNet() we have check token.
-        //5 If Token is, that we have check  is token valid.
+        //5 If Token is, then we have check the token valid.
         //6 if valid  isSubscribed = true else isSubscribed = false with deleting relevant data.
-        //7 if Token  isn't , isSubscribed = false; and loading searchRemain count.
+        //7 if Token  isn't exist , isSubscribed = false; and loading batteryLvl count.
         SubcribeClass subcribeClass = new SubcribeClass();
         try {
             Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
@@ -262,7 +282,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         i--;
                         countDownLatch.await(2, TimeUnit.SECONDS);
                     }
-                    //countDownLatch.await(1,TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     Log.i(TAG, "checkSub : Connecting to google play error try checkSubscribtionWithOutNet()");
                     handler.sendEmptyMessage(hcheckSubscribtionWithOutNet);
@@ -271,45 +290,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
                 subcribeClass.checkThePurchases();
+                //В этом методе будет либо isSubscribed true , либо вызоветься checkSubscribtionWithOutNet()
             });
-
-            if (isSubscribed == null) {
-                checkSubscribtionWithOutNet();
-            }
         } catch (Exception e) {
             //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
             e.printStackTrace();
             Log.d(TAG, "checkSub: error: " + e.getMessage());
-            checkSubscribtionWithOutNet();
-            return;
+            checkSubscribtionWithOutNet(true);
         }
+        // Итог, если будет в этом методе какая либо ошибка то будет  проверка без инета.
+        // А если соединение упешно, и выдан Purchasestate тогда он будет обрабатываться в handler несколькими способами в
+        //зависимости от state.
 
 
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public boolean checkSubscribtionWithOutNet() {
+    public boolean checkSubscribtionWithOutNet(boolean isCheckFromMain) {
+        //В этом методе проверяем наличие Токена. Если есть и он актуален загружаем подписку.
+        //Если нет, загружаем батарею, заставляем смотреть рекламу.
         Log.d(TAG, "checkSubscribtionWithOutNet: Launch token initializations witOut Internet!");
         sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
-        String token = sPref.getString("Token", "");
-        String isValidTime = sPref.getString("Period&SubTime", "");
-        Log.d(TAG, "checkSub: We got data from Spref: Purchase Time is : " + isValidTime);
+        token = sPref.getString("Token", "");
+        subscriptionTime = sPref.getString("Period&SubTime", "");
+        Log.d(TAG, "checkSub: We got data from Spref: Purchase Time is : " + subscriptionTime);
 
         //Если токена нет, то загружаем сколько осталось поисковых кликов.
         if (token == null || token.isEmpty()) {
-            sPref = getSharedPreferences("SEARCH_REMAIN", MODE_PRIVATE);
+            sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
             if (sPref != null) {
-                searchRemain = sPref.getInt("isRemain", 20);
-                Log.d(TAG, "checkSub: токен не получен, загрузка цифр подсчёта: " + searchRemain);
+                batteryLvl = sPref.getInt("KeyBatterylvl", 25);
+                binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                Log.d(TAG, "checkSub: токен не получен, загрузка цифр подсчёта: " + batteryLvl);
             }
             isSubscribed = false;
+            regSubElements(isSubscribed);
         } else {
             Log.d(TAG, "checkSubscribtionWithOutNet: Токен получен, начинаем просмотр его Валидности");
             DateTimeFormatter ldFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             LocalDate localDateNow = LocalDate.now();
-            if (isValidTime != null || !isValidTime.isEmpty()) {
+            if (subscriptionTime != null || !subscriptionTime.isEmpty()) {
                 Log.d(TAG, "checkSubscribtionWithOutNet: Заходим в  проверку");
-                String[] ob = isValidTime.split("/");
+                String[] ob = subscriptionTime.split("/");
                 String subType = ob[0];
                 String subDateStarts = ob[1];
                 LocalDate ldSubDateStarts = LocalDate.parse(subDateStarts, ldFormatter);
@@ -317,29 +339,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (subType.equals("P1M")) {
                     Log.d(TAG, "checkSubscribtionWithOutNet: подписка была 1 месяц, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(1);
-                    if (!checkDateValid(localDateNow, ldSubDateExpire)) {
+                    if (!checkDateValid(localDateNow, ldSubDateExpire, isCheckFromMain)) {
                         return isSubscribed;
                     }
                 } else if (subType.equals("P6M")) {
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на 6 месяцов, проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusMonths(6);
-                    if (!checkDateValid(localDateNow, ldSubDateExpire)) {
+                    if (!checkDateValid(localDateNow, ldSubDateExpire, isCheckFromMain)) {
                         return isSubscribed;
                     }
                 } else if (subType.equals("P1Y")) {
                     Log.d(TAG, "checkSubscribtionWithOutNet: Подписка была на год,проверка годности.");
                     LocalDate ldSubDateExpire = ldSubDateStarts.plusYears(1);
-                    if (!checkDateValid(localDateNow, ldSubDateExpire)) {
+                    if (!checkDateValid(localDateNow, ldSubDateExpire, isCheckFromMain)) {
                         return isSubscribed;
                     }
                 }
             }
 
-            Log.d(TAG, "checkSub: token получен всё хорошо. Подписка действительна");
-            toast = Toast.makeText(MainActivity.this, R.string.subscribe_is_valid, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 330);//250
-            toast.show();
-            isSubscribed = true;
         }
 
         return isSubscribed;
@@ -347,25 +364,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public Boolean checkDateValid(LocalDate now, LocalDate mustExpire) {
+    public Boolean checkDateValid(LocalDate now, LocalDate mustExpire, boolean ischeckFromMain) {
         isSubscribed = true;
         Log.d(TAG, "checkDateValid: зашли в проверку валидности даты");
 
         if (now.isAfter(mustExpire)) {
-            toast = Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 330);
-            toast.show();
-            Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
-            isSubscribed = false;
-            sPref.edit().clear().apply();
-            sPref = getSharedPreferences("SEARCH_REMAIN", MODE_PRIVATE);
-            searchRemain = sPref.getInt("isRemain", 20);
-            return isSubscribed;
+            if (!ischeckFromMain){
+                Log.d(TAG, "checkDateValid: время подписки истекло, проверяем подписку он-лайн");
+                checkSub();
+                return false;
+            }else {
+                //Если при загрузке программы показывает что подписка есть , а через 10 кликов показывает что подписка закончилась
+                //Значит стоит неправильная дата на устройстве.
+                Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG).show();
+                Log.d(TAG, "checkSubscribtionWithOutNet: Подписка истекла");
+                isSubscribed = false;
+                sPref.edit().clear().apply(); // тут чистим sPref  ("Tokens", MODE_PRIVATE);
+                sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
+                batteryLvl = sPref.getInt("KeyBatterylvl", 25);
+                binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                handler.sendEmptyMessage(hBatteryOn);
+                return isSubscribed;
+            }
         }
-
+        Log.d(TAG, "checkSub: token получен всё хорошо. Подписка действительна");
+        if (ischeckFromMain) {
+            regSubElements(isSubscribed);
+            Toast.makeText(MainActivity.this, R.string.subscribe_is_valid, Toast.LENGTH_LONG).show();
+        }
         return isSubscribed;
     }
 
+
+    public void onAdCreate() {
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {
+
+            }
+        });
+
+        //ca-app-pub-6564886494367745/7174186976 - my
+        //ca-app-pub-3940256099942544/5224354917 - test
+        RewardedAd.load(this, "ca-app-pub-6564886494367745/7174186976",
+                adRequest, new RewardedAdLoadCallback() {
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error.
+                        Log.d(TAG, "Ad was not loaded " + loadAdError.getMessage());
+                        mRewardedAd = null;
+                    }
+
+                    @Override
+                    public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
+                        mRewardedAd = rewardedAd;
+                        Log.d(TAG, "Ad was loaded.");
+                    }
+                });
+
+    }
 
     public void onHandlerCreate() {
         handler = new Handler(getMainLooper()) {
@@ -379,9 +439,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 switch (msg.what) {
                     case 1:
-                        toast = Toast.makeText(MainActivity.this, (R.string.File_reading_Error), Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);//250
-                        toast.show();
+                        Toast.makeText(MainActivity.this, (R.string.File_reading_Error), Toast.LENGTH_LONG).show();
                         break;
                     case 2:
                         createRestMemory();
@@ -396,9 +454,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 3:
                         btnDeleteAll.callOnClick();
-                        toast = Toast.makeText(MainActivity.this, R.string.deleted_success, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);//250
-                        toast.show();
+                        Toast.makeText(MainActivity.this, R.string.deleted_success, Toast.LENGTH_LONG).show();
                         break;
                     case 4:
                         btnReadFile.setEnabled(false);
@@ -417,9 +473,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 9:
                         etName.setText("");
-                        toast = Toast.makeText(MainActivity.this, getString(R.string.cancel), Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);//250 //y - чем выше значение тем ниже элемент
-                        toast.show();
+                        Toast.makeText(MainActivity.this, getString(R.string.cancel), Toast.LENGTH_LONG).show();
+
                         break;
                     case 10:
                         list_of_View.setVisibility(View.VISIBLE);
@@ -428,14 +483,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         list_of_View.setAdapter(adapter1);
                         break;
                     case 12:
-                        toast = Toast.makeText(MainActivity.this, R.string.Reading_rest_data_Error, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);//250
-                        toast.show();
+                        Toast.makeText(MainActivity.this, R.string.Reading_rest_data_Error, Toast.LENGTH_LONG).show();
                         break;
                     case 13:
-                        toast = Toast.makeText(MainActivity.this, R.string.Create_dialog_Error, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);//250
-                        toast.show();
+                        Toast.makeText(MainActivity.this, R.string.Create_dialog_Error, Toast.LENGTH_LONG).show();
                         break;
                     case 14:
                         createRestMemory();
@@ -445,40 +496,130 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 16:
                         LayoutInflater inflater = MainActivity.this.getLayoutInflater();
-                        DialogClass dialogClass = new DialogClass(MainActivity.this,
+                        newdialog = new DialogClass(MainActivity.this,
                                 null,
                                 inflater,
                                 null
                         );
-                        dialogClass.createCustomNewDialogFromWhichTowhich();
-                        dialogClass.dialog.show();
+                        newdialog.createCustomNewDialogFromWhichTowhich();
+                        newdialog.dialog.show();
                         break;
                     case 17:
                         deleteCheckedItems();
-                        toast = Toast.makeText(MainActivity.this, R.string.DeleteCheked, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);
-                        toast.show();
+                        Toast.makeText(MainActivity.this, R.string.DeleteCheked, Toast.LENGTH_LONG).show();
                         break;
-                    case hSetIsSubscribeTrue:
+                    case hSetSubscribeTrue:
+                        Toast.makeText(MainActivity.this, R.string.subscribe_is_valid, Toast.LENGTH_LONG).show();
                         isSubscribed = true;
+                        reCheckSub = 3;
+                        regSubElements(isSubscribed);
                         break;
-                    case gethSetIsSubscribeFalse:
-          /*              sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
+                    case hSetSubscribeFalse:
+                        sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
                         sPref.edit().clear().apply();
-                        sPref = getSharedPreferences("SEARCH_REMAIN", MODE_PRIVATE);
-                        searchRemain = sPref.getInt("isRemain", 20);*/
-                        checkSubscribtionWithOutNet();
+                        isSubscribed = false;
+                        regSubElements(isSubscribed);
+                        sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 25);
+                        binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
                         break;
                     case hBillingClientInitializeIsCorrect:
                         bool_billingInitializeOk = true;
                         break;
                     case hcheckSubscribtionWithOutNet:
-                        checkSubscribtionWithOutNet();
+                        checkSubscribtionWithOutNet(true);
+                        break;
+                    case hShowAd:
+                        showAdExecute();
+                        break;
+                    case hSetSubscribePending:
+                        sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
+                        sPref.edit().clear().apply();
+                        isSubscribed = false;
+                        regSubElements(isSubscribed);
+                        sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 25);
+                        binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+
+                        newdialog = new DialogClass(MainActivity.this,
+                                getString(R.string.pending),
+                                getString(R.string.pendingtitle),
+                                getString(R.string.understand),
+                                null, null);
+                        newdialog.createDialogPendingState();
+                        newdialog.dialog.show();
+                        break;
+                    case hSetSubscribeUNSPECIFIED:
+                        Toast.makeText(MainActivity.this, R.string.unspecified, Toast.LENGTH_LONG).show();
+                        checkSubscribtionWithOutNet(true);
+                        break;
+                    case hBatteryOn:
+                        regSubElements(false);
                         break;
 
                 }
             }
         };
+    }
+
+    public void regSubElements(Boolean subcribtionY) {
+        if (subcribtionY) {
+            binding.menuViewBattery.setVisibility(View.GONE);
+            binding.idsubscriptionText.setVisibility(View.VISIBLE);
+
+        } else {
+            binding.idsubscriptionText.setVisibility(View.GONE);
+            binding.menuViewBattery.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void showAdExecute() {
+        if (mRewardedAd != null) {
+            mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdShowedFullScreenContent() {
+                    // Called when ad is shown.
+                    Log.d(TAG, "Ad was shown.");
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(AdError adError) {
+                    // Called when ad fails to show.
+                    Log.d(TAG, "Ad failed to show.");
+                }
+
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    // Called when ad is dismissed.
+                    // Set the ad reference to null so you don't show the ad a second time.
+                    Log.d(TAG, "Ad was dismissed.");
+                    mRewardedAd = null;
+                }
+            });
+            Activity activityContext = MainActivity.this;
+            mRewardedAd.show(activityContext, new OnUserEarnedRewardListener() {
+                @Override
+                public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+                    // Handle the reward.
+                    Log.d(TAG, "The user earned the reward.");
+                    int rewardAmount = rewardItem.getAmount();
+                    //получаем количество очков и загружаем в батарею и сохраняем в sPref
+                    batteryLvl += rewardAmount;
+                    if (batteryLvl > 100) {
+                        batteryLvl = 100;
+                    }
+
+                    sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
+                    sPref.edit().putInt("KeyBatterylvl", batteryLvl).apply();
+
+                    binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                    Log.d(TAG, "onUserEarnedReward!!!!!!!!!: rewardAmount - " + rewardAmount);
+
+                }
+            });
+        } else {
+            Log.d(TAG, "The rewarded ad wasn't ready yet.");
+        }
     }
 
     public void prepareTochange(String changeAbleString) {
@@ -498,9 +639,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 loadhistory.clear();
             } catch (Exception e) {
-                toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.TOP, 0, 330);//250
-                toast.show();
+                Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
 
@@ -526,9 +665,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 loadhistory.clear();
             } catch (Exception e) {
-                toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.TOP, 0, 330);//250
-                toast.show();
+                Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
         } else {
@@ -582,9 +719,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void viewDataForDownloading() {
         cursor = dbHelper.viewData(); // Курсор в данном этапе дейсвует как список в котором храняться все строки с Базы данных
         if (cursor.getCount() == 0) {
-            toast = Toast.makeText(MainActivity.this, getString(R.string.Not_data_to_show) + cursor.getInt(3), Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 330);
-            toast.show();
+            Toast.makeText(MainActivity.this, getString(R.string.Not_data_to_show) + cursor.getInt(3), Toast.LENGTH_LONG).show();
         } else {
             while (cursor.moveToNext()) { // тут мы его считываем
                 mainList.add(cursor.getString(0));
@@ -665,7 +800,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @SuppressLint("Range")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -703,7 +837,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    @SuppressLint({"NonConstantResourceId", "SetTextI18n"})
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onClick(View v) {
@@ -828,9 +961,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     bool_fileNotChosen = false;
                 }
                 if (!mainList.isEmpty() || !found_List.isEmpty()) {
-                    toast = Toast.makeText(MainActivity.this, R.string.list_is_already_full, Toast.LENGTH_LONG);
-                    toast.setGravity(Gravity.TOP, 0, 330);
-                    toast.show();
+                    Toast.makeText(MainActivity.this, R.string.list_is_already_full, Toast.LENGTH_LONG).show();
+
                 } else {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("*/*");
@@ -864,20 +996,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 //поиск
             case R.id.btnSearch:
-
-/*                if (!isSubscribed){
-                    if (searchRemain <= 0) {
-                        Toast.makeText(this, R.string.please_subscribe, Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    searchRemain--;
-                    Log.d(TAG, "onClick: Поисковых попыток осталось: "+ searchRemain);
-                    sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
-                    sPref.edit().putInt("isRemain",searchRemain).apply();
-
-                }*/
-
-
                 //Если все листы пусты то...
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
@@ -887,8 +1005,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (name == null || name.length() == 0) {
                     Toast.makeText(this, R.string.write_something_in_the_place, Toast.LENGTH_LONG).show();
                 } else {
-                    String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
-                    onmyQueryTextSubmit(searchWord);
+                    if (!isSubscribed) {
+                        if (batteryLvl == 0) {
+                            Toast.makeText(this, getString(R.string.checkBatteryLoading), Toast.LENGTH_LONG).show();
+                        } else {
+                            String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
+                            onmyQueryTextSubmit(searchWord);
+                        }
+                    } else {
+                        if (reCheckSub == 0) {
+                            reCheckSub = 3;
+                            executor.execute(()->{
+                                checkSub();
+
+                            });
+                            //checkSubscribtionWithOutNet(false);
+                        }
+                        reCheckSub--;
+                        String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
+                        onmyQueryTextSubmit(searchWord);
+                    }
                 }
                 break;
 
@@ -920,13 +1056,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         loadhistory.clear();
                         Log.d(TAG, "onClick: вызываем тост");
-                        toast = Toast.makeText(this, howDeepWeGo, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 0);
-                        toast.show();
+                        Toast.makeText(this, howDeepWeGo, Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
-                        toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 330);//250
-                        toast.show();
+                        Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG).show();
                         e.printStackTrace();
                     }
                 } else if (!firstWordSearchingList.isEmpty()) {
@@ -946,6 +1078,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
 
+        }
+        if (binding.menuViewBattery.equals(v)) {
+            Toast.makeText(this, binding.menuViewBattery.getTransitionName(), Toast.LENGTH_SHORT).show();
         }
         dbHelper.close();
 
@@ -1041,14 +1176,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         if (file.delete()) {
                             Log.d(TAG, "onRequestPermissionsResult:  deleted");
-                            toast = Toast.makeText(MainActivity.this, getString(R.string.file_deleted_successfully), Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.TOP, 0, 330);
-                            toast.show();
+                            Toast.makeText(MainActivity.this, getString(R.string.file_deleted_successfully), Toast.LENGTH_SHORT).show();
                             sPref.edit().clear().apply();
                         } else {
-                            toast = Toast.makeText(MainActivity.this, getString(R.string.file_not_found) + cursor.getInt(3), Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.TOP, 0, 330);
-                            toast.show();
+                            Toast.makeText(MainActivity.this, getString(R.string.file_not_found) + cursor.getInt(3), Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
                         }
                     } catch (Exception e) {
@@ -1287,13 +1418,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             double countReady = hashSetMainCollectorItems.size();
             double persent = countReady * 100 / countMain;
             String persentString = String.valueOf(persent);
-            toast = Toast.makeText(MainActivity.this, persentString.substring(0, 4) + "% " + getString(R.string.done), Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 400);
-            toast.show();
+            Toast.makeText(MainActivity.this, persentString.substring(0, 4) + "% " + getString(R.string.done), Toast.LENGTH_LONG).show();
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, "0.0 % " + getString(R.string.done), Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 350);
-            toast.show();
+            Toast.makeText(MainActivity.this, "0.0 % " + getString(R.string.done), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -1438,9 +1565,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             loadhistory.clear();
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 330);//250
-            toast.show();
+            Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
 
@@ -1469,9 +1594,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 btnSearch.callOnClick();
             }
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 330);//250
-            toast.show();
+            Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
 
@@ -1543,9 +1666,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // ToAppointSearchList(C какого листа идёт выборка, в какой лист переносяться найденные строки,Поисковое слово)
             }
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, R.string.search_error, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 340);//250
-            toast.show();
+            Toast.makeText(MainActivity.this, R.string.search_error, Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
     }
@@ -1581,10 +1702,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             loadCheckedItems(toWhereList);
             etName.setText("");
+            //вычитаем point c батареи
+
+            if (!isSubscribed) {
+                batteryLvl--;
+
+                binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+
+                sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
+                sPref.edit().putInt("KeyBatterylvl", batteryLvl).apply();
+            }
+
+
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, R.string.toappoint_search_list_error, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 340);//250
-            toast.show();
+            Toast.makeText(MainActivity.this, R.string.toappoint_search_list_error, Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
 
@@ -1613,9 +1744,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         } catch (Exception e) {
-            toast = Toast.makeText(MainActivity.this, R.string.load_checked_items_error, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 0, 340);//250
-            toast.show();
+            Toast.makeText(MainActivity.this, R.string.load_checked_items_error, Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
 
@@ -1634,6 +1763,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         outState.putBoolean("val3", bool_isSaved);
         outState.putBoolean("val4", bool_xlsExecutorCanceled);
         outState.putBoolean("val5", bool_xlsColumnsWasChosen);
+        outState.putBoolean("val6", isSubscribed);
 
     }
 
@@ -1646,9 +1776,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bool_isSaved = savedInstanceState.getBoolean("val3");
         bool_xlsExecutorCanceled = savedInstanceState.getBoolean("val4");
         bool_xlsColumnsWasChosen = savedInstanceState.getBoolean("val5");
+        isSubscribed = savedInstanceState.getBoolean("val6");
         if (dbHelper == null) dbHelper = new DBHelper(this);
         if (contentValues == null) contentValues = new ContentValues();
         if (handler == null) onHandlerCreate();
+        regSubElements(isSubscribed);
 
     }
 
@@ -1706,27 +1838,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Log.d(TAG, "onItemSelected: "+ parent.getAdapter().getItem(position).toString());
+        Log.d(TAG, "onItemSelected: " + parent.getAdapter().getItem(position).toString());
         if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.manual))) {
+            binding.menuSpiner.setSelection(menuSize);
             Intent intent = new Intent(MainActivity.this, UserGuideActivity.class);
             startActivity(intent);
 
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
+            binding.menuSpiner.setSelection(menuSize);
             Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
             startActivity(intent);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
+            binding.menuSpiner.setSelection(menuSize);
             Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
             startActivityForResult(intent, 2);
-        }else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.еoSeeAds))) {
-            if (binding.menuViewBattery.getBackground().getLevel() == 5000){
-                binding.menuViewBattery.getBackground().setLevel(2000);
-            }else {
-                binding.menuViewBattery.getBackground().setLevel(5000);
+        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
+            Log.d(TAG, "onItemSelected: lol");
+            if (mRewardedAd != null) {
+                binding.menuSpiner.setSelection(menuSize);
+                DialogClass dialogClass = new DialogClass(MainActivity.this,
+                        getString(R.string.toGetBatteryEnergy),
+                        getString(R.string.ad),
+                        getString(R.string.towatch),
+                        getString(R.string.cancel),
+                        null
+                );
+                dialogClass.createStandartNewDialogOKCancelNetral();
+                dialogClass.dialog.show();
+            } else {
+                binding.menuSpiner.setSelection(menuSize);
+                Toast.makeText(this, R.string.rewardedAdsIsNull, Toast.LENGTH_LONG).show();
             }
-       /*     if (factor != 100){
-                level = 100*factor;
-                factor++;
-            }*/
         }
 
     }

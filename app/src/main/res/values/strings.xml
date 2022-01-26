@@ -63,7 +63,7 @@
     <string name="context_menu_options">Long pressing on the position\ncall additional functions.</string>
     <string name="possibility_delete_with_rest">When deleting a list, you can save unchecked positions and combine them with another list when loading a new file.They mark as - *</string>
     <string name="recomendation">Recommendation</string>
-    <string name="string_lengh_limit_90">The app is made for managing lists.\nFor comfortable use, the line length\nshould not exceed 90 characters.</string>
+    <string name="string_lengh_limit_90">The app is made for managing lists.\nFor comfortable use, the line length\nshould not exceed 70 characters.</string>
     <string name="Name">Name</string>
     <string name="DeleteCheked">Delete checked positions successfully</string>
     <string name="deleted_success">Deleted successfully</string>
@@ -105,5 +105,18 @@
     <string name="Reason_for_encodin_choose">"In order to avoid unknown characters when loading a file in-app, it is advisable to select the file encoding."</string>
     <string name="Cyrillic">Cyrillic</string>
     <string name="Uncheckallpositions">Отменить все позиции</string>
-    <string name="еoSeeAds">Charge the battery</string>
+    <string name="toSeeAds">Charge the battery</string>
+    <string name="rewardedAdsIsNull">Ad content doesn\'t load</string>
+    <string name="towatch">Watch</string>
+    <string name="toGetBatteryEnergy">To replenish the charge by 25%, watch ads!</string>
+    <string name="ad">"Advertising"</string>
+    <string name="checkBatteryLoading">Check the battery.</string>
+    <string name="pending">Your transaction is in a Pending state. You can\'t access to subscribe state.</string>
+    <string name="understand">Understood</string>
+    <string name="pendingtitle">Pending</string>
+    <string name="HowtoaplusBallance">It is possible to replenish energy by watching ads. When subscribing, you no longer need to replenish energy.</string>
+    <string name="xlarge">xlarge</string>
+    <string name="large">Large</string>
+    <string name="normal">Normal</string>
+    <string name="unspecified">Unspecified state</string>
 </resources>

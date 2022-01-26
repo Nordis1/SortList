@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ID_ConstraintForMenuItems"
@@ -45,8 +42,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.95"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.13"
-            tools:layout_constrainedWidth="true" />
+            app:layout_constraintWidth_percent="0.13" />
 
         <View
             android:id="@+id/menuViewBattery"
@@ -54,14 +50,13 @@
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
             android:background="@drawable/layer_list"
-            android:transitionName="@string/large"
+            android:transitionName="@string/xlarge"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHeight_percent="0.95"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.52"
-            tools:layout_constraintLeft_toRightOf="@id/barrier5" />
+            app:layout_constraintWidth_percent="0.52" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -109,7 +104,7 @@
             android:textAllCaps="false"
             android:textSize="15sp"
             app:autoSizeMaxTextSize="40sp"
-            app:autoSizeMinTextSize="20sp"
+            app:autoSizeMinTextSize="30sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -125,12 +120,13 @@
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
             android:layout_marginEnd="2dp"
-            android:drawableEnd="@drawable/history_icon48"
-            android:paddingStart="1dp"
-            android:paddingEnd="15dp"
-            android:gravity="fill_vertical"
+            android:drawableLeft="@drawable/history_icon72"
+            android:gravity="center"
             android:textAllCaps="false"
-            android:transitionName="@string/large"
+            android:textSize="15sp"
+            app:autoSizeMaxTextSize="19sp"
+            app:autoSizeMinTextSize="10sp"
+            app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnSearch"
             app:layout_constraintHeight_percent="0.98"
@@ -163,9 +159,9 @@
             android:fontFamily="@font/roboto_regular"
             android:text="@string/load_db"
             android:textAllCaps="false"
-            android:textSize="16sp"
+            android:textSize="15sp"
             app:autoSizeMaxTextSize="40sp"
-            app:autoSizeMinTextSize="21sp"
+            app:autoSizeMinTextSize="30sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnDeleteAll"
@@ -187,7 +183,7 @@
             android:textAllCaps="false"
             android:textSize="15sp"
             app:autoSizeMaxTextSize="40sp"
-            app:autoSizeMinTextSize="20sp"
+            app:autoSizeMinTextSize="30sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnSave"
@@ -209,11 +205,11 @@
             android:textAllCaps="false"
             android:textSize="14sp"
             app:autoSizeMaxTextSize="40sp"
-            app:autoSizeMinTextSize="20sp"
+            app:autoSizeMinTextSize="30sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.99"
+            app:layout_constraintHeight_percent="0.98"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/btnDeleteAll"
             app:layout_constraintTop_toTopOf="parent"
@@ -539,8 +535,7 @@
                 app:constraint_referenced_ids="textView15,textView16"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.015"
-                app:layout_constraintStart_toStartOf="parent"
-                tools:layout_editor_absoluteY="632dp" />
+                app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -555,18 +550,18 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <ProgressBar
-        android:id="@+id/downloadBar"
+        android:id="@+id/downloadBar4"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintHeight_percent="0.06"
-        app:layout_constraintWidth_percent="0.5"
-        app:layout_constraintVertical_bias="0.3"
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.06"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3"
+        app:layout_constraintWidth_percent="0.5" />
 </androidx.constraintlayout.widget.ConstraintLayout>

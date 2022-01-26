@@ -7,6 +7,65 @@
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ID_ConstraintForMenuItems"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toTopOf="@id/ID_ConstraintForBTNRow1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.07"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <TextView
+            android:id="@+id/idsubscriptionText"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="4dp"
+            android:fontFamily="@font/roboto_bold"
+            android:text="@string/subscribe_is_valid"
+            android:textSize="23sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_percent="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.6" />
+
+        <Spinner
+            android:id="@+id/menuSpiner"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/menuicon_24"
+            app:layout_constrainedHeight="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.95"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.13"
+            tools:layout_constrainedWidth="true" />
+
+        <View
+            android:id="@+id/menuViewBattery"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/layer_list"
+            android:transitionName="@string/large"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_percent="0.95"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.555"
+            tools:layout_constraintLeft_toRightOf="@id/barrier5" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ID_ConstraintForBTNRow1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -14,8 +73,9 @@
         app:layout_constraintBottom_toTopOf="@+id/ID_ConstraintForBTNRow3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.1"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForMenuItems">
 
 
         <EditText
@@ -31,12 +91,12 @@
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/IdBackSearch"
-            app:layout_constraintHeight_percent="0.9"
+            app:layout_constraintHeight_percent="0.98"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.575" />
+            app:layout_constraintWidth_percent="0.52" />
 
         <Button
             android:id="@+id/btnSearch"
@@ -48,8 +108,8 @@
             android:text="@string/search"
             android:textAllCaps="false"
             android:textSize="15sp"
-            app:autoSizeMaxTextSize="19sp"
-            app:autoSizeMinTextSize="10sp"
+            app:autoSizeMaxTextSize="40sp"
+            app:autoSizeMinTextSize="30sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -57,7 +117,7 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/IdBackSearch"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.3" />
+            app:layout_constraintWidth_percent="0.328" />
 
         <Button
             android:id="@+id/IdBackSearch"
@@ -65,24 +125,23 @@
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
             android:layout_marginEnd="2dp"
-            android:drawableLeft="@drawable/ic_round_arrow_back_24"
+            android:drawableEnd="@drawable/history_icon48"
+            android:paddingStart="1dp"
+            android:paddingEnd="15dp"
+            android:gravity="fill_vertical"
             android:textAllCaps="false"
-            android:textSize="15sp"
-            app:autoSizeMaxTextSize="19sp"
-            app:autoSizeMinTextSize="10sp"
-            app:autoSizeTextType="uniform"
+            android:transitionName="@string/large"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnSearch"
             app:layout_constraintHeight_percent="0.98"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/etName"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.1">
+            app:layout_constraintWidth_percent="0.13">
 
         </Button>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ID_ConstraintForBTNRow3"
@@ -91,10 +150,10 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@+id/ID_ConstraintForListView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.088"
+        app:layout_constraintHeight_percent="0.092"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ID_ConstraintForBTNRow1"
-        app:layout_constraintVertical_chainStyle="spread">
+        app:layout_constraintTop_toBottomOf="@+id/ID_ConstraintForBTNRow1">
 
         <Button
             android:id="@+id/loadtext"
@@ -105,8 +164,8 @@
             android:text="@string/load_db"
             android:textAllCaps="false"
             android:textSize="15sp"
-            app:autoSizeMaxTextSize="19sp"
-            app:autoSizeMinTextSize="10sp"
+            app:autoSizeMaxTextSize="26sp"
+            app:autoSizeMinTextSize="20sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnDeleteAll"
@@ -127,8 +186,8 @@
             android:text="@string/Delete"
             android:textAllCaps="false"
             android:textSize="15sp"
-            app:autoSizeMaxTextSize="19sp"
-            app:autoSizeMinTextSize="10sp"
+            app:autoSizeMaxTextSize="28sp"
+            app:autoSizeMinTextSize="20sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnSave"
@@ -148,9 +207,9 @@
             android:onClick="btnSave"
             android:text="@string/ShowAll"
             android:textAllCaps="false"
-            android:textSize="14sp"
-            app:autoSizeMaxTextSize="19sp"
-            app:autoSizeMinTextSize="10sp"
+            android:textSize="15sp"
+            app:autoSizeMaxTextSize="26sp"
+            app:autoSizeMinTextSize="20sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -162,7 +221,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ID_ConstraintForListView"
         android:layout_width="match_parent"
@@ -170,7 +228,8 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.83"
+        app:layout_constraintHeight_percent="0.74"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ID_ConstraintForBTNRow3">
 
@@ -188,7 +247,6 @@
             app:layout_constraintHeight_percent="0.99"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
             app:layout_constraintWidth_percent="0.99">
@@ -203,8 +261,8 @@
                 android:gravity="center"
                 android:text="@string/recomendation"
                 android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="30sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView16"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -223,8 +281,8 @@
                 android:gravity="center"
                 android:text="@string/string_lengh_limit_90"
                 android:textSize="17sp"
-                app:autoSizeMaxTextSize="20sp"
-                app:autoSizeMinTextSize="14sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeMinTextSize="20sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -242,8 +300,8 @@
                 android:gravity="center_vertical"
                 android:text="@string/check_new_position"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeMinTextSize="20sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView8"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -258,11 +316,11 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:fontFamily="@font/roboto_bold"
-                android:gravity="center_vertical"
+                android:gravity="center"
                 android:text="@string/manual"
                 android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="25sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView5"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -280,8 +338,8 @@
                 android:gravity="center_vertical"
                 android:text="@string/one"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeMinTextSize="20sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView7"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -299,8 +357,8 @@
                 android:gravity="center_vertical"
                 android:text="@string/context_menu_options"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeMinTextSize="20sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView19"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -318,8 +376,8 @@
                 android:gravity="center_vertical"
                 android:text="@string/backarrow"
                 android:textSize="14sp"
-                app:autoSizeMaxTextSize="15sp"
-                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeMinTextSize="20sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView10"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -338,8 +396,8 @@
                 android:gravity="center_vertical"
                 android:text="@string/possibility_delete_with_rest"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeMinTextSize="20sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView15"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -357,8 +415,8 @@
                 android:gravity="center_vertical"
                 android:text="@string/easy_search_word"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeMinTextSize="20sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView9"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -373,11 +431,12 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
+                android:fontFamily="@font/roboto_bold"
                 android:gravity="center"
                 android:text="1."
                 android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="30sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@+id/textView5"
                 app:layout_constraintHeight_percent="0.08"
@@ -390,11 +449,12 @@
                 android:layout_height="0dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="7dp"
+                android:fontFamily="@font/roboto_bold"
                 android:gravity="center"
                 android:text="6."
                 android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="30sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@+id/textView10"
                 app:layout_constraintHeight_percent="0.08"
@@ -406,11 +466,12 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
+                android:fontFamily="@font/roboto_bold"
                 android:gravity="center"
                 android:text="4."
                 android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="30sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@+id/textView9"
                 app:layout_constraintHeight_percent="0.08"
@@ -422,11 +483,12 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
+                android:fontFamily="@font/roboto_bold"
                 android:gravity="center"
                 android:text="5."
                 android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="30sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@+id/textView19"
                 app:layout_constraintHeight_percent="0.08"
@@ -439,11 +501,12 @@
                 android:layout_height="0dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="7dp"
+                android:fontFamily="@font/roboto_bold"
                 android:gravity="center"
                 android:text="3."
                 android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="30sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@+id/textView8"
                 app:layout_constraintHeight_percent="0.08"
@@ -455,11 +518,12 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
+                android:fontFamily="@font/roboto_bold"
                 android:gravity="center"
                 android:text="2."
                 android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeMinTextSize="30sp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@+id/textView7"
                 app:layout_constraintHeight_percent="0.08"
@@ -490,18 +554,18 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <ProgressBar
-        android:id="@+id/downloadBar"
+        android:id="@+id/downloadBar2"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintHeight_percent="0.06"
-        app:layout_constraintWidth_percent="0.5"
-        app:layout_constraintVertical_bias="0.3"
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.06"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3"
+        app:layout_constraintWidth_percent="0.5" />
 </androidx.constraintlayout.widget.ConstraintLayout>

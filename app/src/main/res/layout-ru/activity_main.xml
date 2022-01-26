@@ -13,10 +13,25 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@id/ID_ConstraintForBTNRow1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.08"
+        app:layout_constraintHeight_percent="0.07"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed">
+
+        <TextView
+            android:id="@+id/idsubscriptionText"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="4dp"
+            android:fontFamily="@font/roboto_bold"
+            android:text="@string/subscribe_is_valid"
+            android:textSize="23sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_percent="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.6" />
 
         <Spinner
             android:id="@+id/menuSpiner"
@@ -38,12 +53,14 @@
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
             android:background="@drawable/layer_list"
+            android:visibility="visible"
+            android:transitionName="@string/normal"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHeight_percent="0.95"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.6"
+            app:layout_constraintWidth_percent="0.57"
             tools:layout_constraintLeft_toRightOf="@id/barrier5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -52,14 +69,13 @@
         android:id="@+id/ID_ConstraintForBTNRow1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="5dp"
         android:layout_marginBottom="1dp"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@id/ID_ConstraintForBTNRow3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.08"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForMenuItems"
         app:layout_constraintVertical_chainStyle="packed">
 
         <EditText
@@ -67,10 +83,8 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
-            android:layout_marginLeft="2dp"
             android:layout_marginTop="3dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginRight="2dp"
+            android:layout_marginEnd="10dp"
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_regular"
             android:hint="@string/Typeitem"
@@ -84,7 +98,7 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/etNameOf_hide"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.6" />
+            app:layout_constraintWidth_percent="0.56" />
 
 
         <EditText
@@ -107,7 +121,9 @@
             android:layout_height="0dp"
             android:layout_marginTop="3dp"
             android:layout_marginBottom="1dp"
-            android:drawableLeft="@drawable/ic_round_arrow_back_12"
+            android:drawableRight="@drawable/history_icon"
+            android:paddingStart="0dp"
+            android:paddingEnd="15dp"
             android:textStyle="normal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnSearch"
@@ -115,7 +131,7 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/etName"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.115">
+            app:layout_constraintWidth_percent="0.13">
 
         </Button>
 
@@ -123,9 +139,9 @@
             android:id="@+id/btnSearch"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="2dp"
+            android:layout_marginStart="1dp"
             android:layout_marginTop="3dp"
-            android:layout_marginEnd="3dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_bold"
             android:text="@string/search"
@@ -232,7 +248,7 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.74"
+        app:layout_constraintHeight_percent="0.745"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow3">
 

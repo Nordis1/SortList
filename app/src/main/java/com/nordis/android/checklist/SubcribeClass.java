@@ -1,8 +1,5 @@
 package com.nordis.android.checklist;
 
-import static com.nordis.android.checklist.MainActivity.countDownLatch;
-import static com.nordis.android.checklist.MainActivity.handler;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -40,15 +37,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class SubcribeClass extends AppCompatActivity implements View.OnClickListener {
     Button btnYeardApplySubscribe, btnMonthApplySubscribe, btnSixMonthApplySubscribe;
-    private volatile BillingClient billingClient;
+    private BillingClient billingClient;
     private BillingFlowParams billingFlowParams;
     private ArrayList<SkuDetails> skuDetalsList123 = new ArrayList<>();
     public static final String TAG = "My_SubClass";
@@ -57,14 +52,13 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
     String currentPrice;
     static Handler handlerForSubscribtionClass;
     SharedPreferences sPref;
-    String whatSubChosen;
+    static String currentPurchaseToken;
+    public static String whatSubChosen;
+    static String purchaseTime;
     Activity activity = SubcribeClass.this;
-    ExecutorService executorServiceSubClass = Executors.newFixedThreadPool(2);
+    ExecutorService executorServiceSubClass = Executors.newCachedThreadPool();
 
-
-    String currentPurchaseToken;
     final int hSubISActivated = 2;
-    final int hRecordInSPref = 1;
     final int hSubscribtionActiveYet = 4;
 
     @Override
@@ -87,17 +81,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
                 switch (msg.what) {
                     case hSubISActivated:
-                        Toast.makeText(SubcribeClass.this, "Подписка активированна!", Toast.LENGTH_LONG).show();
-                        Intent i = new Intent(SubcribeClass.this, MainActivity.class);
-                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        Log.d(TAG, "handleMessage: запускаем mainActiviy по новой");
-                        startActivity(i);
-
-                        break;
-                    case hSubscribtionActiveYet:
-                        Toast.makeText(SubcribeClass.this, "Подписка ещё дейсвует", Toast.LENGTH_LONG).show();
-                        break;
-                    case hRecordInSPref:
+                        //1:При Подтверждении подписки методом  onAcknowledgePurchaseResponse
                         sPref = getSharedPreferences("Tokens", MODE_PRIVATE);
                         sPref.edit().clear().apply();
                         Log.d(TAG, "handleMessage: Удаление старого токена и запись нового");
@@ -105,9 +89,15 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                         editor.putString("Token", currentPurchaseToken);
                         editor.putString("Period&SubTime", whatSubChosen);
                         editor.apply();
-                        sPref = getSharedPreferences("SEARCH_REMAIN",MODE_PRIVATE);
-                        sPref.edit().clear().apply();
-                        Log.d(TAG, "handleMessage: Так как была подписка Search remain очищается");
+                        Log.d(TAG, "handleMessage:sub begins in  "+ whatSubChosen);
+                        //подписка Активирована
+                        Intent i = new Intent(SubcribeClass.this, MainActivity.class);
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        Log.d(TAG, "handleMessage: запускаем mainActiviy по новой");
+                        startActivity(i);
+                        break;
+                    case hSubscribtionActiveYet:
+                        Toast.makeText(SubcribeClass.this, "Подписка ещё дейсвует", Toast.LENGTH_LONG).show();
                         break;
                 }
             }
@@ -138,7 +128,8 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
     public void initializeBillingClient(Context context) {
 
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+        //SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
         billingClient = BillingClient.newBuilder(context)
                 .setListener(new PurchasesUpdatedListener() {
@@ -172,17 +163,17 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                                     //UserConsumSub User = new UserConsumSub(purchaseTime,orderId,currentPurchaseToken,currentPrice);
                                     //myRef = database.getReference(orderId);// В getReference нельзя указывать '.' поскольку не будет вписанно. И '/' поскольку будет создавать автоматом новые child.
                                     //myRef.setValue(currentPurchaseToken);
-
-                                    AcknowledgePurchaseParams purchaseParams = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(currentPurchaseToken).build();
-                                    billingClient.acknowledgePurchase(purchaseParams, new AcknowledgePurchaseResponseListener() {
-                                        @Override
-                                        public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
-                                            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                                                handlerForSubscribtionClass.sendEmptyMessage(hRecordInSPref);
-                                                handlerForSubscribtionClass.sendEmptyMessage(hSubISActivated);
+                                    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED){
+                                        AcknowledgePurchaseParams purchaseParams = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(currentPurchaseToken).build();
+                                        billingClient.acknowledgePurchase(purchaseParams, new AcknowledgePurchaseResponseListener() {
+                                            @Override
+                                            public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
+                                                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                                                    handlerForSubscribtionClass.sendEmptyMessage(hSubISActivated);
+                                                }
                                             }
-                                        }
-                                    });
+                                        });
+                                    }
 
                                 }
 
@@ -198,11 +189,12 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
         Log.d(TAG, "initializeBillingClient: Initialize was success!");
     }
-    public Boolean checkConnections(){
-        if (billingClient.getConnectionState() == BillingClient.ConnectionState.CONNECTED){
+
+    public Boolean checkConnections() {
+        if (billingClient.getConnectionState() == BillingClient.ConnectionState.CONNECTED) {
             Log.d(TAG, "checkConnections: true");
             return true;
-        }else {
+        } else {
             Log.d(TAG, "checkConnections: false");
             return false;
         }
@@ -263,8 +255,9 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
 
     }
-    public static void connectionStateGeneration(int state){
-        switch (state){
+
+    public static void connectionStateGeneration(int state) {
+        switch (state) {
             case 0:
                 Log.i(TAG, "connectionStateGeneration: Disconnected");
                 break;
@@ -283,8 +276,9 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
         }
     }
-    public static void purchaseStateGeneration(int state){
-        switch (state){
+
+    public static void purchaseStateGeneration(int state) {
+        switch (state) {
             case 0:
                 Log.d(TAG, "purchaseStateGeneration: UNSPECIFIED_STATE");
                 break;
@@ -298,8 +292,9 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                 break;
         }
     }
-    public static void billingClientResponseCodeGenerated(int state){
-        switch (state){
+
+    public static void billingClientResponseCodeGenerated(int state) {
+        switch (state) {
             case 0:
                 Log.d(TAG, "billingClientResponseCodeGenerated: OK");
                 break;
@@ -349,42 +344,42 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
             @Override
             public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list) {
 
-                if (billingClient.getConnectionState() == BillingClient.ConnectionState.CONNECTING){
+                if (billingClient.getConnectionState() == BillingClient.ConnectionState.CONNECTING) {
                     try {
-                        Log.d(TAG, "onQueryPurchasesResponse: State Connecting... wait a sec");
+                        Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: State Connecting... wait a sec");
                         TimeUnit.SECONDS.sleep(1);
                         checkThePurchases();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-                if (billingClient.getConnectionState() != BillingClient.ConnectionState.CONNECTED){
+                if (billingClient.getConnectionState() != BillingClient.ConnectionState.CONNECTED) {
                     //Если статус not connected то пробуем делать connect.
-                    Log.d(TAG, "onQueryPurchasesResponse: Нет соединения, попытка повторного коннекта");
-                    executorServiceSubClass.execute(()->{
+                    Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: Нет соединения, попытка повторного коннекта");
+                    executorServiceSubClass.execute(() -> {
                         connectToGooglePlayBilling(true);
                     });
-                }else {
-                    Log.d(TAG, "onQueryPurchasesResponse: Соединение успешно, идём далее.");
+                } else {
+                    Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: Соединение успешно, идём далее.");
                     if (!list.isEmpty()) {
-                        Log.d(TAG, "onQueryPurchasesResponse: Лист не пустой");
-                        for (Purchase purchase: list){
-                            if (purchase.getPurchaseState() == 1){
-                                
-                                Log.d(TAG, "onQueryPurchasesResponse: Есть элемент со статусом купленно поэтому True");
-                                MainActivity.handler.sendEmptyMessage(MainActivity.hSetIsSubscribeTrue);
-                            }else {
-                                Log.d(TAG, "onQueryPurchasesResponse: Лист не пустой, но ниже строка скажет почему");
+                        Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: Лист не пустой");
+                        for (Purchase purchase : list) {
+                            if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                                Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: Есть элемент со статусом купленно поэтому True");
+                                MainActivity.handler.sendEmptyMessage(MainActivity.hSetSubscribeTrue);
+                            } else if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
+                                //This for Pending and Unspecified state.
+                                Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: Лист не пустой, но в состоянии ожидания");
                                 purchaseStateGeneration(purchase.getPurchaseState());
-                                MainActivity.handler.sendEmptyMessage(MainActivity.hcheckSubscribtionWithOutNet);
+                                MainActivity.handler.sendEmptyMessage(MainActivity.hSetSubscribePending);
+                            } else if (purchase.getPurchaseState() == Purchase.PurchaseState.UNSPECIFIED_STATE) {
+                                MainActivity.handler.sendEmptyMessage(MainActivity.hSetSubscribeUNSPECIFIED);
                             }
                         }
                     } else {
-                        Log.d(TAG, "onQueryPurchasesResponse: Лист пуст поэтому делаем False");
-                        MainActivity.handler.sendEmptyMessage(MainActivity.gethSetIsSubscribeFalse);
-/*                    MainActivity.isSubscribed = false;
-                    SharedPreferences sharedPreferences = getSharedPreferences("Tokens",MODE_PRIVATE);
-                    sharedPreferences.edit().clear().apply();*/
+                        Log.d(TAG, "checkThePurchases onQueryPurchasesResponse: Лист пуст поэтому делаем False");
+                        // Если подписка ставиться на паузу, то доступ отключаеться. и лист будет пуст.
+                        MainActivity.handler.sendEmptyMessage(MainActivity.hSetSubscribeFalse);
                     }
 
                 }
@@ -392,6 +387,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
         });
 
     }
+
     public void connectToGooglePlayBilling(Boolean check) {
         Log.d(TAG, "connectToGooglePlayBilling: We come in connectToGooglePlayBilling");
         //To connect to Google Play, call startConnection().
@@ -432,9 +428,9 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void onBillingServiceDisconnected() {
-                if (check){
+                if (check) {
                     connectToGooglePlayBilling(check);
-                }else {
+                } else {
                     connectToGooglePlayBilling(false);
                 }
                 // Try to restart the connection on the next request to
@@ -442,7 +438,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
             }
         });
 
-        if (check){
+        if (check) {
             checkThePurchases();
         }
         Log.d(TAG, "connectToGooglePlayBilling: We go out from connectToGooglePlayBilling");

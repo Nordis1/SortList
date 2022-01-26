@@ -22,7 +22,7 @@
     </item>
     <item
         android:id="@+id/menuID_ViewAdForPoint"
-        android:title="@string/еoSeeAds"
+        android:title="@string/toSeeAds"
         app:showAsAction="never">
 
     </item>

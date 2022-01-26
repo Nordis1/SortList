@@ -61,7 +61,7 @@
     <string name="context_menu_options">При длительном нажатии на позицию появляются дополнительные функции.</string>
     <string name="possibility_delete_with_rest">При сохранении неотмеченных позиций, они добавляются к новому списку при загрузке нового файла.Помечаются как - *.</string>
     <string name="recomendation">Рекомендации</string>
-    <string name="string_lengh_limit_90">Для комфортного использования списка, длинна строки не должна привышать 90 символов.</string>
+    <string name="string_lengh_limit_90">Для комфортного использования списка, длинна строки не должна привышать 70 символов.</string>
     <string name="Name">Name</string>
     <string name="DeleteCheked">Удаление отмеченных позиций успешно.</string>
     <string name="deleted_success">Успешно удалено.</string>
@@ -90,11 +90,24 @@
     <string name="title_activity_user_subscribe1">My user subscribe</string>
     <string name="please_subscribe">Пожалуйста подпишитесь для продолжения.</string>
     <string name="subscribe_out">Подписка закончилась.</string>
-    <string name="subscribe_is_valid">"Дейсвует подписка. "</string>
+    <string name="subscribe_is_valid">Дейсвует подписка</string>
     <string name="charset_determinations">Кодировка</string>
     <string name="which">Выберите какой кодировки ваш файл?</string>
     <string name="Reason_for_encodin_choose">"Во избежании неизвестных символов при загрузке файла в приложение, желательно выбрать кодировку загружаемого файла."</string>
     <string name="Cyrillic">Кириллица</string>
     <string name="Uncheckallpositions">Отменить все позиции</string>
-    <string name="еoSeeAds">Пополнить заряд</string>
+    <string name="toSeeAds">Пополнить заряд</string>
+    <string name="rewardedAdsIsNull">Ошибка загрузки рекламы</string>
+    <string name="towatch">Смотреть</string>
+    <string name="toGetBatteryEnergy">Для пополнения заряда на 25% посмотреть рекламу!</string>
+    <string name="ad">"Реклама"</string>
+    <string name="checkBatteryLoading">Уровень заряда мал</string>
+    <string name="pending">Ваш перевод в состоянии ожидания. В данный момент вы не можете получить доступ к подписке.</string>
+    <string name="understand">Понятно</string>
+    <string name="pendingtitle">Перевод в ожидании!</string>
+    <string name="HowtoaplusBallance">Пополнить энергию возвожно посмотрев рекламу. При оформлении подписки вам уже не нужно пополнять энергию.</string>
+    <string name="xlarge">xlarge</string>
+    <string name="large">Large</string>
+    <string name="normal">Normal</string>
+    <string name="unspecified">Что то пошло не так!</string>
 </resources>
