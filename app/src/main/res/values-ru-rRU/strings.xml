@@ -113,4 +113,15 @@
     <string name="intializegettingFall">Проверьте Googleplay идентификацию</string>
     <string name="lostConnection">Пожалуйста проверьте вход в GooglePlay аккаунт!</string>
     <string name="connectionIssue">Потерянно соединение</string>
+    <string name="What_subscription_give">Подписка даёт доступ к безлимитному поиску по листу.</string>
+    <string name="removeSub">Как отменить подписку?</string>
+    <string name="Go_to_reading_howRemoveSub">Читать</string>
+    <string name="clue_one">"Откройте приложение Google Play "</string>
+    <string name="clue_two">В правом верхнем углу экрана нажмите на значок профиля.</string>
+    <string name="clue_three">Выберите Платежи и подписки Подписки.</string>
+    <string name="clue_four">Найдите подписку, которую нужно отменить.</string>
+    <string name="clue_five">Нажмите Отменить подписку.</string>
+    <string name="clue_six">Следуйте инструкциям.</string>
+    <string name="clue_seven">Если подписка будет отменена, она будет ещё дейсвовать пока не истечёт её срок.</string>
+    <string name="clue_0">Действуйте поэтапно.</string>
 </resources>

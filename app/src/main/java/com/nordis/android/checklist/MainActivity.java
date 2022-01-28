@@ -1,6 +1,7 @@
 package com.nordis.android.checklist;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -62,10 +63,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.CountDownLatch;
@@ -81,15 +79,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 // Не забыть включить удаление файла при удалении базы данных. По возможности сделать это изберательно.
 //Попробовать сделать огромный список на 600+ элементов, посмотреть как будет вести себя Listview.Будет ли лагать.
         AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
+    //Inner DataBase SQL variables
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
+    //UI - variables
     EditText etName;
     Button btnSave, btnReadFile, btnDeleteAll, btnSearch, btnBackSearch;
-    ArrayList<String> listFromSharedPreference = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
-    ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
-    volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться изначально тексты с файла а потом с него загружаем в Базу
 
-    //ниже 3 листа ипользуемые в методе onQueryTextSubmit для поиска.
+    //Arraylist variables
     //Примечание: mainlist и foundlist и foundAccurateList основные.В list_of_View отбражаться всё что есть в mainlist или foundlist с помощью  adapter1.
     ArrayList<String> mainList; //основной лист
     ArrayList<String> found_List = new ArrayList<>();
@@ -97,44 +94,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> supportRequestHistoryForChangeStrings = new ArrayList<>();// Для изменения строки
     ArrayList<String> firstWordSearchingList = new ArrayList<>();// Для изменения строки
     ArrayList<String> menuList = new ArrayList<String>();// Для отображения в спинере главного меню.
+    ArrayList<String> listFromSharedPreference = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Main
+    ArrayList<String> listForSearch = new ArrayList<>(); // лист куда закидываться инфа с SharedPreferences up Search
+    volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться изначально тексты с файла а потом с него загружаем в Базу
+    ArrayList<String> loadhistory = new ArrayList<>(); // Лист работает в история поиска.
+    volatile HashSet<String> hashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
+
     volatile ListView list_of_View;   //Лист куда закидываеться основной или поисковые листы при помощи адаптера (adapter1). Для отображения.
     volatile ArrayAdapter adapter1;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
-
-    ArrayList<String> loadhistory = new ArrayList<>(); // Лист работает в история поиска.
-    public static String name = "";
-    volatile HashSet<String> hashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
-    int backcounter = 0;  //backcounter - работает с backSearchlist
-    final int requestCode1 = 1;
-    static int batteryLvl;
     ConstraintLayout constraintLayoutManual;
     Thread thread;
-    static Boolean isSubscribed = null;// для того что бы из subscribtion class получить инфу о подписке.
-    static String token;
-    static String subscriptionTime;
-
-
-    public static volatile String fileName;
     volatile ProgressBar progressBar;
+
+
+    //String variables
+    public static volatile String fileName;
+    public static String name = "";
+    final String TAG = "Main_Activity";
+    String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
+    public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
+
+    //Boolean variables
+    static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
     static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved,
             bool_deleteFile_checkBox_isActivated, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
             bool_xlsExecutorCanceled, bool_haveDeletingRight, bool_billingInitializeOk = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
-    //fileNotChoosed переменная служит для остановки потока который хочет считать имя файла работает в паре fileOfNameReady. Приобретает свойсва true  в методе onRestart()
     //bool_prepereDeleteRow - для контекстной функции Delete row.
     //bool_isSaved - используется в RestCreating. Что бы прога не удалила план пока не завершится сохранение остатка.
     //bool_onSaveReady - для контекстной функции Delete All checked.
     //bool_deleteFile_checkBox_isActivated специальная переменная для удаленя файла на носителе.
-    //isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
+    //bool_isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
+
+    //Integer variables
+    static int batteryLvl;
+    int backcounter = 0;  //backcounter - работает с backSearchlist
+    final int requestCode1 = 1;
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
-    static int firstWordCounter = -1;
+    static int firstWordCounter = -1; //переменная вторичная
     final int menuSize = 4;
-    Uri uri; // Получаем нахождение файла в OnActivityResult
-    String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
 
     final int hSetToastErrorOfFileReading = 1;
-    final int hsetdelete_With_rest = 2;
     final int hsetdelete_WithOut_rest = 3;
     final int hSetbtnReadFileEnabledFalse = 4;
     final int hSetbtnReadFileEnabledTrue = 5;
@@ -160,22 +162,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hsetLostConnectionsWithGooglePlay = 26;
 
     static volatile SharedPreferences sPref;
-    final String TAG = "Main_Activity";
-    public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
     Executor executor;
     Cursor cursor;
     ContentValues contentValues = new ContentValues();
     static Handler handler;
     final static CountDownLatch countDownLatch = new CountDownLatch(1);
-    /*    работа с simple cursor adapter
-        SimpleCursorAdapter scAdapter;
-        String[] from = new String[] {DBHelper.KEY_NAME,DBHelper.KEY_MODEL,DBHelper.KEY_DATA};
-        int[] to  = new int[] {R.id.textFirstName,R.id.textModel,R.id.textData};*/
     ActivityMainBinding binding;
     private RewardedAd mRewardedAd;
     DialogClass newdialog;
-    DateTimeFormatter ldFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     LocalDateTime localDateChecked;
+    Uri uri; // Получаем нахождение файла в OnActivityResult
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -419,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 25);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 35);
                         binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
                         break;
                     case hBillingClientInitializeIsCorrect:
@@ -432,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 25);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 35);
                         binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
 
                         newdialog = new DialogClass(MainActivity.this,
@@ -453,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 25);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 35);
                         binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
 
                         newdialog = new DialogClass(MainActivity.this,
@@ -746,6 +742,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    @SuppressLint("NonConstantResourceId")
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onClick(View v) {
@@ -923,10 +920,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     } else {
 
-                        if (LocalDateTime.now().isAfter(localDateChecked.plusMinutes(1))) {
+                        if (LocalDateTime.now().isAfter(localDateChecked.plusDays(1))) {
                             Log.d(TAG, "onClick: проходим дополнительную проверку.");
                             checkSub();
-                            //executor.execute(this::checkSub);
                         }
                         String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
                         onmyQueryTextSubmit(searchWord);
@@ -1671,6 +1667,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         outState.putBoolean("val4", bool_xlsExecutorCanceled);
         outState.putBoolean("val5", bool_xlsColumnsWasChosen);
         outState.putBoolean("val6", isSubscribed);
+        if (localDateChecked != null) outState.putString("val7", localDateChecked.toString());
 
     }
 
@@ -1687,6 +1684,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (dbHelper == null) dbHelper = new DBHelper(this);
         if (contentValues == null) contentValues = new ContentValues();
         if (handler == null) onHandlerCreate();
+        if (localDateChecked == null){
+            String date = savedInstanceState.getString("val7");
+            localDateChecked = LocalDateTime.parse(date);
+        }
         regSubElements(isSubscribed);
 
     }
@@ -1770,7 +1771,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         getString(R.string.cancel),
                         null
                 );
-                dialogClass.createStandartNewDialogOKCancelNetral();
+                dialogClass.createStandartNewDialogShowAd();
                 dialogClass.dialog.show();
             } else {
                 binding.menuSpiner.setSelection(menuSize);

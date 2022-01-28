@@ -51,6 +51,9 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
     String dialog_message, dialog_title, btnPositive, btnNegative, btnNetral;
 
 
+    Button btnDeleteAllChecked;
+
+
     final String TAG = "Dialog_class_Tag";
 
     public DialogClass(Context context, @Nullable String dialog_message, LayoutInflater inflater, @Nullable String stringPrepareToChange) {
@@ -114,8 +117,10 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                 break;
             case R.id.ID_saveUncheckedPositions:
                 if (checkbox_saveCheched.isChecked()) {
+                    btnDeleteAllChecked.setEnabled(false);
                     handler.sendEmptyMessage(hSetDoRest);
                 }else {
+                    btnDeleteAllChecked.setEnabled(true);
                     handler.sendEmptyMessage(hSetDeleteRest);
                 }
                 break;
@@ -173,7 +178,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
             checkBox_DeleteFile = layout.findViewById(R.id.ID_checkBoxDeleteFile);
             checkbox_saveCheched = layout.findViewById(R.id.ID_saveUncheckedPositions);
             Button btnCancel = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Cancel);
-            Button btnDeleteAllChecked = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_DeleteAllChecked);
+            btnDeleteAllChecked = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_DeleteAllChecked);
             Button btnDelete = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Delete);
             checkbox_saveCheched.setOnClickListener(this);
             btnCancel.setOnClickListener(this);
@@ -237,7 +242,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
     }
 
 
-    public void createStandartNewDialogOKCancelNetral() {
+    public void createStandartNewDialogShowAd() {
         try {
             alertBuilder = new AlertDialog.Builder(context);
             alertBuilder.setMessage(dialog_message).setTitle(dialog_title)

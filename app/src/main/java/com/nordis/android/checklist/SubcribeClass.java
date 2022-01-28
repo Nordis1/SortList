@@ -30,6 +30,7 @@ import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.example.android.checklist.R;
+import com.example.android.checklist.databinding.SubscribeLayoutBinding;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.Inflater;
 
 public class SubcribeClass extends AppCompatActivity implements View.OnClickListener {
     Button btnYeardApplySubscribe, btnMonthApplySubscribe, btnSixMonthApplySubscribe;
@@ -57,6 +59,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
     static String purchaseTime;
     Activity activity = SubcribeClass.this;
     ExecutorService executorServiceSubClass = Executors.newCachedThreadPool();
+    SubscribeLayoutBinding subscribeLayoutBinding;
 
     final int hSubISActivated = 2;
     final int hSubscribtionActiveYet = 4;
@@ -64,7 +67,8 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.subscribe_layout);
+        subscribeLayoutBinding = SubscribeLayoutBinding.inflate(getLayoutInflater());
+        setContentView(subscribeLayoutBinding.getRoot());
         handlerForSubscribtionClass = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -104,7 +108,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
         };
 
-
+        subscribeLayoutBinding.btnGotoread.setOnClickListener(this);
 
         /*final String databaseUrl = "https://checklist-nordis-default-rtdb.europe-west1.firebasedatabase.app";
         database = FirebaseDatabase.getInstance(databaseUrl);*/
@@ -222,6 +226,10 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
         } else if (v.getId() == R.id.btnYeardBuy) {
             initAndCheckPurchase(skuDetalsList123.get(2));
 
+        }
+        if (subscribeLayoutBinding.btnGotoread.equals(v)){
+            Intent intent = new Intent(SubcribeClass.this,ActivitySubRemove.class);
+            startActivity(intent);
         }
 
     }

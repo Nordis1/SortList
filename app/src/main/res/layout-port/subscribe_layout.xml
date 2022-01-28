@@ -66,7 +66,7 @@
         android:fontFamily="@font/roboto_bold"
         android:gravity="center"
         android:text="@string/one_Yeard"
-        app:autoSizeMaxTextSize="30sp"
+        app:autoSizeMaxTextSize="25sp"
         app:autoSizeMinTextSize="14sp"
         app:autoSizeTextType="uniform"
         app:layout_constraintEnd_toStartOf="@+id/MonthText"
@@ -83,7 +83,7 @@
         android:fontFamily="@font/roboto_bold"
         android:gravity="center"
         android:text="@string/Month"
-        app:autoSizeMaxTextSize="30sp"
+        app:autoSizeMaxTextSize="25sp"
         app:autoSizeMinTextSize="14sp"
         app:autoSizeTextType="uniform"
         app:layout_constraintEnd_toStartOf="@+id/sixMonthsText"
@@ -100,8 +100,8 @@
         android:fontFamily="@font/roboto_bold"
         android:gravity="center"
         android:text="@string/Sixmonths"
-        app:autoSizeMaxTextSize="30sp"
-        app:autoSizeMinTextSize="14sp"
+        app:autoSizeMaxTextSize="32sp"
+        app:autoSizeMinTextSize="16sp"
         app:autoSizeTextType="uniform"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.07"
@@ -151,22 +151,43 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.43" />
+        app:layout_constraintGuide_begin="314dp" />
 
     <TextView
-        android:id="@+id/textView22"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="70dp"
-        android:gravity="center_horizontal"
-        android:text="@string/SubscribeText"
-        app:autoSizeMaxTextSize="22sp"
-        app:autoSizeMinTextSize="14sp"
-        app:autoSizeTextType="uniform"
+        android:id="@+id/textView25"
+        android:layout_width="358dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="60dp"
+        android:gravity="center"
+        android:text="@string/What_subscription_give"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.08"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_Buy_month"
-        app:layout_constraintWidth_percent="0.9" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_Buy_month" />
+
+    <TextView
+        android:id="@+id/textView26"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="@string/removeSub"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView25" />
+
+    <Button
+        android:id="@+id/btnGotoread"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="161dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="162dp"
+        android:text="@string/Go_to_reading_howRemoveSub"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView26" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
