@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Комплектовщик</string>
     <string name="Download">Скачать</string>
     <string name="search">Поиск</string>
     <string name="Typeitem">Поисковое слово</string>
@@ -86,10 +87,9 @@
     <string name="choose_subscribe_plan">Выберете срок подписки</string>
     <string name="or1">Или</string>
     <string name="GetSubscribe1">Подписка</string>
-    <string name="SubscribeText">Цены указынны без учёта НДС. Подписку всегда и легко можно отменить в Google Play.</string>
     <string name="title_activity_user_subscribe1">My user subscribe</string>
     <string name="please_subscribe">Пожалуйста подпишитесь для продолжения.</string>
-    <string name="subscribe_out">Подписка закончилась.</string>
+    <string name="subscribe_out">Нет подписки</string>
     <string name="subscribe_is_valid">Дейсвует подписка</string>
     <string name="charset_determinations">Кодировка</string>
     <string name="which">Выберите какой кодировки ваш файл?</string>
@@ -124,4 +124,5 @@
     <string name="clue_six">Следуйте инструкциям.</string>
     <string name="clue_seven">Если подписка будет отменена, она будет ещё дейсвовать пока не истечёт её срок.</string>
     <string name="clue_0">Действуйте поэтапно.</string>
+    <string name="string_owner">Developer Mode</string>
 </resources>

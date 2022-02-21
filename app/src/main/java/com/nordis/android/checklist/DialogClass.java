@@ -140,6 +140,7 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
 
     public void createCustomNewDialogFromWhichTowhich() {
         // Используеться при загрузке xls файла, что бы понять с какой по какую колонку загружать.
+        Log.d(TAG, "createCustomNewDialogFromWhichTowhich: Начало нового диалога");
         try {
             alertBuilder = new AlertDialog.Builder(context);
             View layout = inflater.inflate(R.layout.resize_xls_reader, null);

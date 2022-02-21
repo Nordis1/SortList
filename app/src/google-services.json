@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "605983851124",
+    "firebase_url": "https://checklist-nordis-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "checklist-nordis",
     "storage_bucket": "checklist-nordis.appspot.com"
   },
@@ -40,7 +41,8 @@
             }
           ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-6564886494367745~6728492085"
     }
   ],
   "configuration_version": "1"

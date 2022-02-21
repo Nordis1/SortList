@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Check List</string>
+    <string name="app_name">Picker</string>
     <string name="Download">Download</string>
     <string name="search">Search</string>
     <string name="Typeitem">Search word</string>
@@ -88,7 +88,6 @@
     <string name="choose_subscribe_plan">Choose subscribe plan</string>
     <string name="or1">OR</string>
     <string name="GetSubscribe1">Subscribe</string>
-    <string name="SubscribeText">Цены указынны без учёта НДС.Подписку всегда и легко можно отменить в Google Play.</string>
     <string name="title_activity_user_subscribe1">My user subscribe</string>
     <string name="please_subscribe">Please subscribe to continue.</string>
     <string name="subscribe_out">Subscription expired.</string>
@@ -133,4 +132,6 @@
     <string name="clue_six">Follow the instructions.</string>
     <string name="clue_seven">If the subscription is cancelled, it will still be valid until it expires.</string>
     <string name="clue_0">Take it step by step.</string>
+    <string name="string_owner">Developer Mode</string>
+    <string name="developer_mode">Developer mode is activated</string>
 </resources>

@@ -23,16 +23,11 @@ import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,7 +35,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 
 import com.example.android.checklist.R;
@@ -82,13 +76,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //Inner DataBase SQL variables
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
-    //UI - variables
-    EditText etName;
-    Button btnSave, btnReadFile, btnDeleteAll, btnSearch, btnBackSearch;
 
     //Arraylist variables
     //Примечание: mainlist и foundlist и foundAccurateList основные.В list_of_View отбражаться всё что есть в mainlist или foundlist с помощью  adapter1.
-    ArrayList<String> mainList; //основной лист
+    ArrayList<String> mainList = new ArrayList<>(); //основной лист
     ArrayList<String> found_List = new ArrayList<>();
     ArrayList<String> foundAccurateList = new ArrayList<>();// Используеться в более точном поиске
     ArrayList<String> supportRequestHistoryForChangeStrings = new ArrayList<>();// Для изменения строки
@@ -99,13 +90,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться изначально тексты с файла а потом с него загружаем в Базу
     ArrayList<String> loadhistory = new ArrayList<>(); // Лист работает в история поиска.
     volatile HashSet<String> hashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
-
-    volatile ListView list_of_View;   //Лист куда закидываеться основной или поисковые листы при помощи адаптера (adapter1). Для отображения.
     volatile ArrayAdapter adapter1;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
-    ConstraintLayout constraintLayoutManual;
     Thread thread;
-    volatile ProgressBar progressBar;
 
+    volatile File_XLS_Reader file_xls_reader;
 
     //String variables
     public static volatile String fileName;
@@ -118,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
     static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved,
             bool_deleteFile_checkBox_isActivated, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled, bool_haveDeletingRight, bool_billingInitializeOk = false;
+            bool_xlsExecutorCanceled, bool_haveDeletingRight, bool_billingInitializeOk,bool_owner,bool_neiser = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //bool_prepereDeleteRow - для контекстной функции Delete row.
     //bool_isSaved - используется в RestCreating. Что бы прога не удалила план пока не завершится сохранение остатка.
@@ -142,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hSetbtnReadFileEnabledTrue = 5;
     final int hSetProgressBarVisible = 6;
     final int hSetProgressBarGone = 7;
-    final int hSetTurnManualOn = 8;
+    final int hSetMainInnerUserGuideOnVISIBLE = 8;
     final int hsetdelete_IsCanceled = 9;
     final int hsetlistView_Onvisible = 10;
     final int hSetLoadingListOfView_fromAdapter1 = 11;
@@ -150,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hSetCreateDialogError = 13;
     final int hSetDoRest = 14;
     final int hSetDeleteRest = 15;
-    final int hSetCreateDialogFromWhichToWhich = 16;
+    final static int hSetCreateDialogFromWhichToWhich = 16;
     final int hSetDeleteChekedPositions = 17;
     final static int hSetSubscribeTrue = 18;
     final static int hSetSubscribeFalse = 19;
@@ -160,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static int hSetSubscribeUNSPECIFIED = 24;
     final int hBatteryOn = 25;
     final int hsetLostConnectionsWithGooglePlay = 26;
+    final int hNewXLSReader = 27;
 
     static volatile SharedPreferences sPref;
     Executor executor;
@@ -171,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RewardedAd mRewardedAd;
     DialogClass newdialog;
     LocalDateTime localDateChecked;
-    Uri uri; // Получаем нахождение файла в OnActivityResult
+    static Uri uri; // Получаем нахождение файла в OnActivityResult
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -179,7 +168,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        onMenuCreate();
+
+
+        executor = Executors.newCachedThreadPool(); // With this method, the thread lives 60 sec if it done.
+
+        //Лист куда закидываеться основной или поисковые листы при помощи адаптера (adapter1)
+        binding.listItemModel.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        registerForContextMenu(binding.listItemModel);
+        binding.listItemModel.setOnItemClickListener(this);
+
+        /*иницализация кнопок*/
+        binding.menuViewBattery.setOnClickListener(this);
+        binding.btnSave.setOnClickListener(this);
+        binding.btnLoadFile.setOnClickListener(this);
+        binding.btnDeleteAll.setOnClickListener(this);
+        binding.IdBackSearch.setOnClickListener(this);
+        binding.btnSearch.setOnClickListener(this);
+
+        dbHelper = new DBHelper(this);
+        viewData();
+        onUserGuideShow();
+        onHandlerCreate();
+        checkSub();
         onAdCreate();
+
+    }
+
+    private void onUserGuideShow() {
+        if (!mainList.isEmpty() || !found_List.isEmpty() || !foundAccurateList.isEmpty()) {
+            binding.IDMainInnerUserGuide.setVisibility(View.GONE);
+            binding.listItemModel.setVisibility(View.VISIBLE);
+
+        } else {
+            binding.listItemModel.setVisibility(View.GONE);
+            binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
+        }
+        binding.btnSave.callOnClick();
+    }
+
+    private void onMenuCreate() {
         menuList.add(getString(R.string.manual));
         menuList.add(getString(R.string.charset_determinations));
         menuList.add(getString(R.string.getSubscribe));
@@ -197,96 +225,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.menuSpiner.setSelection(menuSize);
         binding.menuSpiner.setOnItemSelectedListener(this);
 
-        binding.menuViewBattery.setOnClickListener(this);
-
-
-        executor = Executors.newCachedThreadPool(); // With this method, the thread lives 60 sec if it done.
-
-
-        constraintLayoutManual = findViewById(R.id.ID_ConstraintManual);
-
-        list_of_View = findViewById(R.id.list_item_model);
-        list_of_View.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        mainList = new ArrayList<>();
-
-        /*иницализация кнопок*/
-        btnSave = findViewById(R.id.btnSave);
-        btnSave.setOnClickListener(this);
-
-        btnReadFile = findViewById(R.id.loadtext);
-        btnReadFile.setOnClickListener(this);
-
-        btnDeleteAll = findViewById(R.id.btnDeleteAll);
-        btnDeleteAll.setOnClickListener(this);
-
-        btnBackSearch = findViewById(R.id.IdBackSearch);
-        btnBackSearch.setOnClickListener(this);
-
-        /*находим Добавление view*/
-        etName = findViewById(R.id.etName);
-
-        btnSearch = findViewById(R.id.btnSearch);
-        btnSearch.setOnClickListener(this);
-
-
-        dbHelper = new DBHelper(this);
-        viewData();
-        registerForContextMenu(list_of_View);
-        progressBar = findViewById(R.id.downloadBar);
-
-//Нажатие на Item
-        list_of_View.setOnItemClickListener(this);
-        onHandlerCreate();
-        if (!mainList.isEmpty() || !found_List.isEmpty() || !foundAccurateList.isEmpty()) {
-            constraintLayoutManual.setVisibility(View.GONE);
-            list_of_View.setVisibility(View.VISIBLE);
-
-        } else {
-            list_of_View.setVisibility(View.GONE);
-            constraintLayoutManual.setVisibility(View.VISIBLE);
-        }
-        btnSave.callOnClick();
-
-        checkSub();
-
     }
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
-        //Логика дейсвий:
-        //1 Проверяеться connection to PlayStore, если ошибка тогда оповещаем клиента что ошибка!
-        //2 Если connecting in correct. Then we have check subscription.
-        //3 If subscribe is correct: isSubscribe = true , else isSubscribe = false;
-        SubcribeClass subcribeClass = new SubcribeClass();
-        try {
-            Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
-            subcribeClass.initializeBillingClient(this);
-            executor.execute(() -> {
-                Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
-                subcribeClass.connectToGooglePlayBilling(false);// false так как это обычное подсоединение.
-                try {
-                    int i = 4;
-                    while (!subcribeClass.checkConnections()) {
-                        if (i == 0) {
-                            throw new InterruptedException();
+        sPref = getSharedPreferences("OWNER",MODE_PRIVATE);
+        bool_owner = sPref.getBoolean("keyown",false);
+
+        if (!bool_owner) {
+            //Логика дейсвий:
+            //1 Проверяеться connection to PlayStore, если ошибка тогда оповещаем клиента что ошибка!
+            //2 Если connecting in correct. Then we have check subscription.
+            //3 If subscribe is correct: isSubscribe = true , else isSubscribe = false;
+            SubcribeClass subcribeClass = new SubcribeClass();
+            try {
+                Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
+                subcribeClass.initializeBillingClient(this);
+                executor.execute(() -> {
+                    Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
+                    subcribeClass.connectToGooglePlayBilling(false);// false так как это обычное подсоединение.
+                    try {
+                        int i = 4;
+                        while (!subcribeClass.checkConnections()) {
+                            if (i == 0) {
+                                throw new InterruptedException();
+                            }
+                            i--;
+                            countDownLatch.await(2, TimeUnit.SECONDS);
                         }
-                        i--;
-                        countDownLatch.await(2, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        handler.sendEmptyMessage(hsetLostConnectionsWithGooglePlay);
+                        return;
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    handler.sendEmptyMessage(hsetLostConnectionsWithGooglePlay);
-                    return;
-                }
-                Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
-                subcribeClass.checkThePurchases();
-            });
-        } catch (Exception e) {
-            //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
-            e.printStackTrace();
-            Toast.makeText(MainActivity.this, R.string.intializegettingFall, Toast.LENGTH_LONG).show();
-            Log.d(TAG, "checkSub: error: " + e.getMessage());
+                    Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
+                    subcribeClass.checkThePurchases();
+                });
+            } catch (Exception e) {
+                //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, R.string.intializegettingFall, Toast.LENGTH_LONG).show();
+                Log.d(TAG, "checkSub: error: " + e.getMessage());
+            }
+        }else {
+            isSubscribed = true;
+            regSubElements(isSubscribed);
+
         }
 
 
@@ -311,6 +296,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         // Handle the error.
+                        Log.d(TAG, "onAdFailedToLoad: "+ loadAdError);
                         Log.d(TAG, "Ad was not loaded " + loadAdError.getMessage());
                         mRewardedAd = null;
                     }
@@ -346,37 +332,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 Log.i(TAG, "run: :Ждём пока isSave , будет true " + bool_isSaved);
                             }
                             Log.i(TAG, "isSave = " + bool_isSaved + "      run: пошло удаление");
-                            btnDeleteAll.callOnClick();
+                            binding.btnDeleteAll.callOnClick();
                         });
                         break;
                     case 3:
-                        btnDeleteAll.callOnClick();
+                        binding.btnDeleteAll.callOnClick();
                         Toast.makeText(MainActivity.this, R.string.deleted_success, Toast.LENGTH_LONG).show();
                         break;
                     case 4:
-                        btnReadFile.setEnabled(false);
+                        binding.btnLoadFile.setEnabled(false);
                         break;
                     case 5:
-                        btnReadFile.setEnabled(true);
+                        binding.btnLoadFile.setEnabled(true);
                         break;
                     case 6:
-                        progressBar.setVisibility(View.VISIBLE);
+                        binding.downloadBar.setVisibility(View.VISIBLE);
                         break;
                     case 7:
-                        progressBar.setVisibility(View.GONE);
+                        binding.downloadBar.setVisibility(View.GONE);
                         break;
                     case 8:
-                        constraintLayoutManual.setVisibility(View.VISIBLE);
+                        binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
                         break;
                     case 9:
-                        etName.setText("");
+                        binding.etName.setText("");
                         Toast.makeText(MainActivity.this, getString(R.string.cancel), Toast.LENGTH_LONG).show();
                         break;
                     case 10:
-                        list_of_View.setVisibility(View.VISIBLE);
+                        binding.listItemModel.setVisibility(View.VISIBLE);
                         break;
                     case 11:
-                        list_of_View.setAdapter(adapter1);
+                        binding.listItemModel.setAdapter(adapter1);
                         break;
                     case 12:
                         Toast.makeText(MainActivity.this, R.string.Reading_rest_data_Error, Toast.LENGTH_LONG).show();
@@ -391,6 +377,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         deleteRestMemory();
                         break;
                     case 16:
+                        Log.d(TAG, "handleMessage: зашли в создание диалога");
                         LayoutInflater inflater = MainActivity.this.getLayoutInflater();
                         newdialog = new DialogClass(MainActivity.this,
                                 null,
@@ -460,6 +447,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         newdialog.createDialogPendingState();
                         newdialog.dialog.show();
                         break;
+                    case hNewXLSReader:
+                        file_xls_reader = new File_XLS_Reader(fileName);
+                        break;
 
 
                 }
@@ -469,10 +459,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void regSubElements(Boolean subcribtionY) {
         if (subcribtionY) {
-            binding.menuViewBattery.setVisibility(View.GONE);
-            binding.idsubscriptionText.setVisibility(View.VISIBLE);
+            if (bool_owner){
+                binding.menuViewBattery.setVisibility(View.GONE);
+                binding.idsubscriptionText.setVisibility(View.GONE);
+                binding.idTextOwner.setVisibility(View.VISIBLE);
+                Toast.makeText(MainActivity.this, R.string.developer_mode, Toast.LENGTH_SHORT).show();
+            }else {
+                binding.idTextOwner.setVisibility(View.GONE);
+                binding.menuViewBattery.setVisibility(View.GONE);
+                binding.idsubscriptionText.setVisibility(View.VISIBLE);
+            }
 
         } else {
+            binding.idTextOwner.setVisibility(View.GONE);
             binding.idsubscriptionText.setVisibility(View.GONE);
             binding.menuViewBattery.setVisibility(View.VISIBLE);
         }
@@ -535,12 +534,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!found_List.isEmpty() || !foundAccurateList.isEmpty()) {    //Если Пойсковый лист не пустой то данные заменяються и запускаеться обновление
             sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
             Log.i(TAG, "prepareTochange: Изменение с сторией поиска");
-            btnSave.callOnClick();
+            binding.btnSave.callOnClick();
             try {
                 ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
                 for (int i = 0; i < loadhistory.size(); i++) {
-                    etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
-                    btnSearch.callOnClick();
+                    binding.etName.setText(loadhistory.get(i));//сюда закидываються слова которые были в поиске
+                    binding.btnSearch.callOnClick();
                 }
                 loadhistory.clear();
             } catch (Exception e) {
@@ -551,7 +550,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             Log.i(TAG, "prepareTochange: простое изменение");
             sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
-            btnSave.callOnClick();
+            binding.btnSave.callOnClick();
         }
         dbHelper.close();
 
@@ -561,12 +560,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sqLiteDatabase = dbHelper.getWritableDatabase();
         if (!found_List.isEmpty() || !foundAccurateList.isEmpty()) {
             sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{becomeDeleteString});
-            btnSave.callOnClick();
+            binding.btnSave.callOnClick();
             try {
                 ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
                 for (int i = 0; i < loadhistory.size(); i++) {
-                    etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
-                    btnSearch.callOnClick();
+                    binding.etName.setText(loadhistory.get(i));//сюда закидываються слова которые были в поиске
+                    binding.btnSearch.callOnClick();
                 }
                 loadhistory.clear();
             } catch (Exception e) {
@@ -576,7 +575,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             try {
                 sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{becomeDeleteString});
-                btnSave.callOnClick();
+                binding.btnSave.callOnClick();
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, R.string.Delete_Error, Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
@@ -629,7 +628,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             while (cursor.moveToNext()) { // тут мы его считываем
                 mainList.add(cursor.getString(0));
                 mProgresscounter++;
-                if (progressBar.getMax() <= 40) {// В зависимости от объёма данных увеличиваем скорость загрузки
+                if (binding.downloadBar.getMax() <= 40) {// В зависимости от объёма данных увеличиваем скорость загрузки
                     try {
                         TimeUnit.MILLISECONDS.sleep(70); //0.7 - 2.8 sec
                         //Log.i(TAG, "Sleep 50");
@@ -637,7 +636,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else if (progressBar.getMax() > 40 && progressBar.getMax() <= 100) { //1.4 - 3.5 sec
+                }
+                else if (binding.downloadBar.getMax() > 40 && binding.downloadBar.getMax() <= 100) { //1.4 - 3.5 sec
                     try {
                         TimeUnit.MILLISECONDS.sleep(35);
                         //Log.i(TAG, "Sleep 35");
@@ -647,7 +647,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else if (progressBar.getMax() > 100 && progressBar.getMax() <= 350) { //1.3 - 4.5 sec
+                }
+                else if (binding.downloadBar.getMax() > 100 && binding.downloadBar.getMax() <= 350) { //1.3 - 4.5 sec
                     try {
                         TimeUnit.MILLISECONDS.sleep(13);
                         //Log.i(TAG, "Sleep 30");
@@ -657,7 +658,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else if (progressBar.getMax() > 350 && progressBar.getMax() <= 600) { // 2.4 - 4.2
+                }
+                else if (binding.downloadBar.getMax() > 350 && binding.downloadBar.getMax() <= 600) { // 2.4 - 4.2
                     try {
                         TimeUnit.MILLISECONDS.sleep(7);
                         //Log.i(TAG, "Sleep 12");
@@ -667,7 +669,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else if (progressBar.getMax() > 600) { // 3 sec
+                }
+                else if (binding.downloadBar.getMax() > 600) { // 3 sec
                     try {
                         TimeUnit.MILLISECONDS.sleep(5);
                         //Log.i(TAG, "Sleep 5");
@@ -700,7 +703,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
-            list_of_View.setAdapter(adapter1);
+            binding.listItemModel.setAdapter(adapter1);
             cursor.close();
         }
     }
@@ -746,7 +749,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onClick(View v) {
-        name = etName.getText().toString(); //Сохранение в базу шаг 1
+        name = binding.etName.getText().toString();
         sqLiteDatabase = dbHelper.getWritableDatabase();
         //ContentValues contentValues = new ContentValues(); //шаг 2
         switch (v.getId()) {
@@ -770,7 +773,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 bool_onSaveReady = false;
                 //contentValues.put(DBHelper.KEY_NAME, hideName); //шаг 3
-                if (etName.length() == 0 || bool_haveDeletingRight) {
+                if (binding.etName.length() == 0 || bool_haveDeletingRight) {
                     //Если все значения были пустыми то чистим все листы и обновляем основной с проставлением checked
                     found_List.clear();
                     foundAccurateList.clear();
@@ -788,7 +791,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     choosen_ItemInClickmethod = "";
                     bool_onSaveReady = true;
                 } else {
-                    etName.setText("");
+                    binding.etName.setText("");
                     Toast.makeText(this, R.string.clear_object, Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -800,7 +803,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 }
                 Log.i(TAG, "onClick: Была нажата кнопка удалить");
-                String del = etName.getText().toString();
+                String del = binding.etName.getText().toString();
                 String delete = "Delete";
                 if (del.equals(delete)) { // Если Ввёл в строку Delete
                     try {
@@ -829,7 +832,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         cursor.close();
                         listFromSharedPreference.clear();
                         listForSearch.clear();
-                        list_of_View.setAdapter(null);
                         mainList.clear();
                         found_List.clear();
                         downloadList.clear();
@@ -841,9 +843,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         mColumnmax = 0;
                         mColumnmin = 0;
                         name = null;
-                        etName.setText("");
+                        binding.etName.setText("");
                         bool_haveDeletingRight = false;
-                        constraintLayoutManual.setVisibility(View.VISIBLE);
+                        binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, R.string.something_went_wrong, Toast.LENGTH_SHORT).show();
                     }
@@ -858,11 +860,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     );
                     dialogClass.createCustomNewDialogDeleteFile();
                     dialogClass.dialog.show();
-                    etName.setText("Delete");
+                    binding.etName.setText("Delete");
                 }
                 break;
 //Загрузка
-            case R.id.loadtext:
+            case R.id.btnLoadFile:
                 if (!bool_fileOfNameReady) {
                     bool_fileNotChosen = false;
                 }
@@ -911,20 +913,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (name == null || name.length() == 0) {
                     Toast.makeText(this, R.string.write_something_in_the_place, Toast.LENGTH_LONG).show();
                 } else {
-                    if (!isSubscribed) {
+                    if (name.equals("Nordis-picker=null")){
+                        sPref = getSharedPreferences("OWNER",MODE_PRIVATE);
+                        sPref.edit().clear().apply();
+                        bool_owner = false;
+                        isSubscribed = false;
+                        binding.etName.setText("");
+                        checkSub();
+                    }
+                    if (name.equals("Nordis-picker")){
+                        Log.d(TAG, "onClick: зашли в Nordis-picker");
+                        bool_owner = true;
+                        isSubscribed = true;
+                        sPref = getSharedPreferences("OWNER",MODE_PRIVATE);
+                        sPref.edit().putBoolean("keyown",bool_owner).apply();
+                        binding.etName.setText("");
+                        checkSub();
+
+                    }else if (!isSubscribed) {
                         if (batteryLvl == 0) {
                             Toast.makeText(this, getString(R.string.checkBatteryLoading), Toast.LENGTH_LONG).show();
                         } else {
-                            String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
+                            String searchWord = binding.etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
                             onmyQueryTextSubmit(searchWord);
                         }
                     } else {
-
-                        if (LocalDateTime.now().isAfter(localDateChecked.plusDays(1))) {
-                            Log.d(TAG, "onClick: проходим дополнительную проверку.");
-                            checkSub();
+                        if (!bool_owner){
+                            if (LocalDateTime.now().isAfter(localDateChecked.plusDays(1))) {
+                                Log.d(TAG, "onClick: проходим дополнительную проверку.");
+                                checkSub();
+                            }
                         }
-                        String searchWord = etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
+                        String searchWord = binding.etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
                         onmyQueryTextSubmit(searchWord);
                     }
                 }
@@ -940,7 +960,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "onClick: зашли в историю поиска пунк 1");
                     try {
                         loadhistory.addAll(supportRequestHistoryForChangeStrings);
-                        btnSave.callOnClick();
+                        binding.btnSave.callOnClick();
                         String howDeepWeGo = "";
                         // supportRequestHistoryForChangeStrings чистить не нужно так как чистица автоматом в поиске.
                         for (int i = 0; i < loadhistory.size() - 1; i++) {
@@ -953,8 +973,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 Log.d(TAG, "onClick: №2 " + howDeepWeGo);
                             }
 
-                            etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
-                            btnSearch.callOnClick();
+                            binding.etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
+                            binding.btnSearch.callOnClick();
                         }
                         loadhistory.clear();
                         Log.d(TAG, "onClick: вызываем тост");
@@ -965,17 +985,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 } else if (!firstWordSearchingList.isEmpty()) {
                     //firstWordCounter = firstWordSearchingList.size()-1;
-                    btnSave.callOnClick();
+                    binding.btnSave.callOnClick();
                     if (firstWordCounter <= -1)
                         firstWordCounter = firstWordSearchingList.size() - 1;
                     Log.i(TAG, "onClick: firstWordSearchingList.size = " + firstWordSearchingList.size());
                     Log.i(TAG, "onClick: firstWordCounter = " + firstWordCounter);
-                    etName.setText(firstWordSearchingList.get(firstWordCounter));
+                    binding.etName.setText(firstWordSearchingList.get(firstWordCounter));
                     firstWordCounter--;
-                    btnSearch.callOnClick();
+                    binding.btnSearch.callOnClick();
                 } else {
                     Log.d(TAG, "onClick: зашли в историю поиска пунк 2");
-                    btnSave.callOnClick();
+                    binding.btnSave.callOnClick();
                 }
                 break;
 
@@ -991,7 +1011,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void createRestMemory() {
         //mainList.clear();
         //viewData(); // тут мы востанавливаем main
-        btnSave.callOnClick();
+        binding.btnSave.callOnClick();
         restCreating(); // тут мы сравниваем разность main и hashSetMain
     }
 
@@ -1015,7 +1035,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, list);
-        list_of_View.setAdapter(adapter1);
+        binding.listItemModel.setAdapter(adapter1);
     }
 
 
@@ -1096,7 +1116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }//Логика удаления файла на носителе закончена.
         //далее начинаеться логика загрузки файла
         else if (!bool_deleteFile_checkBox_isActivated) {
-            constraintLayoutManual.setVisibility(View.GONE);
+            binding.IDMainInnerUserGuide.setVisibility(View.GONE);
             Log.i(TAG, "onRequestPermissionsResult: Загрузка файла : " + fileName);
             if (fileName == null) {
                 return;
@@ -1124,21 +1144,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     handler.sendEmptyMessage(hSetProgressBarGone);
                     handler.sendEmptyMessage(hsetlistView_Onvisible);
                     //} else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
-                } else if (fileName.contains(".xls")) {
+                }
+                else if (fileName.contains(".xls")) {
+                    if (fileName.contains("Neiser")){
+                        Log.d(TAG, "Содержит в названии Neiser");
+                        bool_neiser = true;
+                    }
                     Log.i(TAG, "run: File был распознан как xls");
                     try {
                         handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
                         handler.sendEmptyMessage(hSetProgressBarVisible); // Диактивируем кнопку и Активируем прогресс бар
 
                         Log.i(TAG, "run: Передаём имя файла, файлу который считывает");
-
-                        File_XLS_Reader file_xls_reader = new File_XLS_Reader(fileName); // передаём имя файла в наш Класс, который читает его.
-                        downloadList = file_xls_reader.readingXLS();
+                        Log.i(TAG, "onRequestPermissionsResult: имя файла "+fileName );
+                        handler.sendEmptyMessage(hNewXLSReader);// передаём имя файла в наш Класс, который читает его.
+                        while (file_xls_reader == null){
+                            TimeUnit.SECONDS.sleep(1);
+                            Log.d(TAG, "ждём  инициальзации file_xls_reader");
+                        }
+                        Log.d(TAG, "Инициализация успешна!");
+                        downloadList = file_xls_reader.readingXLS(MainActivity.this);
                         Log.i(TAG, "run: Получили считанный лист. Его размер: " + downloadList.size());
                         loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
 
                         int j = downloadList.size() + mProgresscounter;
-                        progressBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
+                        binding.downloadBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
                         Log.i(TAG, "mainloading: progress bar MAX = " + j);
 
                         for (int i = 0; i < downloadList.size(); i++) {
@@ -1147,20 +1177,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
                         downloadList.clear();
+                        file_xls_reader = null;
+                        mProgresscounter = 0;
+                        bool_neiser = false;
                         //Востанавливаем кнопку и убирает прогресс бар.
                         handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
                         handler.sendEmptyMessage(hSetProgressBarGone);
                         handler.sendEmptyMessage(hsetlistView_Onvisible);
-                        mProgresscounter = 0;
 
                     } catch (Exception e) {
                         Log.i(TAG, "onRequestPermissionsResult: Поток был прерван в main");
+                        Log.d(TAG, "onRequestPermissionsResult: "+ e.getMessage());
                         handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
                         handler.sendEmptyMessage(hSetProgressBarGone);
-                        handler.sendEmptyMessage(hSetTurnManualOn);
+                        handler.sendEmptyMessage(hSetMainInnerUserGuideOnVISIBLE);
+                        file_xls_reader = null;
                         mProgresscounter = 0;
+                        bool_neiser = false;
                         bool_xlsExecutorCanceled = false;
                         bool_xlsColumnsWasChosen = false;
+                        bool_neiser = false;
                         e.printStackTrace();
                     }
                 }
@@ -1169,7 +1205,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
         bool_deleteFile_checkBox_isActivated = false;//для удаления файла на устройстве
-        progressBar.setProgress(0);
+        binding.downloadBar.setProgress(0);
         mProgresscounter = 0;
         bool_fileOfNameReady = false;
     }
@@ -1178,7 +1214,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void run() {
             Log.i(TAG, "run: зашли в в увеличение progressbar mProgresscounter = " + mProgresscounter);
-            progressBar.setProgress(mProgresscounter);
+            binding.downloadBar.setProgress(mProgresscounter);
 
         }
     };
@@ -1225,7 +1261,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             j = (downloadList.size() + mProgresscounter);
             mProgresscounter = 0;
-            progressBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
+            binding.downloadBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
             Log.i(TAG, "mainloading: progress bar MAX = " + j);
             for (int i = 0; i < downloadList.size(); i++) {
                 //начал добавлять сразу в базу что бы не нагружать main.
@@ -1285,35 +1321,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    /*Создаём меню и регистрируем там поиск*/
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menuxml, menu);
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menuID_USER_GUIDE) {
-            Intent intent = new Intent(MainActivity.this, UserGuideActivity.class);
-            startActivity(intent);
-
-        } else if (item.getItemId() == R.id.menuID_ToSubscribe) {
-            Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
-            startActivity(intent);
-        } else if (item.getItemId() == R.id.menuID_Determination_Charset) {
-            Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
-            startActivityForResult(intent, 2);
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
     public void showListIsReadyPercent() {
         try {
             double countMain = mainList.size();
@@ -1354,10 +1361,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int itemId = item.getItemId();
 //Изменить строку
         if (itemId == R.id.menuitemChageRow) {
-            choosen_ItemInClickmethod = list_of_View.getItemAtPosition(position1).toString();
+            choosen_ItemInClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
             //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
-            if (list_of_View.isItemChecked(position1)) {
-                list_of_View.setItemChecked(position1, false);
+            if (binding.listItemModel.isItemChecked(position1)) {
+                binding.listItemModel.setItemChecked(position1, false);
                 checkedItemsReloadInfo();
             }
             //Создаём диалог
@@ -1373,10 +1380,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Удаляем строку
         else if (itemId == R.id.menuitemDeleteRow) {
             bool_prepereDeleteRow = false;
-            choosen_ItemInClickmethod = list_of_View.getItemAtPosition(position1).toString();
+            choosen_ItemInClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
             //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
-            if (list_of_View.isItemChecked(position1)) {
-                list_of_View.setItemChecked(position1, false);
+            if (binding.listItemModel.isItemChecked(position1)) {
+                binding.listItemModel.setItemChecked(position1, false);
                 checkedItemsReloadInfo();// в конце метода checkedItemsReloadInfo(), bool_prepereDeleteRow должна стать true.
             } else {
                 bool_prepereDeleteRow = true;
@@ -1404,7 +1411,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Отметить все элементы в листе
         else if (itemId == R.id.menuCheckAllPositions) { // Меню отмечаем все елементы.
             if (!mainList.isEmpty()) {
-                btnSave.callOnClick();
+                binding.btnSave.callOnClick();
                 sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sPref.edit();
                 sPref.edit().clear().apply();
@@ -1419,7 +1426,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 editor.apply();
                 gap.clear();
                 hashSetMainCollectorItems.clear();// Чистим его тут что бы он обновился с новыми данными в btnSave.
-                btnSave.callOnClick();
+                binding.btnSave.callOnClick();
             } else if (!found_List.isEmpty()) {
                 getAllListItemsIsCheched(found_List);
             } else if (!foundAccurateList.isEmpty()) {
@@ -1428,11 +1435,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         } else if (itemId == R.id.menuUnCheckAllPositions) {
             if (!mainList.isEmpty()) {
-                btnSave.callOnClick();
+                binding.btnSave.callOnClick();
                 sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
                 sPref.edit().clear().apply();
                 hashSetMainCollectorItems.clear();
-                btnSave.callOnClick();
+                binding.btnSave.callOnClick();
             } else if (!found_List.isEmpty()) {
                 getAllListItemsIsUnCheched(found_List);
             } else if (!foundAccurateList.isEmpty()) {
@@ -1458,12 +1465,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.apply();
         gap.clear();
         hashSetMainCollectorItems.clear();// Чистим его тут что бы он обновился с новыми данными в btnSave.
-        btnSave.callOnClick();
+        binding.btnSave.callOnClick();
         try {
             ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
             for (int i = 0; i < loadhistory.size(); i++) {
-                etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
-                btnSearch.callOnClick();
+                binding.etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
+                binding.btnSearch.callOnClick();
             }
             loadhistory.clear();
         } catch (Exception e) {
@@ -1488,12 +1495,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.apply();
         gap.clear();
         hashSetMainCollectorItems.clear();// Чистим его тут что бы он обновился с новыми данными в btnSave.
-        btnSave.callOnClick();
+        binding.btnSave.callOnClick();
         try {
             ArrayList<String> loadhistory = new ArrayList<>(supportRequestHistoryForChangeStrings);
             for (int i = 0; i < loadhistory.size(); i++) {
-                etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
-                btnSearch.callOnClick();
+                binding.etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
+                binding.btnSearch.callOnClick();
             }
         } catch (Exception e) {
             Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG).show();
@@ -1507,16 +1514,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
              list_of_View.getItemAtPosition( sparseBooleanArray.keyAt(i))); // получение имени по позиции.
             */
         bool_haveDeletingRight = false;
-        btnSave.callOnClick();
+        binding.btnSave.callOnClick();
         if (hashSetMainCollectorItems.size() == mainList.size()) {
-            etName.setText("Delete");
-            btnDeleteAll.callOnClick();
+            binding.etName.setText("Delete");
+            binding.btnDeleteAll.callOnClick();
         }
         sqLiteDatabase = dbHelper.getWritableDatabase();
-        SparseBooleanArray sparseBooleanArray = list_of_View.getCheckedItemPositions();//получаем все cheked elements
+        SparseBooleanArray sparseBooleanArray = binding.listItemModel.getCheckedItemPositions();//получаем все cheked elements
         for (int i = 0; i < sparseBooleanArray.size(); i++) {
-            Log.i(TAG, "onContextItemSelected: " + list_of_View.getItemAtPosition(sparseBooleanArray.keyAt(i)));
-            String toDeleteString = (String) list_of_View.getItemAtPosition(sparseBooleanArray.keyAt(i));// получаем строку
+            Log.i(TAG, "onContextItemSelected: " + binding.listItemModel.getItemAtPosition(sparseBooleanArray.keyAt(i)));
+            String toDeleteString = (String) binding.listItemModel.getItemAtPosition(sparseBooleanArray.keyAt(i));// получаем строку
             //list_of_View.setItemChecked(sparseBooleanArray.keyAt(i),false);
             sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{toDeleteString});
             //dbHelper.uninsertData(toDeleteString);
@@ -1525,7 +1532,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         hashSetMainCollectorItems.clear();
         sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
         sPref.edit().clear().apply();
-        btnSave.callOnClick();
+        binding.btnSave.callOnClick();
 
     }
 
@@ -1587,7 +1594,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 } else if (searchWord.length() <= 2) {
                     Log.i(TAG, "toAppointSearchList: Слово уже слишком короткое уходим от сюда");
-                    etName.setText("");
+                    binding.etName.setText("");
                     Toast.makeText(MainActivity.this, R.string.word_not_exist, Toast.LENGTH_LONG).show();
                     return;
                 } else if (toWhereList.isEmpty()) {
@@ -1599,11 +1606,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_checked, toWhereList);
-            list_of_View.setAdapter(adapter);
+            binding.listItemModel.setAdapter(adapter);
             fromWhereSearchlist.clear();
 
             loadCheckedItems(toWhereList);
-            etName.setText("");
+            binding.etName.setText("");
             //вычитаем point c батареи
 
             if (!isSubscribed) {
@@ -1641,7 +1648,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             for (int i = 0; i < list.size(); i++) {             //Теперь из основного Списка находим отмеченные
                 for (int g = 0; g < listFromSharedPreference.size(); g++) {
                     if (list.get(i).contains(listFromSharedPreference.get(g))) {
-                        list_of_View.setItemChecked(list.indexOf(list.get(i)), true);//Если имена совпали, в list.get(i) - получаем индекс, и сразу пихаем его в list.indexOf().
+                        binding.listItemModel.setItemChecked(list.indexOf(list.get(i)), true);
+                        //Если имена совпали, в list.get(i) - получаем индекс, и сразу пихаем его в list.indexOf().
                         break;
                     }
                 }
@@ -1668,6 +1676,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         outState.putBoolean("val5", bool_xlsColumnsWasChosen);
         outState.putBoolean("val6", isSubscribed);
         if (localDateChecked != null) outState.putString("val7", localDateChecked.toString());
+        outState.putBoolean("val8", bool_owner);
 
     }
 
@@ -1688,6 +1697,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String date = savedInstanceState.getString("val7");
             localDateChecked = LocalDateTime.parse(date);
         }
+        bool_owner = savedInstanceState.getBoolean("val8");
         regSubElements(isSubscribed);
 
     }
@@ -1753,30 +1763,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
 
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
+            if (!bool_owner) {
+                binding.menuSpiner.setSelection(menuSize);
+                Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
+                startActivity(intent);
+            }
             binding.menuSpiner.setSelection(menuSize);
-            Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
-            startActivity(intent);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
             binding.menuSpiner.setSelection(menuSize);
             Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
             startActivityForResult(intent, 2);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
-            Log.d(TAG, "onItemSelected: lol");
-            if (mRewardedAd != null) {
-                binding.menuSpiner.setSelection(menuSize);
-                DialogClass dialogClass = new DialogClass(MainActivity.this,
-                        getString(R.string.toGetBatteryEnergy),
-                        getString(R.string.ad),
-                        getString(R.string.towatch),
-                        getString(R.string.cancel),
-                        null
-                );
-                dialogClass.createStandartNewDialogShowAd();
-                dialogClass.dialog.show();
-            } else {
-                binding.menuSpiner.setSelection(menuSize);
-                Toast.makeText(this, R.string.rewardedAdsIsNull, Toast.LENGTH_LONG).show();
+            if (!bool_owner) {
+                if (mRewardedAd != null) {
+                    binding.menuSpiner.setSelection(menuSize);
+                    DialogClass dialogClass = new DialogClass(MainActivity.this,
+                            getString(R.string.toGetBatteryEnergy),
+                            getString(R.string.ad),
+                            getString(R.string.towatch),
+                            getString(R.string.cancel),
+                            null
+                    );
+                    dialogClass.createStandartNewDialogShowAd();
+                    dialogClass.dialog.show();
+                } else {
+                    binding.menuSpiner.setSelection(menuSize);
+                    Toast.makeText(this, R.string.rewardedAdsIsNull, Toast.LENGTH_LONG).show();
+                }
             }
+            binding.menuSpiner.setSelection(menuSize);
         }
 
     }

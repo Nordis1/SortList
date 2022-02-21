@@ -19,6 +19,21 @@
         app:layout_constraintVertical_chainStyle="packed">
 
         <TextView
+            android:id="@+id/idTextOwner"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="4dp"
+            android:fontFamily="@font/roboto_bold"
+            android:text="@string/string_owner"
+            android:textSize="23sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_percent="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <TextView
             android:id="@+id/idsubscriptionText"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -53,8 +68,8 @@
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
             android:background="@drawable/layer_list"
-            android:visibility="visible"
             android:transitionName="@string/normal"
+            android:visibility="visible"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHeight_percent="0.95"
@@ -171,7 +186,7 @@
         app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow1">
 
         <Button
-            android:id="@+id/loadtext"
+            android:id="@+id/btnLoadFile"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="2dp"
@@ -210,7 +225,7 @@
             app:layout_constraintEnd_toStartOf="@+id/btnSave"
             app:layout_constraintHeight_percent="0.9"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/loadtext"
+            app:layout_constraintStart_toEndOf="@+id/btnLoadFile"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.29" />
 
@@ -254,7 +269,7 @@
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/ID_ConstraintManual"
+            android:id="@+id/ID_Main_Inner_UserGuide"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="1dp"
@@ -266,7 +281,6 @@
             app:layout_constraintHeight_percent="0.99"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
             app:layout_constraintWidth_percent="0.99">
