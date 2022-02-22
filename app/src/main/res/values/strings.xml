@@ -103,7 +103,7 @@
     <string name="which">Choose which your file Encoding Type?</string>
     <string name="Reason_for_encodin_choose">"In order to avoid unknown characters when loading a file in-app, it is advisable to select the file encoding."</string>
     <string name="Cyrillic">Cyrillic</string>
-    <string name="Uncheckallpositions">Отменить все позиции</string>
+    <string name="Uncheckallpositions">Uncheck all positions</string>
     <string name="toSeeAds">Charge the battery</string>
     <string name="rewardedAdsIsNull">Ad content doesn\'t load</string>
     <string name="towatch">Watch</string>
