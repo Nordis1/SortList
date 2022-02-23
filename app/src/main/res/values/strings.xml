@@ -36,7 +36,7 @@
     <string name="Create_dialog_Error">Create dialog Error!</string>
     <string name="fail_to_restore_previous_searching">Fail to restore previous searching</string>
     <string name="Delete_Error">Delete Error</string>
-    <string name="Not_data_to_show">Not data to show</string>
+    <string name="Not_data_to_show">No data to show</string>
     <string name="First_download_the_file">\"First, download the file \"</string>
     <string name="file_version_error">File version error</string>
 

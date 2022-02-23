@@ -13,18 +13,8 @@ import java.util.regex.Pattern;
 public class NeiserClass {
     static int pittB80;
     static int pittB95;
-
-    static int tumba;
-    static int origon;
-    static int addSpace;
-    static int miami;
-    static int bern;
-    static int aspen;
-    static int life;
-    static int yle_sonad_kokku;
     static ArrayList<String> mainList = new ArrayList<>();
     static ArrayList<String> mainSupport = new ArrayList<>();
-    static int countSpase = 0;
     static int countDate = 0;
     private static final String TAG = "NeiserClass";
 
@@ -49,7 +39,6 @@ public class NeiserClass {
         String day = "";
         String name = "";
         String line;
-        int forSpaceDetecting = 0;
         int forDate = 0;
         for (int i = 0; i < mainSupport.size(); i++) {
             line = mainSupport.get(i);
@@ -65,10 +54,7 @@ public class NeiserClass {
             if (m_date_Searshing.find() && i<10){
                 Log.d(TAG, "main: " + line);
                 forDate = line.length();
-            }
-            if (line.length() == forSpaceDetecting) {
-                countSpase++;
-            } else if (line.length() == forDate) {   // Находим Дату и реализуем её в день обычно 17 - 18 (это там где дата)
+            }else if (line.length() == forDate) {   // Находим Дату и реализуем её в день
                 day = daysDeterminate(line);
             } else if (m_nameSearching.find()) {     // ищем Имена
                 name = namesDeterminate(line);
@@ -77,13 +63,12 @@ public class NeiserClass {
 
                 //Удаляем пробелы и подготавливаем строку к записи
 
-                String p = deletingExtraSpaces(line.substring(2)); // поддержка со 2 символа, что бы весь номер не выводить.
-                String newline = name + " " + p + " | | " + day;
-                mainList.add(newline);
+                line = deletingExtraSpaces(line.substring(2)); // поддержка со 2 символа, что бы весь номер не выводить.
+                line = name + " " + line + " | | " + day;
+                mainList.add(line);
             }
         }
 
-        //Подготовка к записи
 
         mainList.add("NB----->>> Padi Pitt/uma/living/Lux A80 - " + pittB80 + " tk " + "; A95 - " + pittB95 + " tk "); // добавляю количество люксовых подушек
 
@@ -169,17 +154,12 @@ public class NeiserClass {
         String previousString = null;
 
 
-        ArrayList<String> mainLoadList = new ArrayList<>(); // создаём новый аррай лист
-        mainLoadList.addAll(comeList);
+        // создаём новый аррай лист
+        ArrayList<String> mainLoadList = new ArrayList<>(comeList);
         try {
             for (int i = 0; i < mainLoadList.size(); i++) {
                 ln = mainLoadList.get(i);
-                int StringLength = ln.length();
-                if (StringLength < 5) {
-                    ln = ln + "  ";
-                }
                 if (ln.substring(0, 2).contains("OR")) {   //Origon совмещаем Вариант 3
-                    origon++;
                     previousString = mainLoadList.get(i - 2);
                     String previos_number = previousString.substring(0, 8);
                     int oo = previousString.length();
@@ -188,24 +168,17 @@ public class NeiserClass {
                     mainLoadList.add(i - 2, nnew);
                     mainLoadList.remove(i);
                 } else if (ln.substring(0, 1).matches(p.toString())) { // изменения внесены 15.08.2019
-                    addSpace++;
                     mainLoadList.remove(i);
                     mainLoadList.add(i, "        " + "1 " + ln);
 
                 } else if (ln.contains("kokku")) {
-                    //System.out.println("убрана подпись kokku. Строка 221" + mainLoadList.get(i));
                     mainLoadList.remove(i);
-                    yle_sonad_kokku++;
                 } else if (ln.contains("MIAM")) {
-                    miami++;
                     String pp = ln.substring(18, ln.length()).replaceAll("(MIAM/)([NX])(/k-|/p)", ""); // уберает лишние MIAM/N/k-B85-H6R  1tk;  MIAM/N/k-QL  1tk
                     String lp = ln.substring(0, 17);
                     mainLoadList.remove(i);
                     mainLoadList.add(i, lp + pp);          /**!!!!!! -----   НОВЕНЬКОЕ  15.10.2019 -----   !!!!!!*/
-                    //System.out.println(lp + pp);
                 } else if (ln.contains("FOOTSTOOL") || ln.contains("Footstool")) {
-                    //System.out.println(ln);
-                    tumba++;
                     String pp2 = ln.replaceAll("FOOTSTOOL|Footstool", "");
                     mainLoadList.remove(i);
                     mainLoadList.add(i, pp2);
@@ -215,20 +188,13 @@ public class NeiserClass {
                     String lp = ln.substring(0, 17);
                     mainLoadList.remove(i);
                     mainLoadList.add(i, lp + pp);
-                } else if (ln.contains("ASPEN")) {
-                    aspen++;
-                } else if (ln.contains("LIFE")) {
-                    life++;
                 } else if (ln.contains("PITTSBURGH/LUX") || ln.contains("UMA/LUX") || ln.contains("LIVINGSTON/LUX")) {
-                    //System.out.println(ln);
                     if (ln.contains("B80")) {
                         pittB80 += 2;
                     }
                     if (ln.contains("B95")) {
                         pittB95 += 2;
                     }
-                } else if (ln.contains("BERN")) {
-                    bern++;
                 }else if (ln.contains("F135")) {
                     CorrectString = ln + " { F104 }";
                     mainLoadList.remove(i);

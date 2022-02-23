@@ -51,7 +51,7 @@
     <string name="Create_dialog_Error">Ошибка создания диалога!</string>
     <string name="fail_to_restore_previous_searching">Неудалось восстанновить предыдущие запросы</string>
     <string name="Delete_Error">Ошибка удаления!</string>
-    <string name="Not_data_to_show">Ошибка курсора,перезапустите программу!</string>
+    <string name="Not_data_to_show">Данных нет</string>
     <string name="First_download_the_file">Сделайте закачку файла!</string>
     <string name="file_version_error">Ошибка версии файла!</string>
     <string name="how_delete">Варианты удаления</string>
