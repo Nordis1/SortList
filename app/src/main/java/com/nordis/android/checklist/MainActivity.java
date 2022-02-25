@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
-    static volatile boolean bool_fileOfNameReady, bool_deleteFile_checkBox_isActivated, bool_fileNotChosen, bool_isSaved, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
+    static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
             bool_xlsExecutorCanceled, bool_haveDeletingRight, bool_billingInitializeOk, bool_owner, bool_neiser = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //bool_prepereDeleteRow - для контекстной функции Delete row.
@@ -175,7 +175,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DialogClass newdialog;
     LocalDateTime localDateChecked;
     static Uri uri; // Получаем нахождение файла в OnActivityResult
-    private int requestCodePermissionResult_ToDeleteFile = 1;
     private int requestCodePermissionResult_ToReadFile = 2;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -418,7 +417,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 35);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 50);
                         binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
                         break;
                     case hBillingClientInitializeIsCorrect:
@@ -431,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 35);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 50);
                         binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
 
                         newdialog = new DialogClass(MainActivity.this,
@@ -452,7 +451,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 35);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 50);
                         binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
 
                         newdialog = new DialogClass(MainActivity.this,
@@ -734,12 +733,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             binding.IDMainInnerUserGuide.setVisibility(View.GONE);
 
-            sPref = getSharedPreferences("FILENAME", MODE_PRIVATE);
-            SharedPreferences.Editor editor1 = sPref.edit();
-            editor1.putString("keyFileName", fileName);
-            editor1.putString("keyUriFile", uri.toString());
-            editor1.apply();
-
             //Проверяем доступ к файлам.
             int result = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
             //Если нет доступа то запрашиваем и в onPermissionResult осуществляем открытие документа.
@@ -851,19 +844,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String delete = "Delete";
                 if (del.equals(delete)) { // Если Ввёл в строку Delete
                     try {
-                        if (bool_deleteFile_checkBox_isActivated) {
-                            Log.d(TAG, "onClick: зашли проверить разрешения на управление файлами");
-                            int result = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-                            if (result != PackageManager.PERMISSION_GRANTED) {
-                                Log.d(TAG, "onClick: Разрешение на управление файлами нет! Делаем запрос.");
-                                ActivityCompat.requestPermissions(MainActivity.this,
-                                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCodePermissionResult_ToDeleteFile);
-                            } else {
-                                Log.d(TAG, "onClick: Разрешение на управление файлами есть.");
-                                startingFileDeleting();
-                            }
-                        }
 
                         sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);
                         File file = new File("data/data/com.nordis.android.checklist/databases/DBNeiser");
@@ -897,7 +877,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         foundAccurateList.clear();
                         hashSetMainCollectorItems.clear();
                         choosen_ItemInClickmethod = null;
-                        bool_deleteFile_checkBox_isActivated = false;
                         adapter1.clear();
                         backcounter = 0;
                         mColumnmax = 0;
@@ -1109,14 +1088,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == requestCodePermissionResult_ToDeleteFile &&
-                grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) { // подготовка к удалению файла
-            Log.d(TAG, "onRequestPermissionsResult: зашли в удаления файла");
-            startingFileDeleting();
-        }
-        //Логика удаления файла на носителе закончена.
-        //------------------------------------------------------------------------------------------
-        //далее начинаеться логика загрузки файла
+        //начинаеться логика загрузки файла
         if (requestCode == requestCodePermissionResult_ToReadFile &&
                 grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "onRequestPermissionsResult: зашли в чтение файла");
@@ -1136,45 +1108,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bool_fileOfNameReady = false;
     }
 
-
-    private void startingFileDeleting() {
-        sPref = getSharedPreferences("FILENAME", MODE_PRIVATE); // получаем имя файла, которое сохранили при загрузке
-        fileName = sPref.getString("keyFileName", "");
-        String s = sPref.getString("keyUriFile", "");
-        uri = (Uri.parse(s));
-
-        //Проверка версии программы.
-        try {
-            PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
-            String version = pInfo.versionName;
-            Log.i(TAG, "onRequestPermissionsResult: versionName: " + version);
-            if (version.equals("1.0")) {
-                fileName = "Plan.txt";
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            Toast.makeText(MainActivity.this, R.string.file_version_error, Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
-
-        //удаления файла
-        try {
-            File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File file = new File(sdCard, fileName);
-
-            if (file.delete()) {
-                Log.d(TAG, "onRequestPermissionsResult:  deleted");
-                Toast.makeText(MainActivity.this, getString(R.string.file_deleted_successfully), Toast.LENGTH_SHORT).show();
-                sPref.edit().clear().apply();
-            } else {
-                Toast.makeText(MainActivity.this, getString(R.string.file_not_found) + cursor.getInt(3), Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
-            Toast.makeText(MainActivity.this, R.string.file_deleting_error, Toast.LENGTH_SHORT).show();
-        }
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public boolean deleteFileUsingDisplayName(Context context, String displayName) {

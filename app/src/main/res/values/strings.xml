@@ -29,7 +29,7 @@
     <string name="From_which_to_which">From which to which column to read ?</string>
     <string name="Accept">Accept</string>
     <string name="Delete_with">Delete file from download folder?</string>
-    <string name="Save_unchecked">Do save unchecked positions?</string>
+    <string name="Save_unchecked">Save unchecked positions?</string>
 
     <string name="File_reading_Error">File reading Error!</string>
     <string name="Reading_rest_data_Error">Reading rest data Error!</string>
@@ -79,7 +79,7 @@
     <string name="one_Yeard">Yeard</string>
     <string name="Month">Month</string>
     <string name="Sixmonths">6 Months</string>
-    <string name="checklistsubscribe">Check List Subscribe</string>
+    <string name="checklistsubscribe">Picker - Subscription</string>
     <string name="theneuro">10 Euro</string>
     <string name="oneEuro">1 Euro</string>
     <string name="fiveEuro">5.40 Euro</string>

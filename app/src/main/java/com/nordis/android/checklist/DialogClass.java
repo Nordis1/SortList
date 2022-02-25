@@ -82,7 +82,6 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                 dialog.cancel();
                 break;
             case R.id.ID_btn_DeleteFile_Dialog_DeleteAllChecked:
-                bool_deleteFile_checkBox_isActivated = false;
                 handler.sendEmptyMessage(hSetDeleteRest);
                 try {
                     TimeUnit.MILLISECONDS.sleep(500);
@@ -95,13 +94,6 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
             case R.id.ID_btn_DeleteFile_Dialog_Delete:
                 handler.sendEmptyMessage(hsetdelete_WithOut_rest);
                 dialog.cancel();
-                break;
-            case R.id.ID_checkBoxDeleteFile:
-                if (checkBox_DeleteFile.isChecked()) {
-                    bool_deleteFile_checkBox_isActivated = true;
-                } else {
-                    bool_deleteFile_checkBox_isActivated = false;
-                }
                 break;
             case R.id.ID_resize_btnAccept:
                 String max = (String) maxValue.getText();
@@ -118,9 +110,11 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
             case R.id.ID_saveUncheckedPositions:
                 if (checkbox_saveCheched.isChecked()) {
                     btnDeleteAllChecked.setEnabled(false);
+                    btnCancel.setEnabled(false);
                     handler.sendEmptyMessage(hSetDoRest);
                 }else {
                     btnDeleteAllChecked.setEnabled(true);
+                    btnCancel.setEnabled(true);
                     handler.sendEmptyMessage(hSetDeleteRest);
                 }
                 break;
@@ -176,16 +170,14 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
             View layout = inflater.inflate(R.layout.activity_delete_file, null);
             alertBuilder.setView(layout);
             alertBuilder.setCancelable(false);
-            checkBox_DeleteFile = layout.findViewById(R.id.ID_checkBoxDeleteFile);
             checkbox_saveCheched = layout.findViewById(R.id.ID_saveUncheckedPositions);
-            Button btnCancel = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Cancel);
+            btnCancel = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Cancel);
             btnDeleteAllChecked = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_DeleteAllChecked);
             Button btnDelete = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Delete);
             checkbox_saveCheched.setOnClickListener(this);
             btnCancel.setOnClickListener(this);
             btnDeleteAllChecked.setOnClickListener(this);
             btnDelete.setOnClickListener(this);
-            checkBox_DeleteFile.setOnClickListener(this);
             dialog = alertBuilder.create();
         } catch (Exception e) {
             handler.sendEmptyMessage(hSetCreateDialogError);

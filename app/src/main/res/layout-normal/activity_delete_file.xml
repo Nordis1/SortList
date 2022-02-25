@@ -77,11 +77,11 @@
         app:autoSizeMinTextSize="10sp"
         app:layout_constraintBottom_toTopOf="@+id/ID_btn_DeleteFile_Dialog_DeleteAllChecked"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.15"
+        app:layout_constraintHeight_percent="0.18"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ID_saveUncheckedPositions"
-        app:layout_constraintWidth_percent="0.7" />
+        app:layout_constraintWidth_percent="0.75" />
 
     <Button
         android:id="@+id/ID_btn_DeleteFile_Dialog_DeleteAllChecked"
@@ -99,11 +99,11 @@
         app:autoSizeTextType="uniform"
         app:layout_constraintBottom_toTopOf="@+id/ID_btn_DeleteFile_Dialog_Cancel"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.15"
+        app:layout_constraintHeight_percent="0.18"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ID_btn_DeleteFile_Dialog_Delete"
-        app:layout_constraintWidth_percent="0.7" />
+        app:layout_constraintWidth_percent="0.75" />
 
     <Button
         android:id="@+id/ID_btn_DeleteFile_Dialog_Cancel"
@@ -118,9 +118,9 @@
         app:autoSizeMinTextSize="10sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.15"
+        app:layout_constraintHeight_percent="0.18"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ID_btn_DeleteFile_Dialog_DeleteAllChecked"
-        app:layout_constraintWidth_percent="0.7" />
+        app:layout_constraintWidth_percent="0.75" />
 </androidx.constraintlayout.widget.ConstraintLayout>
