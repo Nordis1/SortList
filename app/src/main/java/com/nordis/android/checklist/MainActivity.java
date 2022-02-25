@@ -5,23 +5,31 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaMetadata;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.os.Parcelable;
 import android.os.SystemClock;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,6 +44,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
+import androidx.loader.content.CursorLoader;
 
 import com.example.android.checklist.R;
 import com.example.android.checklist.databinding.ActivityMainBinding;
@@ -54,12 +65,16 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -104,25 +119,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
-    static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved,
-            bool_deleteFile_checkBox_isActivated, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled, bool_haveDeletingRight, bool_billingInitializeOk,bool_owner,bool_neiser = false;
+    static volatile boolean bool_fileOfNameReady, bool_deleteFile_checkBox_isActivated, bool_fileNotChosen, bool_isSaved, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
+            bool_xlsExecutorCanceled, bool_haveDeletingRight, bool_billingInitializeOk, bool_owner, bool_neiser = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //bool_prepereDeleteRow - для контекстной функции Delete row.
     //bool_isSaved - используется в RestCreating. Что бы прога не удалила план пока не завершится сохранение остатка.
     //bool_onSaveReady - для контекстной функции Delete All checked.
-    //bool_deleteFile_checkBox_isActivated специальная переменная для удаленя файла на носителе.
     //bool_isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
 
     //Integer variables
     static int batteryLvl;
     int backcounter = 0;  //backcounter - работает с backSearchlist
-    final int requestCode1 = 1;
+    final int requestCodeActivityResult_PickFile = 1;
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
     static int firstWordCounter = -1; //переменная вторичная
     final int menuSize = 4;
+    static int takeFlags;
 
     final int hSetToastErrorOfFileReading = 1;
     final int hsetdelete_WithOut_rest = 3;
@@ -161,6 +175,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DialogClass newdialog;
     LocalDateTime localDateChecked;
     static Uri uri; // Получаем нахождение файла в OnActivityResult
+    private int requestCodePermissionResult_ToDeleteFile = 1;
+    private int requestCodePermissionResult_ToReadFile = 2;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -230,8 +246,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
-        sPref = getSharedPreferences("OWNER",MODE_PRIVATE);
-        bool_owner = sPref.getBoolean("keyown",false);
+        sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
+        bool_owner = sPref.getBoolean("keyown", false);
 
         if (!bool_owner) {
             //Логика дейсвий:
@@ -268,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(MainActivity.this, R.string.intializegettingFall, Toast.LENGTH_LONG).show();
                 Log.d(TAG, "checkSub: error: " + e.getMessage());
             }
-        }else {
+        } else {
             isSubscribed = true;
             regSubElements(isSubscribed);
 
@@ -296,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         // Handle the error.
-                        Log.d(TAG, "onAdFailedToLoad: "+ loadAdError);
+                        Log.d(TAG, "onAdFailedToLoad: " + loadAdError);
                         Log.d(TAG, "Ad was not loaded " + loadAdError.getMessage());
                         mRewardedAd = null;
                     }
@@ -459,12 +475,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void regSubElements(Boolean subcribtionY) {
         if (subcribtionY) {
-            if (bool_owner){
+            if (bool_owner) {
                 binding.menuViewBattery.setVisibility(View.GONE);
                 binding.idsubscriptionText.setVisibility(View.GONE);
                 binding.idTextOwner.setVisibility(View.VISIBLE);
                 Toast.makeText(MainActivity.this, R.string.developer_mode, Toast.LENGTH_SHORT).show();
-            }else {
+            } else {
                 binding.idTextOwner.setVisibility(View.GONE);
                 binding.menuViewBattery.setVisibility(View.GONE);
                 binding.idsubscriptionText.setVisibility(View.VISIBLE);
@@ -636,8 +652,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                }
-                else if (binding.downloadBar.getMax() > 40 && binding.downloadBar.getMax() <= 100) { //1.4 - 3.5 sec
+                } else if (binding.downloadBar.getMax() > 40 && binding.downloadBar.getMax() <= 100) { //1.4 - 3.5 sec
                     try {
                         TimeUnit.MILLISECONDS.sleep(35);
                         //Log.i(TAG, "Sleep 35");
@@ -647,8 +662,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                }
-                else if (binding.downloadBar.getMax() > 100 && binding.downloadBar.getMax() <= 350) { //1.3 - 4.5 sec
+                } else if (binding.downloadBar.getMax() > 100 && binding.downloadBar.getMax() <= 350) { //1.3 - 4.5 sec
                     try {
                         TimeUnit.MILLISECONDS.sleep(13);
                         //Log.i(TAG, "Sleep 30");
@@ -658,8 +672,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                }
-                else if (binding.downloadBar.getMax() > 350 && binding.downloadBar.getMax() <= 600) { // 2.4 - 4.2
+                } else if (binding.downloadBar.getMax() > 350 && binding.downloadBar.getMax() <= 600) { // 2.4 - 4.2
                     try {
                         TimeUnit.MILLISECONDS.sleep(7);
                         //Log.i(TAG, "Sleep 12");
@@ -669,8 +682,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                }
-                else if (binding.downloadBar.getMax() > 600) { // 3 sec
+                } else if (binding.downloadBar.getMax() > 600) { // 3 sec
                     try {
                         TimeUnit.MILLISECONDS.sleep(5);
                         //Log.i(TAG, "Sleep 5");
@@ -712,23 +724,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         //Сюда приходим из Загрузки, и ищём наш файл на устройстве. А так же инициализируем его имя.
-        if (requestCode == requestCode1 && resultCode == Activity.RESULT_OK) {
+        if (requestCode == requestCodeActivityResult_PickFile && resultCode == Activity.RESULT_OK) {
             if (data == null) {
                 return;
             }
             uri = data.getData();
-            fileName = BrowseTheFile.getRealPath(MainActivity.this, uri);
-            //String path23 = BrowseTheFile.getRealPath(this, uri);
-            Log.i(TAG, "onActivityResult: data String: " + fileName);
-            String[] massiveString = fileName.split("/");
-            fileName = massiveString[massiveString.length - 1];
-            Log.i(TAG, "onActivityResult: data String: " + massiveString[massiveString.length - 1]);
+            fileName = getFileName(uri);
             bool_fileOfNameReady = true;
+
+            binding.IDMainInnerUserGuide.setVisibility(View.GONE);
 
             sPref = getSharedPreferences("FILENAME", MODE_PRIVATE);
             SharedPreferences.Editor editor1 = sPref.edit();
             editor1.putString("keyFileName", fileName);
+            editor1.putString("keyUriFile", uri.toString());
             editor1.apply();
+
+            //Проверяем доступ к файлам.
+            int result = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+            //Если нет доступа то запрашиваем и в onPermissionResult осуществляем открытие документа.
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, requestCodePermissionResult_ToReadFile);
+            } else {
+                //Если доступ был предоставлен то делаем открытие документа тут.
+                creatingThreadToReadingFile();
+            }
+
 
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
@@ -744,6 +766,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @SuppressLint("Range")
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
+    }
 
     @SuppressLint("NonConstantResourceId")
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -808,18 +852,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (del.equals(delete)) { // Если Ввёл в строку Delete
                     try {
                         if (bool_deleteFile_checkBox_isActivated) {
-                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                            Log.d(TAG, "onClick: зашли проверить разрешения на управление файлами");
+                            int result = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+                            if (result != PackageManager.PERMISSION_GRANTED) {
+                                Log.d(TAG, "onClick: Разрешение на управление файлами нет! Делаем запрос.");
+                                ActivityCompat.requestPermissions(MainActivity.this,
+                                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCodePermissionResult_ToDeleteFile);
+                            } else {
+                                Log.d(TAG, "onClick: Разрешение на управление файлами есть.");
+                                startingFileDeleting();
+                            }
                         }
+
                         sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);
-                        File file = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser");
-                        File file2 = new File("data/data/com.example.android.sqlitekod_dev_test/databases/DBNeiser-journal");
-                        Log.i(TAG, "onClick: Попытка удалить файлы Data base. Файл сущестует?" + file.exists());
-                        file.delete();
-                        file2.delete(); //data/data/com.example.android.sqlitekod_dev_test/shared_prefs/SAVE.xml
-                        Log.i(TAG, "onClick: После удаления Data base. Файл сущестует?" + file.exists());
+                        File file = new File("data/data/com.nordis.android.checklist/databases/DBNeiser");
+                        File file2 = new File("data/data/com.nordis.android.checklist/databases/DBNeiser-journal");
+                        if (file.exists() || file2.exists()) {
+                            file.delete();
+                            file2.delete();
+                            Log.d(TAG, "Файлы базы данных были обнаружины и удалены! Существуют ли файлы баз данных после удаления? " + file.exists());
+                        } else {
+                            Log.d(TAG, "onClick: Файлы базы данных не были обнаруженны.");
+                        }
+
 
                     } catch (Exception e) {
-                        Log.d(TAG, "Попытка удалить внутренние файлы DBNeiser и DBNeiser-journal " + e.getMessage());
+                        Log.d(TAG, "Ошибка удаления внутренних файлов DBNeiser и DBNeiser-journal " + e.getMessage());
                         e.printStackTrace();
                     }
 
@@ -838,6 +897,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         foundAccurateList.clear();
                         hashSetMainCollectorItems.clear();
                         choosen_ItemInClickmethod = null;
+                        bool_deleteFile_checkBox_isActivated = false;
                         adapter1.clear();
                         backcounter = 0;
                         mColumnmax = 0;
@@ -875,31 +935,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("*/*");
                     setResult(RESULT_OK, intent);
-                    startActivityForResult(intent, requestCode1);
-                    Thread t = new Thread(() -> {
-                        while (!bool_fileOfNameReady || Thread.currentThread().isInterrupted()) {
-                            if (bool_fileNotChosen) {
-                                //if функция служит если файл не был выбран, включаться автоматом в onRestart
-                                break;
-                            }
-                            try {
-                                Log.i(TAG, "run: Зашли в режим сна, fileOfnameReady:  " + bool_fileOfNameReady);
-                                TimeUnit.SECONDS.sleep(3);
-                                //Thread.sleep(3300);
-                            } catch (InterruptedException e) {
-                                Log.i(TAG, "run: ошибка в новой нити: " + e.getMessage());
-                                e.printStackTrace();
-                            }
-                        }
-                        if (!bool_fileNotChosen && bool_fileOfNameReady) { // если файл
-                            Log.i(TAG, "run: Получили имя файла идём в загрузку,fileOfNameReady: " + bool_fileOfNameReady);
-                            ActivityCompat.requestPermissions(MainActivity.this,
-                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                        } else {
-                            handler.sendEmptyMessage(hSetToastErrorOfFileReading);
-                        }
-                    });
-                    t.start();
+                    startActivityForResult(intent, requestCodeActivityResult_PickFile);
                 }
                 break;
 //поиск
@@ -913,24 +949,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (name == null || name.length() == 0) {
                     Toast.makeText(this, R.string.write_something_in_the_place, Toast.LENGTH_LONG).show();
                 } else {
-                    if (name.equals("Nordis-picker=null")){
-                        sPref = getSharedPreferences("OWNER",MODE_PRIVATE);
+                    if (name.equals("Nordis-picker=null")) {
+                        sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
                         sPref.edit().clear().apply();
                         bool_owner = false;
                         isSubscribed = false;
                         binding.etName.setText("");
                         checkSub();
                     }
-                    if (name.equals("Nordis-picker")){
+                    if (name.equals("Nordis-picker")) {
                         Log.d(TAG, "onClick: зашли в Nordis-picker");
                         bool_owner = true;
                         isSubscribed = true;
-                        sPref = getSharedPreferences("OWNER",MODE_PRIVATE);
-                        sPref.edit().putBoolean("keyown",bool_owner).apply();
+                        sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
+                        sPref.edit().putBoolean("keyown", bool_owner).apply();
                         binding.etName.setText("");
                         checkSub();
 
-                    }else if (!isSubscribed) {
+                    } else if (!isSubscribed) {
                         if (batteryLvl == 0) {
                             Toast.makeText(this, getString(R.string.checkBatteryLoading), Toast.LENGTH_LONG).show();
                         } else {
@@ -938,7 +974,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             onmyQueryTextSubmit(searchWord);
                         }
                     } else {
-                        if (!bool_owner){
+                        if (!bool_owner) {
                             if (LocalDateTime.now().isAfter(localDateChecked.plusDays(1))) {
                                 Log.d(TAG, "onClick: проходим дополнительную проверку.");
                                 checkSub();
@@ -1068,146 +1104,203 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bool_isSaved = true;
     }
 
+
     @Override //после получения доступа Загружаем базу данных
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.i(TAG, "onRequestPermissionsResult: Переменная для удаления файла bool_deleteFile_checkBox_isActivated: " + bool_deleteFile_checkBox_isActivated);
-        if (bool_deleteFile_checkBox_isActivated) { // bool_deleteFile_checkBox_isActivated специальная переменная для удаления файла на носителе.
-            Log.i(TAG, "onRequestPermissionsResult:  Зашли в метод удаления файла.");
 
-            sPref = getSharedPreferences("FILENAME", MODE_PRIVATE); // получаем имя файла, которое сохранили при загрузке
-            fileName = sPref.getString("keyFileName", "");
-
-            try {
-                PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
-                String version = pInfo.versionName;
-                Log.i(TAG, "onRequestPermissionsResult: versionName: " + version);
-                if (version.equals("1.0")) {
-                    fileName = "Plan.txt";
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                Toast.makeText(MainActivity.this, R.string.file_version_error, Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
-            }
-
-            if (requestCode == 1) { // подготовка к удалению файла
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                        File file = new File(sdCard, fileName);
-
-                        if (file.delete()) {
-                            Log.d(TAG, "onRequestPermissionsResult:  deleted");
-                            Toast.makeText(MainActivity.this, getString(R.string.file_deleted_successfully), Toast.LENGTH_SHORT).show();
-                            sPref.edit().clear().apply();
-                        } else {
-                            Toast.makeText(MainActivity.this, getString(R.string.file_not_found) + cursor.getInt(3), Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
-                        Toast.makeText(MainActivity.this, R.string.file_deleting_error, Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(MainActivity.this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
-                }
-            }
-        }//Логика удаления файла на носителе закончена.
+        if (requestCode == requestCodePermissionResult_ToDeleteFile &&
+                grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) { // подготовка к удалению файла
+            Log.d(TAG, "onRequestPermissionsResult: зашли в удаления файла");
+            startingFileDeleting();
+        }
+        //Логика удаления файла на носителе закончена.
+        //------------------------------------------------------------------------------------------
         //далее начинаеться логика загрузки файла
-        else if (!bool_deleteFile_checkBox_isActivated) {
-            binding.IDMainInnerUserGuide.setVisibility(View.GONE);
-            Log.i(TAG, "onRequestPermissionsResult: Загрузка файла : " + fileName);
+        if (requestCode == requestCodePermissionResult_ToReadFile &&
+                grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "onRequestPermissionsResult: зашли в чтение файла");
             if (fileName == null) {
                 return;
             }
-            thread = new Thread(() -> {
-                Log.i(TAG, "run: Поток закачки был запущен");
-                //if (fileName.substring(fileName.length() - 3, fileName.length()).equals("txt")) {
-                if (fileName.contains(".txt")) {
-                    Log.i(TAG, "run: File был распознан как txt");
-                    if (requestCode == 1) {
-                        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                            if (!mainList.isEmpty()) {
-                                Toast.makeText(MainActivity.this, R.string.data_base_is_full, Toast.LENGTH_SHORT).show();
-                            } else {
-                                handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
-                                handler.sendEmptyMessage(hSetProgressBarVisible);
-                                loadingRest();
-                                mainloading();
-                            }
-                        } else {
-                            Toast.makeText(MainActivity.this, getString(R.string.permission_denied), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
-                    handler.sendEmptyMessage(hSetProgressBarGone);
-                    handler.sendEmptyMessage(hsetlistView_Onvisible);
-                    //} else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
-                }
-                else if (fileName.contains(".xls")) {
-                    if (fileName.contains("Neiser")){
-                        Log.d(TAG, "Содержит в названии Neiser");
-                        bool_neiser = true;
-                    }
-                    Log.i(TAG, "run: File был распознан как xls");
-                    try {
-                        handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
-                        handler.sendEmptyMessage(hSetProgressBarVisible); // Диактивируем кнопку и Активируем прогресс бар
-
-                        Log.i(TAG, "run: Передаём имя файла, файлу который считывает");
-                        Log.i(TAG, "onRequestPermissionsResult: имя файла "+fileName );
-                        handler.sendEmptyMessage(hNewXLSReader);// передаём имя файла в наш Класс, который читает его.
-                        while (file_xls_reader == null){
-                            TimeUnit.SECONDS.sleep(1);
-                            Log.d(TAG, "ждём  инициальзации file_xls_reader");
-                        }
-                        Log.d(TAG, "Инициализация успешна!");
-                        downloadList = file_xls_reader.readingXLS(MainActivity.this);
-                        Log.i(TAG, "run: Получили считанный лист. Его размер: " + downloadList.size());
-                        loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
-
-                        int j = downloadList.size() + mProgresscounter;
-                        binding.downloadBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
-                        Log.i(TAG, "mainloading: progress bar MAX = " + j);
-
-                        for (int i = 0; i < downloadList.size(); i++) {
-                            //начал добавлять сразу в базу что бы не нагружать main.
-                            dbHelper.insertData(downloadList.get(i));
-                        }
-                        viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
-                        downloadList.clear();
-                        file_xls_reader = null;
-                        mProgresscounter = 0;
-                        bool_neiser = false;
-                        //Востанавливаем кнопку и убирает прогресс бар.
-                        handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
-                        handler.sendEmptyMessage(hSetProgressBarGone);
-                        handler.sendEmptyMessage(hsetlistView_Onvisible);
-
-                    } catch (Exception e) {
-                        Log.i(TAG, "onRequestPermissionsResult: Поток был прерван в main");
-                        Log.d(TAG, "onRequestPermissionsResult: "+ e.getMessage());
-                        handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
-                        handler.sendEmptyMessage(hSetProgressBarGone);
-                        handler.sendEmptyMessage(hSetMainInnerUserGuideOnVISIBLE);
-                        file_xls_reader = null;
-                        mProgresscounter = 0;
-                        bool_neiser = false;
-                        bool_xlsExecutorCanceled = false;
-                        bool_xlsColumnsWasChosen = false;
-                        bool_neiser = false;
-                        e.printStackTrace();
-                    }
-                }
-            });
-            thread.start();
+            creatingThreadToReadingFile();
+        } else {
+            Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_LONG).show();
+            binding.downloadBar.setProgress(0);
+            mProgresscounter = 0;
+            bool_fileOfNameReady = false;
 
         }
-        bool_deleteFile_checkBox_isActivated = false;//для удаления файла на устройстве
         binding.downloadBar.setProgress(0);
         mProgresscounter = 0;
         bool_fileOfNameReady = false;
+    }
+
+
+    private void startingFileDeleting() {
+        sPref = getSharedPreferences("FILENAME", MODE_PRIVATE); // получаем имя файла, которое сохранили при загрузке
+        fileName = sPref.getString("keyFileName", "");
+        String s = sPref.getString("keyUriFile", "");
+        uri = (Uri.parse(s));
+
+        //Проверка версии программы.
+        try {
+            PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
+            String version = pInfo.versionName;
+            Log.i(TAG, "onRequestPermissionsResult: versionName: " + version);
+            if (version.equals("1.0")) {
+                fileName = "Plan.txt";
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Toast.makeText(MainActivity.this, R.string.file_version_error, Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+
+        //удаления файла
+        try {
+            File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File file = new File(sdCard, fileName);
+
+            if (file.delete()) {
+                Log.d(TAG, "onRequestPermissionsResult:  deleted");
+                Toast.makeText(MainActivity.this, getString(R.string.file_deleted_successfully), Toast.LENGTH_SHORT).show();
+                sPref.edit().clear().apply();
+            } else {
+                Toast.makeText(MainActivity.this, getString(R.string.file_not_found) + cursor.getInt(3), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onRequestPermissionsResult:  file doesn't deleted");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
+            Toast.makeText(MainActivity.this, R.string.file_deleting_error, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public boolean deleteFileUsingDisplayName(Context context, String displayName) {
+        //MediaStore.DownloadColumns.DISPLAY_NAME     false
+        //MediaStore.Downloads.DISPLAY_NAME           false
+        if (MediaStore.Downloads.DISPLAY_NAME.contains(displayName)) {
+            Log.d(TAG, "deleteFileUsingDisplayName: Да! есть такой файл ");
+        } else {
+            Log.d(TAG, "deleteFileUsingDisplayName: ТАкого файла тут нет.");
+        }
+
+        if (uri != null) {
+            final ContentResolver resolver = context.getContentResolver();
+            String[] selectionArgsPdf = new String[]{displayName};
+
+            try {
+                resolver.delete(uri, MediaStore.Downloads.DISPLAY_NAME + "=?", selectionArgsPdf);
+                return true;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                // show some alert message
+            }
+        }
+        return false;
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private boolean chkFilefromMediaStore(String in_filename) {
+
+        String path, filename;
+        try (Cursor cursor = getApplicationContext().getContentResolver().query(
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                null, null, null, null
+        )) {
+
+            assert cursor != null;
+            while (cursor.moveToNext()) {
+                // Use an ID column from the projection to get
+                // a URI representing the media item itself.
+                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA));
+                filename = path.substring(path.lastIndexOf('/') + 1);
+
+                if (filename.equals(in_filename)) {
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+
+    }
+
+    private void creatingThreadToReadingFile() {
+        thread = new Thread(() -> {
+            Log.i(TAG, "run: Поток закачки был запущен");
+            if (fileName.contains(".txt")) {
+                Log.i(TAG, "run: File был распознан как txt");
+
+                handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
+                handler.sendEmptyMessage(hSetProgressBarVisible);
+                loadingRest();
+                mainloading();
+
+                handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
+                handler.sendEmptyMessage(hSetProgressBarGone);
+                handler.sendEmptyMessage(hsetlistView_Onvisible);
+                //} else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
+            } else if (fileName.contains(".xls")) {
+                if (fileName.contains("Neiser")) {
+                    Log.d(TAG, "Содержит в названии Neiser");
+                    bool_neiser = true;
+                }
+                Log.i(TAG, "run: File был распознан как xls");
+                try {
+                    handler.sendEmptyMessage(hSetbtnReadFileEnabledFalse);
+                    handler.sendEmptyMessage(hSetProgressBarVisible); // Диактивируем кнопку и Активируем прогресс бар
+
+                    Log.i(TAG, "run: Передаём имя файла, файлу который считывает");
+                    Log.i(TAG, "onRequestPermissionsResult: имя файла " + fileName);
+                    handler.sendEmptyMessage(hNewXLSReader);// передаём имя файла в наш Класс, который читает его.
+                    while (file_xls_reader == null) {
+                        TimeUnit.SECONDS.sleep(1);
+                        Log.d(TAG, "ждём  инициальзации file_xls_reader");
+                    }
+                    Log.d(TAG, "Инициализация успешна!");
+                    downloadList = file_xls_reader.readingXLS(MainActivity.this);
+                    Log.i(TAG, "run: Получили считанный лист. Его размер: " + downloadList.size());
+                    loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
+
+                    int j = downloadList.size() + mProgresscounter;
+                    binding.downloadBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
+                    Log.i(TAG, "mainloading: progress bar MAX = " + j);
+
+                    for (int i = 0; i < downloadList.size(); i++) {
+                        //начал добавлять сразу в базу что бы не нагружать main.
+                        dbHelper.insertData(downloadList.get(i));
+                    }
+                    viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
+                    downloadList.clear();
+                    file_xls_reader = null;
+                    mProgresscounter = 0;
+                    bool_neiser = false;
+                    //Востанавливаем кнопку и убирает прогресс бар.
+                    handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
+                    handler.sendEmptyMessage(hSetProgressBarGone);
+                    handler.sendEmptyMessage(hsetlistView_Onvisible);
+
+                } catch (Exception e) {
+                    Log.i(TAG, "onRequestPermissionsResult: Поток был прерван в main");
+                    Log.d(TAG, "onRequestPermissionsResult: " + e.getMessage());
+                    handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
+                    handler.sendEmptyMessage(hSetProgressBarGone);
+                    handler.sendEmptyMessage(hSetMainInnerUserGuideOnVISIBLE);
+                    file_xls_reader = null;
+                    mProgresscounter = 0;
+                    bool_neiser = false;
+                    bool_xlsExecutorCanceled = false;
+                    bool_xlsColumnsWasChosen = false;
+                    bool_neiser = false;
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 
     Runnable runnableIncrementProgressbar = new Runnable() {
@@ -1247,6 +1340,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int j = 1;
             downloadList.add(fileName.substring(0, fileName.length() - 4));
 
+            //readTextFromUri(uri);
+
             while ((line = reader.readLine()) != null) {
 
                 if (line.isEmpty() || line.equals(" ")) { // если строка пустая , то пропускаем её.
@@ -1261,8 +1356,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             j = (downloadList.size() + mProgresscounter);
             mProgresscounter = 0;
-            binding.downloadBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
-            Log.i(TAG, "mainloading: progress bar MAX = " + j);
+            binding.downloadBar.setMax(downloadList.size()); // так как переменная volantile все изменения будут видны в любом потоке.
+            //Log.i(TAG, "mainloading: progress bar MAX = " + j);
             for (int i = 0; i < downloadList.size(); i++) {
                 //начал добавлять сразу в базу что бы не нагружать main.
                 dbHelper.insertData(downloadList.get(i));
@@ -1668,7 +1763,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onSaveInstanceState(outState);
         // View элементы у которых есть ID они сами востанавливают своё значение. Так же как Элементы Final.
         // А все другие нужно сохранять тут. А востанавливать в onRestoreInstanceState.
-        outState.putBoolean("permission", bool_deleteFile_checkBox_isActivated);
         outState.putBoolean("val1", bool_fileOfNameReady);
         outState.putBoolean("val2", bool_fileNotChosen);
         outState.putBoolean("val3", bool_isSaved);
@@ -1683,7 +1777,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        bool_deleteFile_checkBox_isActivated = savedInstanceState.getBoolean("permission");
         bool_fileOfNameReady = savedInstanceState.getBoolean("val1");
         bool_fileNotChosen = savedInstanceState.getBoolean("val2");
         bool_isSaved = savedInstanceState.getBoolean("val3");
@@ -1693,7 +1786,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (dbHelper == null) dbHelper = new DBHelper(this);
         if (contentValues == null) contentValues = new ContentValues();
         if (handler == null) onHandlerCreate();
-        if (localDateChecked == null){
+        if (localDateChecked == null) {
             String date = savedInstanceState.getString("val7");
             localDateChecked = LocalDateTime.parse(date);
         }
