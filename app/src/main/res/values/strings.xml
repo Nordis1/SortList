@@ -1,34 +1,21 @@
 <resources>
     <string name="app_name">Picker</string>
-    <string name="Download">Download</string>
     <string name="search">Search</string>
     <string name="Typeitem">Search word</string>
-    <string name="CorrectItem">Click "Change" to change item</string>
-    <string name="Type">Type Item</string>
     <string name="ShowAll">Show full list</string>
     <string name="Save">Save</string>
-    <string name="Rest">UnChecked</string>
-    <string name="search_back">Search history</string>
-    <string name="search_back_normal">History</string>
 
-    <string name="dialog_message">We can put unselected items in memory.
-    And load it, when creating  a new list.</string>
-    <string name="ok_accept">Put</string>
     <string name="cancel">Cancel</string>
     <string name="load_db">Load file\n( txt, xls )</string>
-    <string name="del_all">Del file and list</string>
     <string name="Change_Row">Change this String</string>
     <string name="Delete_Row">Delete this String</string>
     <string name="ShowUnchekedItems">Show unchecked items</string>
-    <string name="TextForDelete">Delete with Rest is:\npossible save unchecked positions and combine them with a new file uploading.</string>
     <string name="TextForDelete1">If save unchecked positions.\nLater, combine them with a new file uploading.They Mark as - * </string>
-    <string name="Deletewithrest">Delete with Rest</string>
     <string name="Delete">Delete</string>
     <string name="Delete_all">Delete all</string>
     <string name="Delete_Checked_rows">Delete all checked</string>
     <string name="From_which_to_which">From which to which column to read ?</string>
     <string name="Accept">Accept</string>
-    <string name="Delete_with">Delete file from download folder?</string>
     <string name="Save_unchecked">Save unchecked positions?</string>
 
     <string name="File_reading_Error">File reading Error!</string>
@@ -38,19 +25,14 @@
     <string name="Delete_Error">Delete Error</string>
     <string name="Not_data_to_show">No data to show</string>
     <string name="First_download_the_file">\"First, download the file \"</string>
-    <string name="file_version_error">File version error</string>
 
-    <string name="file_deleted_successfully">File deleted Successfully</string>
-    <string name="file_not_found">File not found</string>
-    <string name="file_deleting_error">File deleting Error</string>
     <string name="permission_denied">Permission denied</string>
     <string name="done">\" done\"</string>
     <string name="search_error">Search Error</string>
     <string name="word_not_exist">Word not Exist</string>
     <string name="toappoint_search_list_error">ToAppointSearchList Error</string>
     <string name="load_checked_items_error">LoadCheckedItems Error</string>
-    <string name="data_base_is_full">DataBase is full</string>
-    <string name="write_something_in_the_place">"Write something in the place \"Type item\" "</string>
+    <string name="write_something_in_the_place">"Write something</string>
     <string name="list_is_already_full">List is already full</string>
     <string name="deleted_successfully">Deleted successfully</string>
     <string name="something_went_wrong">Something went wrong</string>
@@ -71,36 +53,17 @@
     <string name="title_activity_user_subscribe">User Subscribe</string>
     <string name="checkallpositions">Check all positions</string>
     <string name="backarrow">Back arrow will return you to the previous search query.</string>
-    <string name="TextFor_itemOwned">Product already in action.</string>
-    <string name="TextFor_itemBillingUnavailable">Subscribe is not available!</string>
-    <string name="TextFor_itemFeatureNotSupport">Subscribe is not available for this device!</string>
     <string name="getSubscribe">Subscription</string>
-    <string name="Go_Back">Back</string>
     <string name="one_Yeard">Yeard</string>
     <string name="Month">Month</string>
     <string name="Sixmonths">6 Months</string>
     <string name="checklistsubscribe">Picker - Subscription</string>
-    <string name="theneuro">10 Euro</string>
-    <string name="oneEuro">1 Euro</string>
-    <string name="fiveEuro">5.40 Euro</string>
     <string name="tobuy">BUY</string>
-    <string name="tryforfree">Try Free</string>
     <string name="choose_subscribe_plan">Choose subscribe plan</string>
-    <string name="or1">OR</string>
-    <string name="GetSubscribe1">Subscribe</string>
     <string name="title_activity_user_subscribe1">My user subscribe</string>
-    <string name="please_subscribe">Please subscribe to continue.</string>
     <string name="subscribe_out">Subscription expired.</string>
     <string name="subscribe_is_valid">"Subscription is valid "</string>
     <string name="charset_determinations">Encoding</string>
-    <string name="Windows1251" translatable="false">Windows -1251</string>
-    <string name="iso_8859_5" translatable="false">ISO 8859-5</string>
-    <string name="KOI8_R" translatable="false">KOI8 -R</string>
-    <string name="KOI8_U" translatable="false">KOI8 -U</string>
-    <string name="OEM_855" translatable="false">OEM 855</string>
-    <string name="OEM_866" translatable="false">OEM 866</string>
-    <string name="macintosh" translatable="false">Macintosh</string>
-    <string name="which">Choose which your file Encoding Type?</string>
     <string name="Reason_for_encodin_choose">"In order to avoid unknown characters when loading a file in-app, it is advisable to select the file encoding."</string>
     <string name="Cyrillic">Cyrillic</string>
     <string name="Uncheckallpositions">Uncheck all positions</string>

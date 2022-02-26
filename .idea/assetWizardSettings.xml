@@ -23,7 +23,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../../../Nordis/AppData/Local/Android/Sdk/icons/material/materialicons/history/baseline_history_24.xml" />
+                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../../../Nordis/AppData/Local/Android/Sdk/icons/material/materialicons/playlist_add/baseline_playlist_add_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -34,7 +34,7 @@
                         <option name="values">
                           <map>
                             <entry key="color" value="181830" />
-                            <entry key="outputName" value="history_icon72" />
+                            <entry key="outputName" value="add_element_70" />
                             <entry key="sourceFile" value="C:\Users\Stas" />
                           </map>
                         </option>

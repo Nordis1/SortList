@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DialogClass newdialog;
     LocalDateTime localDateChecked;
     static Uri uri; // Получаем нахождение файла в OnActivityResult
-    private int requestCodePermissionResult_ToReadFile = 2;
+    final private int requestCodePermissionResult_ToReadFile = 2;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -196,9 +196,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /*иницализация кнопок*/
         binding.menuViewBattery.setOnClickListener(this);
         binding.btnSave.setOnClickListener(this);
+        binding.btnAddCustomLine.setOnClickListener(this);
         binding.btnLoadFile.setOnClickListener(this);
         binding.btnDeleteAll.setOnClickListener(this);
-        binding.IdBackSearch.setOnClickListener(this);
+        binding.idBackSearch.setOnClickListener(this);
         binding.btnSearch.setOnClickListener(this);
 
         dbHelper = new DBHelper(this);
@@ -698,6 +699,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handler.sendEmptyMessage(hSetLoadingListOfView_fromAdapter1);
             cursor.close();
             chosenCharset = null;
+            mProgresscounter = 0;
             uri = null;
 
         }
@@ -966,7 +968,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
 //История поиска
-            case R.id.IdBackSearch:
+            case R.id.idBackSearch:
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
                     break;
@@ -1011,6 +1013,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     Log.d(TAG, "onClick: зашли в историю поиска пунк 2");
                     binding.btnSave.callOnClick();
+                }
+                break;
+            case R.id.btnAddCustomLine:
+                if (!name.isEmpty() && mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()){
+                    Log.d(TAG, "onClick: Зашли в создание первого итема");
+                    binding.IDMainInnerUserGuide.setVisibility(View.GONE);
+                    binding.listItemModel.setVisibility(View.VISIBLE);
+                    dbHelper.insertData(name);
+                    viewData();
+                    binding.etName.setText("");
+                }else if (!name.isEmpty() && !mainList.isEmpty()){
+                    Log.d(TAG, "onClick: Зашли в создание второстепенного итема");
+                    dbHelper.insertData(name);
+                    mainList.clear();
+                    viewData();
+                    binding.etName.setText("");
+                    binding.btnSave.callOnClick();
+                }else {
+                    Toast.makeText(this,R.string.write_something_in_the_place,Toast.LENGTH_LONG).show();
                 }
                 break;
 

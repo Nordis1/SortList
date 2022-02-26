@@ -10,7 +10,6 @@
         android:id="@+id/ID_ConstraintForMenuItems"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="2dp"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@id/ID_ConstraintForBTNRow1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,7 +22,7 @@
             android:id="@+id/idTextOwner"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="4dp"
             android:fontFamily="@font/roboto_bold"
             android:text="@string/string_owner"
             android:textSize="23sp"
@@ -33,36 +32,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.5" />
-
-        <Spinner
-            android:id="@+id/menuSpiner"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/menuicon_24"
-            app:layout_constrainedHeight="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.95"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.13"
-            tools:layout_constrainedWidth="true" />
-
-        <View
-            android:id="@+id/menuViewBattery"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="2dp"
-            android:background="@drawable/layer_list"
-            android:transitionName="@string/normal"
-            android:visibility="visible"
-            app:layout_constrainedWidth="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHeight_percent="0.95"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.57"
-            tools:layout_constraintLeft_toRightOf="@id/barrier5" />
 
         <TextView
             android:id="@+id/idsubscriptionText"
@@ -78,6 +47,37 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.6" />
+
+        <Spinner
+            android:id="@+id/menuSpiner"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/menuicon_24"
+            app:layout_constrainedHeight="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.95"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.13"
+            tools:layout_constrainedWidth="true" />
+
+        <View
+            android:id="@+id/menuViewBattery"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/layer_list"
+            android:transitionName="@string/normal"
+            android:visibility="visible"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_percent="0.95"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.55"
+            tools:layout_constraintLeft_toRightOf="@id/barrier5" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -98,9 +98,8 @@
             android:id="@+id/etName"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="2dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="3dp"
-            android:layout_marginEnd="2dp"
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_regular"
             android:hint="@string/Typeitem"
@@ -109,12 +108,10 @@
             app:autoSizeMinTextSize="14sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/IdBackSearch"
             app:layout_constraintHeight_percent="0.9"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/etNameOf_hide"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.57" />
+            app:layout_constraintWidth_percent="0.6" />
 
 
         <EditText
@@ -132,32 +129,11 @@
 
 
         <Button
-            android:id="@+id/IdBackSearch"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="3dp"
-            android:layout_marginBottom="1dp"
-            android:drawableRight="@drawable/history_icon"
-            android:paddingStart="0dp"
-            android:paddingEnd="15dp"
-            android:textStyle="normal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btnSearch"
-            app:layout_constraintHeight_percent="0.9"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/etName"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.13">
-
-        </Button>
-
-        <Button
             android:id="@+id/btnSearch"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="2dp"
             android:layout_marginTop="3dp"
-            android:layout_marginEnd="3dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_bold"
             android:text="@string/search"
@@ -166,10 +142,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.9"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/IdBackSearch"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.27" />
+            app:layout_constraintWidth_percent="0.33" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -184,74 +158,82 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.09"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow1"
-        app:layout_constraintVertical_chainStyle="packed">
-
-        <Button
-            android:id="@+id/btnLoadFile"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginLeft="2dp"
-            android:layout_marginBottom="1dp"
-            android:fontFamily="@font/roboto_regular"
-            android:text="@string/load_db"
-            android:textSize="15sp"
-            android:textStyle="normal"
-            app:autoSizeMaxTextSize="16sp"
-            app:autoSizeMinTextSize="10sp"
-            app:autoSizeTextType="uniform"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btnDeleteAll"
-            app:layout_constraintHeight_percent="0.8"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.29" />
-
-        <Button
-            android:id="@+id/btnDeleteAll"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginLeft="2dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginRight="2dp"
-            android:layout_marginBottom="1dp"
-            android:fontFamily="@font/roboto_regular"
-            android:text="@string/Delete"
-            android:textSize="15sp"
-            android:textStyle="normal"
-            app:autoSizeMaxTextSize="16sp"
-            app:autoSizeMinTextSize="10sp"
-            app:autoSizeTextType="uniform"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btnSave"
-            app:layout_constraintHeight_percent="0.8"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/btnLoadFile"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.29" />
+        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow1">
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginEnd="3dp"
-            android:layout_marginRight="3dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_bold"
+            android:gravity="center"
             android:onClick="btnSave"
             android:text="@string/ShowAll"
-            android:textSize="14sp"
             android:textStyle="normal"
+            app:autoSizeMaxTextSize="14sp"
+            app:autoSizeMinTextSize="10sp"
+            app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.8"
+            app:layout_constraintHeight_percent="0.9"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.33" />
+
+        <ImageView
+            android:id="@+id/btnAddCustomLine"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnLoadFile"
+            app:layout_constraintHeight_percent="0.9"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.526"
+            app:layout_constraintWidth_percent="0.11"
+            app:srcCompat="@mipmap/add123" />
+
+        <ImageView
+            android:id="@+id/btnLoadFile"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnDeleteAll"
+            app:layout_constraintHeight_percent="0.9"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/btnAddCustomLine"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.526"
+            app:layout_constraintWidth_percent="0.11"
+            app:srcCompat="@mipmap/upload_file70" />
+
+        <ImageView
+            android:id="@+id/btnDeleteAll"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/idBackSearch"
+            app:layout_constraintHeight_percent="0.9"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/btnLoadFile"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.526"
+            app:layout_constraintWidth_percent="0.11"
+            app:srcCompat="@mipmap/delete1" />
+
+        <ImageView
+            android:id="@+id/idBackSearch"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintEnd_toStartOf="@+id/btnSave"
+            app:layout_constraintHeight_percent="0.7"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/btnDeleteAll"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.39" />
+            app:layout_constraintWidth_percent="0.13"
+            app:srcCompat="@mipmap/history1"
+            tools:layout_editor_absoluteY="11dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -266,18 +248,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.745"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow3"
-        app:layout_constraintVertical_chainStyle="packed">
+        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow3">
 
-
-        <ListView
-            android:id="@+id/list_item_model"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/ID_Main_Inner_UserGuide"
@@ -292,7 +264,6 @@
             app:layout_constraintHeight_percent="0.99"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
             app:layout_constraintWidth_percent="0.99">
@@ -326,10 +297,7 @@
                 android:fontFamily="@font/roboto_regular"
                 android:gravity="center"
                 android:text="@string/string_lengh_limit_90"
-                android:textSize="17sp"
-                app:autoSizeMaxTextSize="20sp"
-                app:autoSizeMinTextSize="14sp"
-                app:autoSizeTextType="uniform"
+                android:textSize="15sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.1"
@@ -346,9 +314,6 @@
                 android:gravity="center_vertical"
                 android:text="@string/check_new_position"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
-                app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView8"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.08"
@@ -384,9 +349,6 @@
                 android:gravity="center_vertical"
                 android:text="@string/one"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
-                app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView7"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.08"
@@ -403,16 +365,13 @@
                 android:gravity="center_vertical"
                 android:text="@string/context_menu_options"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
-                app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView19"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.08"
-                app:layout_constraintHorizontal_bias="0.49"
+                app:layout_constraintHorizontal_bias="0.6"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView8"
-                app:layout_constraintWidth_percent="0.75" />
+                app:layout_constraintWidth_percent="0.8" />
 
             <TextView
                 android:id="@+id/textView19"
@@ -421,10 +380,7 @@
                 android:fontFamily="@font/roboto_regular"
                 android:gravity="center_vertical"
                 android:text="@string/backarrow"
-                android:textSize="14sp"
-                app:autoSizeMaxTextSize="15sp"
-                app:autoSizeMinTextSize="10sp"
-                app:autoSizeTextType="uniform"
+                android:textSize="15sp"
                 app:layout_constraintBottom_toTopOf="@+id/textView10"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.08"
@@ -442,9 +398,6 @@
                 android:gravity="center_vertical"
                 android:text="@string/possibility_delete_with_rest"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
-                app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView15"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.15"
@@ -461,9 +414,6 @@
                 android:gravity="center_vertical"
                 android:text="@string/easy_search_word"
                 android:textSize="15sp"
-                app:autoSizeMaxTextSize="17sp"
-                app:autoSizeMinTextSize="10sp"
-                app:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@+id/textView9"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.09"
@@ -477,12 +427,9 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
-                android:gravity="center"
-                android:text="1."
-                android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
-                app:autoSizeTextType="uniform"
+                android:gravity="center_horizontal"
+                android:textSize="23dp"
+                android:text="."
                 app:layout_constraintEnd_toStartOf="@+id/textView5"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView5"
@@ -494,12 +441,9 @@
                 android:layout_height="0dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="7dp"
-                android:gravity="center"
-                android:text="6."
-                android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
-                app:autoSizeTextType="uniform"
+                android:gravity="center_horizontal"
+                android:textSize="23dp"
+                android:text="."
                 app:layout_constraintEnd_toStartOf="@+id/textView10"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView10"
@@ -510,12 +454,9 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
-                android:gravity="center"
-                android:text="4."
-                android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
-                app:autoSizeTextType="uniform"
+                android:gravity="center_horizontal"
+                android:textSize="23dp"
+                android:text="."
                 app:layout_constraintEnd_toStartOf="@+id/textView9"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView9"
@@ -526,12 +467,9 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
-                android:gravity="center"
-                android:text="5."
-                android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
-                app:autoSizeTextType="uniform"
+                android:gravity="center_horizontal"
+                android:textSize="23dp"
+                android:text="."
                 app:layout_constraintEnd_toStartOf="@+id/textView19"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView19"
@@ -543,12 +481,9 @@
                 android:layout_height="0dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="7dp"
-                android:gravity="center"
-                android:text="3."
-                android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
-                app:autoSizeTextType="uniform"
+                android:gravity="center_horizontal"
+                android:textSize="23dp"
+                android:text="."
                 app:layout_constraintEnd_toStartOf="@+id/textView8"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView8"
@@ -559,12 +494,9 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
-                android:gravity="center"
-                android:text="2."
-                android:textSize="20sp"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
-                app:autoSizeTextType="uniform"
+                android:gravity="center_horizontal"
+                android:textSize="23dp"
+                android:text="."
                 app:layout_constraintEnd_toStartOf="@+id/textView7"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView7"
@@ -582,6 +514,15 @@
                 tools:layout_editor_absoluteY="632dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ListView
+            android:id="@+id/list_item_model"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
