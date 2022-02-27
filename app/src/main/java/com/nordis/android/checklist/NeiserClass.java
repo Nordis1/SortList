@@ -51,12 +51,9 @@ public class NeiserClass {
             m_Proto_searching = patternProto.matcher(line.trim());
             m_date_Searshing = patternDate.matcher(line.trim());
 
-            if (m_date_Searshing.find() && i<10){
-                Log.d(TAG, "main: " + line);
-                forDate = line.length();
-            }else if (line.length() == forDate) {   // Находим Дату и реализуем её в день
-                day = daysDeterminate(line);
-            } else if (m_nameSearching.find()) {     // ищем Имена
+            if (m_date_Searshing.find() ){
+                day = daysDeterminate(line);        // находим дату и формируем её в удобную форму
+            }else if (m_nameSearching.find()) {     // ищем Имена
                 name = namesDeterminate(line);
             } else {                                 //Работа с регуляками
                 line = workWithRegularExpresions(line, m_B90R_L_Searching, m_INSPIRA_Searching, m_1R_25_3_2_15_serching, m_Proto_searching);

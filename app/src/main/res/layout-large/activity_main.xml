@@ -7,6 +7,33 @@
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/id_whatListConstraintLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="3dp"
+        app:layout_constraintBottom_toTopOf="@+id/ID_ConstraintForListView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.04"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ID_ConstraintForBTNRow3">
+
+        <TextView
+            android:id="@+id/idWhatIsList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="4dp"
+            android:fontFamily="@font/roboto_bold"
+            android:text="TextView"
+            android:textSize="17sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ID_ConstraintForMenuItems"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -136,7 +163,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constrainedHeight="true"
-        app:layout_constraintBottom_toTopOf="@+id/ID_ConstraintForListView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.092"
         app:layout_constraintHorizontal_bias="0.5"
@@ -205,7 +231,7 @@
             android:layout_marginEnd="6dp"
             android:fontFamily="@font/roboto_bold"
             android:onClick="btnSave"
-            android:text="@string/ShowAll"
+            android:text="@string/main2"
             android:textAllCaps="false"
             android:textSize="15sp"
             app:autoSizeMaxTextSize="26sp"
@@ -226,10 +252,9 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.74"
+        app:layout_constraintHeight_percent="0.695"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ID_ConstraintForBTNRow3">
+        app:layout_constraintStart_toStartOf="parent">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -404,8 +429,8 @@
                 android:layout_marginEnd="7dp"
                 android:fontFamily="@font/roboto_bold"
                 android:gravity="center_horizontal"
-                android:textSize="30dp"
                 android:text="."
+                android:textSize="30dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView5"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView5"
@@ -419,8 +444,8 @@
                 android:layout_marginEnd="7dp"
                 android:fontFamily="@font/roboto_bold"
                 android:gravity="center_horizontal"
-                android:textSize="30dp"
                 android:text="."
+                android:textSize="30dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView10"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView10"
@@ -433,8 +458,8 @@
                 android:layout_marginEnd="7dp"
                 android:fontFamily="@font/roboto_bold"
                 android:gravity="center_horizontal"
-                android:textSize="30dp"
                 android:text="."
+                android:textSize="30dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView9"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView9"
@@ -447,8 +472,8 @@
                 android:layout_marginEnd="7dp"
                 android:fontFamily="@font/roboto_bold"
                 android:gravity="center_horizontal"
-                android:textSize="30dp"
                 android:text="."
+                android:textSize="30dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView19"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView19"
@@ -462,8 +487,8 @@
                 android:layout_marginEnd="7dp"
                 android:fontFamily="@font/roboto_bold"
                 android:gravity="center_horizontal"
-                android:textSize="30dp"
                 android:text="."
+                android:textSize="30dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView8"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView8"
@@ -476,8 +501,8 @@
                 android:layout_marginEnd="7dp"
                 android:fontFamily="@font/roboto_bold"
                 android:gravity="center_horizontal"
-                android:textSize="30dp"
                 android:text="."
+                android:textSize="30dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView7"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView7"

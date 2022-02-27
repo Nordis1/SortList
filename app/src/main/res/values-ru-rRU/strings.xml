@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Комплектовщик</string>
     <string name="search">Поиск</string>
-    <string name="Typeitem">Поисковое слово</string>
+    <string name="Typeitem">Поисковое или добавляемое слово</string>
     <string name="ShowAll">Показать всё</string>
     <string name="Save">Сохранить</string>
 
@@ -95,4 +95,8 @@
     <string name="clue_seven">Если подписка будет отменена, она будет ещё дейсвовать пока не истечёт её срок.</string>
     <string name="clue_0">Действуйте поэтапно.</string>
     <string name="string_owner">Developer Mode</string>
+    <string name="element_isExist">Строка уже существует</string>
+    <string name="main">Основной лист</string>
+    <string name="main2">Основной лист</string>
+    <string name="searchList">Поисковый лист</string>
 </resources>

@@ -22,7 +22,7 @@
             android:id="@+id/idTextOwner"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="5dp"
             android:fontFamily="@font/roboto_bold"
             android:text="@string/string_owner"
             android:textSize="23sp"
@@ -37,7 +37,7 @@
             android:id="@+id/idsubscriptionText"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="5dp"
             android:fontFamily="@font/roboto_bold"
             android:text="@string/subscribe_is_valid"
             android:textSize="23sp"
@@ -52,7 +52,7 @@
             android:id="@+id/menuSpiner"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="5dp"
             android:background="@drawable/menuicon_24"
             app:layout_constrainedHeight="true"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -66,7 +66,7 @@
             android:id="@+id/menuViewBattery"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="5dp"
             android:background="@drawable/layer_list"
             android:transitionName="@string/normal"
             android:visibility="visible"
@@ -89,7 +89,7 @@
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@id/ID_ConstraintForBTNRow3"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.08"
+        app:layout_constraintHeight_percent="0.09"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForMenuItems"
         app:layout_constraintVertical_chainStyle="packed">
@@ -98,7 +98,7 @@
             android:id="@+id/etName"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="5dp"
             android:layout_marginTop="3dp"
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_regular"
@@ -133,7 +133,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="3dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_bold"
             android:text="@string/search"
@@ -143,7 +143,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.9"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.33" />
+            app:layout_constraintWidth_percent="0.35" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -152,9 +152,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="5dp"
-        android:layout_marginBottom="2dp"
         app:layout_constrainedHeight="true"
-        app:layout_constraintBottom_toTopOf="@id/ID_ConstraintForListView"
+        app:layout_constraintBottom_toTopOf="@+id/id_whatListConstraintLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.09"
         app:layout_constraintStart_toStartOf="parent"
@@ -164,12 +163,12 @@
             android:id="@+id/btnSave"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_bold"
             android:gravity="center"
             android:onClick="btnSave"
-            android:text="@string/ShowAll"
+            android:text="@string/main"
             android:textStyle="normal"
             app:autoSizeMaxTextSize="14sp"
             app:autoSizeMinTextSize="10sp"
@@ -178,13 +177,12 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.9"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.33" />
+            app:layout_constraintWidth_percent="0.35" />
 
         <ImageView
             android:id="@+id/btnAddCustomLine"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnLoadFile"
             app:layout_constraintHeight_percent="0.9"
@@ -227,13 +225,14 @@
             android:id="@+id/idBackSearch"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnSave"
             app:layout_constraintHeight_percent="0.7"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/btnDeleteAll"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.13"
-            app:srcCompat="@mipmap/history1"
-            tools:layout_editor_absoluteY="11dp" />
+            app:srcCompat="@mipmap/history1" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -242,13 +241,11 @@
         android:id="@+id/ID_ConstraintForListView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="2dp"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.745"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForBTNRow3">
+        app:layout_constraintHeight_percent="0.695"
+        app:layout_constraintStart_toStartOf="parent">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -259,6 +256,7 @@
             android:layout_marginTop="1dp"
             android:layout_marginEnd="1dp"
             android:layout_marginBottom="1dp"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.99"
@@ -428,8 +426,8 @@
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
                 android:gravity="center_horizontal"
-                android:textSize="23dp"
                 android:text="."
+                android:textSize="23dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView5"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView5"
@@ -442,8 +440,8 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="7dp"
                 android:gravity="center_horizontal"
-                android:textSize="23dp"
                 android:text="."
+                android:textSize="23dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView10"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView10"
@@ -455,8 +453,8 @@
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
                 android:gravity="center_horizontal"
-                android:textSize="23dp"
                 android:text="."
+                android:textSize="23dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView9"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView9"
@@ -468,8 +466,8 @@
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
                 android:gravity="center_horizontal"
-                android:textSize="23dp"
                 android:text="."
+                android:textSize="23dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView19"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView19"
@@ -482,8 +480,8 @@
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="7dp"
                 android:gravity="center_horizontal"
-                android:textSize="23dp"
                 android:text="."
+                android:textSize="23dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView8"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView8"
@@ -495,8 +493,8 @@
                 android:layout_height="0dp"
                 android:layout_marginEnd="7dp"
                 android:gravity="center_horizontal"
-                android:textSize="23dp"
                 android:text="."
+                android:textSize="23dp"
                 app:layout_constraintEnd_toStartOf="@+id/textView7"
                 app:layout_constraintHeight_percent="0.08"
                 app:layout_constraintTop_toTopOf="@+id/textView7"
@@ -539,5 +537,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/id_whatListConstraintLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginBottom="2dp"
+        app:layout_constraintBottom_toTopOf="@+id/ID_ConstraintForListView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.04"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/idWhatIsList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:fontFamily="@font/roboto_bold"
+            android:text="TextView"
+            android:textSize="17sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

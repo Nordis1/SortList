@@ -8,28 +8,21 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.media.MediaMetadata;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
-import android.os.Parcelable;
 import android.os.SystemClock;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,8 +38,6 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.documentfile.provider.DocumentFile;
-import androidx.loader.content.CursorLoader;
 
 import com.example.android.checklist.R;
 import com.example.android.checklist.databinding.ActivityMainBinding;
@@ -65,16 +56,13 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -163,6 +151,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hBatteryOn = 25;
     final int hsetLostConnectionsWithGooglePlay = 26;
     final int hNewXLSReader = 27;
+    final int hSetWhatIsListVisible = 28;
+    final int hSetWhatIsListNotVisible = 29;
 
     static volatile SharedPreferences sPref;
     Executor executor;
@@ -204,20 +194,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         dbHelper = new DBHelper(this);
         viewData();
-        onUserGuideShow();
+        checkInnerPreview();
         onHandlerCreate();
         checkSub();
         onAdCreate();
 
     }
 
-    private void onUserGuideShow() {
+    private void checkInnerPreview() {
         if (!mainList.isEmpty() || !found_List.isEmpty() || !foundAccurateList.isEmpty()) {
             binding.IDMainInnerUserGuide.setVisibility(View.GONE);
+            binding.idWhatIsList.setVisibility(View.VISIBLE);
             binding.listItemModel.setVisibility(View.VISIBLE);
 
         } else {
             binding.listItemModel.setVisibility(View.GONE);
+            binding.idWhatIsList.setVisibility(View.GONE);
             binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
         }
         binding.btnSave.callOnClick();
@@ -379,6 +371,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 11:
                         binding.listItemModel.setAdapter(adapter1);
+                        binding.idWhatIsList.setText(R.string.main);
                         break;
                     case 12:
                         Toast.makeText(MainActivity.this, R.string.Reading_rest_data_Error, Toast.LENGTH_LONG).show();
@@ -466,7 +459,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case hNewXLSReader:
                         file_xls_reader = new File_XLS_Reader(fileName);
                         break;
-
+                    case hSetWhatIsListVisible:
+                        binding.idWhatIsList.setVisibility(View.VISIBLE);
+                        break;
+                    case hSetWhatIsListNotVisible:
+                        binding.idWhatIsList.setVisibility(View.GONE);
+                        break;
 
                 }
             }
@@ -715,6 +713,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mainList.add(cursor.getString(0));
 
             }
+            binding.idWhatIsList.setText(R.string.main);
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
             binding.listItemModel.setAdapter(adapter1);
             cursor.close();
@@ -886,6 +885,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         name = null;
                         binding.etName.setText("");
                         bool_haveDeletingRight = false;
+                        binding.idWhatIsList.setVisibility(View.GONE);
+                        binding.listItemModel.setVisibility(View.GONE);
                         binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, R.string.something_went_wrong, Toast.LENGTH_SHORT).show();
@@ -1015,23 +1016,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     binding.btnSave.callOnClick();
                 }
                 break;
+//Добавляемая строка
             case R.id.btnAddCustomLine:
-                if (!name.isEmpty() && mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()){
+                if (!name.isEmpty() && mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     Log.d(TAG, "onClick: Зашли в создание первого итема");
-                    binding.IDMainInnerUserGuide.setVisibility(View.GONE);
-                    binding.listItemModel.setVisibility(View.VISIBLE);
                     dbHelper.insertData(name);
                     viewData();
+                    checkInnerPreview();
                     binding.etName.setText("");
-                }else if (!name.isEmpty() && !mainList.isEmpty()){
+                } else if (!name.isEmpty() && !mainList.isEmpty() && !mainList.contains(name)) {
                     Log.d(TAG, "onClick: Зашли в создание второстепенного итема");
                     dbHelper.insertData(name);
                     mainList.clear();
                     viewData();
                     binding.etName.setText("");
                     binding.btnSave.callOnClick();
-                }else {
-                    Toast.makeText(this,R.string.write_something_in_the_place,Toast.LENGTH_LONG).show();
+                } else if (mainList.contains(name)) {
+                    Toast.makeText(this, R.string.element_isExist, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, R.string.write_something_in_the_place, Toast.LENGTH_LONG).show();
                 }
                 break;
 
@@ -1196,10 +1199,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
                 handler.sendEmptyMessage(hSetProgressBarGone);
+                handler.sendEmptyMessage(hSetWhatIsListVisible);
                 handler.sendEmptyMessage(hsetlistView_Onvisible);
                 //} else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
             } else if (fileName.contains(".xls")) {
-                if (fileName.contains("Neiser")) {
+                if (fileName.toLowerCase(Locale.ROOT).contains("neiser")) {
                     Log.d(TAG, "Содержит в названии Neiser");
                     bool_neiser = true;
                 }
@@ -1236,6 +1240,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     //Востанавливаем кнопку и убирает прогресс бар.
                     handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
                     handler.sendEmptyMessage(hSetProgressBarGone);
+                    handler.sendEmptyMessage(hSetWhatIsListVisible);
                     handler.sendEmptyMessage(hsetlistView_Onvisible);
 
                 } catch (Exception e) {
@@ -1326,6 +1331,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fileReader.close();
             }
             viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
+            if (!mainList.isEmpty()){
+                handler.sendEmptyMessage(hSetWhatIsListVisible);
+            }
             downloadList.clear();
             handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
             handler.sendEmptyMessage(hSetProgressBarGone);
@@ -1657,6 +1665,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_checked, toWhereList);
             binding.listItemModel.setAdapter(adapter);
             fromWhereSearchlist.clear();
+
+            if (!mainList.isEmpty()) {
+                binding.idWhatIsList.setText(R.string.main);
+            } else {
+                binding.idWhatIsList.setText(R.string.searchList);
+            }
 
             loadCheckedItems(toWhereList);
             binding.etName.setText("");
