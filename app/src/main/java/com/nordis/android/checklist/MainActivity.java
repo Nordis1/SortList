@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
     static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled, bool_haveDeletingRight, bool_billingInitializeOk, bool_owner, bool_neiser = false;
+            bool_xlsExecutorCanceled,bool_accessToDeleteAllWithOutDialog, bool_haveDeletingRight, bool_billingInitializeOk, bool_owner, bool_neiser = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //bool_prepereDeleteRow - для контекстной функции Delete row.
     //bool_isSaved - используется в RestCreating. Что бы прога не удалила план пока не завершится сохранение остатка.
@@ -614,9 +614,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void checkedItemsReloadInfo() {
         if (hashSetMainCollectorItems.contains(choosen_ItemInClickmethod)) { // Основной Список Выбранных Элементов
             hashSetMainCollectorItems.remove(choosen_ItemInClickmethod);
-        } else {
+        } /*else {
             hashSetMainCollectorItems.add(choosen_ItemInClickmethod);
-        }
+        }*/
 
         /*Save stats in sharedPreferences*/
 
@@ -843,7 +843,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.i(TAG, "onClick: Была нажата кнопка удалить");
                 String del = binding.etName.getText().toString();
                 String delete = "Delete";
-                if (del.equals(delete)) { // Если Ввёл в строку Delete
+                if (del.equals(delete) || bool_accessToDeleteAllWithOutDialog) { // Если Ввёл в строку Delete
                     try {
 
                         sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);
@@ -878,6 +878,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         foundAccurateList.clear();
                         hashSetMainCollectorItems.clear();
                         choosen_ItemInClickmethod = null;
+                        bool_accessToDeleteAllWithOutDialog = false;
                         adapter1.clear();
                         backcounter = 0;
                         mColumnmax = 0;
@@ -1436,28 +1437,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 //Удаляем строку
         else if (itemId == R.id.menuitemDeleteRow) {
-            bool_prepereDeleteRow = false;
-            choosen_ItemInClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
-            //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
-            if (binding.listItemModel.isItemChecked(position1)) {
-                binding.listItemModel.setItemChecked(position1, false);
-                checkedItemsReloadInfo();// в конце метода checkedItemsReloadInfo(), bool_prepereDeleteRow должна стать true.
-            } else {
-                bool_prepereDeleteRow = true;
-            }
-            Thread thread = new Thread(() -> {
-                while (!bool_prepereDeleteRow) { //Если до сих пор false то спим.
-                    try {
-                        Log.i(TAG, "run: Данные не подготовленны, спим");
-                        TimeUnit.MILLISECONDS.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            if (mainList.size() == 1){
+                bool_accessToDeleteAllWithOutDialog = true;
+                binding.btnDeleteAll.callOnClick();
+            }else {
+                bool_prepereDeleteRow = false;
+                choosen_ItemInClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
+                //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
+                if (binding.listItemModel.isItemChecked(position1)) {
+                    binding.listItemModel.setItemChecked(position1, false);
+                    checkedItemsReloadInfo();// в конце метода checkedItemsReloadInfo(), bool_prepereDeleteRow должна стать true.
+                } else {
+                    bool_prepereDeleteRow = true;
                 }
-                handler.post(runnableToDelete);
+                Thread thread = new Thread(() -> {
+                    while (!bool_prepereDeleteRow) { //Если до сих пор false то спим.
+                        try {
+                            Log.i(TAG, "run: Данные не подготовленны, спим");
+                            TimeUnit.MILLISECONDS.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    handler.post(runnableToDelete);
 
-            });
-            thread.start();
+                });
+                thread.start();
+            }
             // handler запуститься через пол секунды
             //handler.postAtTime(runnableToDelete,(SystemClock.uptimeMillis()+300));
         }

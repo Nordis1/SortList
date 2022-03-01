@@ -64,12 +64,9 @@
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
                 <action android:name="android.intent.action.GET_CONTENT" />
                 <category android:name="android.intent.category.OPENABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*"/>
-
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
