@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
     static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled,bool_accessToDeleteAllWithOutDialog, bool_haveDeletingRight, bool_billingInitializeOk, bool_owner, bool_neiser = false;
+            bool_xlsExecutorCanceled, bool_accessToDeleteAllWithOutDialog, bool_haveDeletingRight, bool_billingInitializeOk, bool_owner, bool_neiser = false;
     //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
     //bool_prepereDeleteRow - для контекстной функции Delete row.
     //bool_isSaved - используется в RestCreating. Что бы прога не удалила план пока не завершится сохранение остатка.
@@ -614,9 +614,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void checkedItemsReloadInfo() {
         if (hashSetMainCollectorItems.contains(choosen_ItemInClickmethod)) { // Основной Список Выбранных Элементов
             hashSetMainCollectorItems.remove(choosen_ItemInClickmethod);
-        } /*else {
+        } else {
             hashSetMainCollectorItems.add(choosen_ItemInClickmethod);
-        }*/
+        }
 
         /*Save stats in sharedPreferences*/
 
@@ -812,6 +812,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 bool_onSaveReady = false;
                 //contentValues.put(DBHelper.KEY_NAME, hideName); //шаг 3
                 if (binding.etName.length() == 0 || bool_haveDeletingRight) {
+                    Log.d(TAG, "onClick: зашли в обновление данных");
                     //Если все значения были пустыми то чистим все листы и обновляем основной с проставлением checked
                     found_List.clear();
                     foundAccurateList.clear();
@@ -1332,7 +1333,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fileReader.close();
             }
             viewDataForDownloading(); //образуем показ Загрузки и списка после того как он полностью загрузиться в Базу
-            if (!mainList.isEmpty()){
+            if (!mainList.isEmpty()) {
                 handler.sendEmptyMessage(hSetWhatIsListVisible);
             }
             downloadList.clear();
@@ -1437,10 +1438,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 //Удаляем строку
         else if (itemId == R.id.menuitemDeleteRow) {
-            if (mainList.size() == 1){
+            if (mainList.size() == 1) {
                 bool_accessToDeleteAllWithOutDialog = true;
                 binding.btnDeleteAll.callOnClick();
-            }else {
+            } else {
                 bool_prepereDeleteRow = false;
                 choosen_ItemInClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
                 //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
@@ -1708,11 +1709,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //UP-date Main
             sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
             int kol = sPref.getInt("Kolichesvo", 0);
-            if (listFromSharedPreference.isEmpty()) {
-                for (int i = 0; i < kol; i++) {
-                    listFromSharedPreference.add(sPref.getString("Keyg" + i, "")); //загрузка с Preferences всех сохранёных отмеченных итемов
-                }
+            Log.d(TAG, "loadCheckedItems: кол-во сохранёных в spref "+ kol);
+            for (int i = 0; i < kol; i++) {
+                listFromSharedPreference.add(sPref.getString("Keyg" + i, "")); //загрузка с Preferences всех сохранёных отмеченных итемов
             }
+
             // Экспериментальный, опробован, подтверждён!
             for (int i = 0; i < list.size(); i++) {             //Теперь из основного Списка находим отмеченные
                 for (int g = 0; g < listFromSharedPreference.size(); g++) {
