@@ -2,7 +2,6 @@ package com.nordis.android.checklist;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
@@ -12,9 +11,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -133,7 +130,7 @@ public class File_XLS_Reader extends MainActivity {
                             if (string1.isEmpty()) {
                                 continue;
                             }
-                            stringBuilder.append(string1);
+                            stringBuilder.append(string1 + " ");
                         }
                     }
 

@@ -1,12 +1,9 @@
 package com.nordis.android.checklist;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,9 +36,9 @@ public class NeiserClass {
         String day = "";
         String name = "";
         String line;
-        int forDate = 0;
         for (int i = 0; i < mainSupport.size(); i++) {
             line = mainSupport.get(i);
+            //Log.d(TAG, "main:" + line);
             // Забиваем переменные на совпадения
 
             m_nameSearching = patternName.matcher(line.trim()); // c помощью trim убераем пробелы с переди и с зади.
@@ -61,6 +58,7 @@ public class NeiserClass {
                 //Удаляем пробелы и подготавливаем строку к записи
 
                 line = deletingExtraSpaces(line.substring(2)); // поддержка со 2 символа, что бы весь номер не выводить.
+                //Log.d(TAG, "main:" + line);
                 line = name + " " + line + " | | " + day;
                 mainList.add(line);
             }
@@ -156,6 +154,7 @@ public class NeiserClass {
         try {
             for (int i = 0; i < mainLoadList.size(); i++) {
                 ln = mainLoadList.get(i);
+                //Log.d(TAG, "main:" + ln);
                 if (ln.substring(0, 2).contains("OR")) {   //Origon совмещаем Вариант 3
                     previousString = mainLoadList.get(i - 2);
                     String previos_number = previousString.substring(0, 8);
