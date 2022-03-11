@@ -1,5 +1,7 @@
 package com.nordis.android.checklist;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +12,13 @@ import java.util.regex.Pattern;
 public class NeiserClass {
     static int pittB80;
     static int pittB95;
+    static int bogart115;
+    static int bogart95;
+    static int bogart80;
+    static int lounge95;
+    static int lounge110;
+    static int lounge125;
+    static int lounge_k1;
     static ArrayList<String> mainList = new ArrayList<>();
     static ArrayList<String> mainSupport = new ArrayList<>();
     static int countDate = 0;
@@ -48,9 +57,9 @@ public class NeiserClass {
             m_Proto_searching = patternProto.matcher(line.trim());
             m_date_Searshing = patternDate.matcher(line.trim());
 
-            if (m_date_Searshing.find() ){
+            if (m_date_Searshing.find()) {
                 day = daysDeterminate(line);        // находим дату и формируем её в удобную форму
-            }else if (m_nameSearching.find()) {     // ищем Имена
+            } else if (m_nameSearching.find()) {     // ищем Имена
                 name = namesDeterminate(line);
             } else {                                 //Работа с регуляками
                 line = workWithRegularExpresions(line, m_B90R_L_Searching, m_INSPIRA_Searching, m_1R_25_3_2_15_serching, m_Proto_searching);
@@ -65,21 +74,28 @@ public class NeiserClass {
         }
 
 
-        mainList.add("NB----->>> Padi Pitt/uma/living/Lux A80 - " + pittB80 + " tk " + "; A95 - " + pittB95 + " tk "); // добавляю количество люксовых подушек
+        mainList.add("NB----->>> Padi Pitt/uma/living/Lux A80 - " + pittB80 + " tk; " + "A95 - " + pittB95 + " tk; "); // добавляю количество люксовых подушек
+        mainList.add("NB----->>> Padi Bogart/Huurre/Lux A80 - " + bogart80 + " tk; " +
+                "A95 - " + bogart95 + " tk; " +
+                "A115 - " + bogart115+ " tk"); // добавляю количество люксовых подушек
+        mainList.add("NB----->>> Padi LOUNGE/Lux A95 - " + lounge95 + " tk; " +
+                "A110 - " + lounge110 + " tk; " +
+                "A125 - " + lounge125+ " tk; " +
+                "K1 - " + lounge_k1+ " tk");
 
 
         String s = mainList.get(0);
-        if (s.contains("TOOTMISPLAAN")){
-            s = s.substring(18,s.length()-4);
+        if (s.contains("TOOTMISPLAAN")) {
+            s = s.substring(18, s.length() - 4);
             mainList.remove(0);
-            mainList.add(0,s);
+            mainList.add(0, s);
         }
 
 
         return mainList;
     }
 
-    private static String workWithRegularExpresions(String line,Matcher m_B90R_L_Searching,Matcher m_INSPIRA_Searching,Matcher m_1R_25_3_2_15_serching,Matcher m_Proto_searching1 ) {
+    private static String workWithRegularExpresions(String line, Matcher m_B90R_L_Searching, Matcher m_INSPIRA_Searching, Matcher m_1R_25_3_2_15_serching, Matcher m_Proto_searching1) {
         while (m_B90R_L_Searching.find()) {
             //System.out.println(line);
             line = line.replaceAll(m_B90R_L_Searching.group(), "");
@@ -92,11 +108,10 @@ public class NeiserClass {
             //System.out.println(line);
             line = line.replace(m_1R_25_3_2_15_serching.group(), "");
         }
-        if (m_Proto_searching1.find()){
+        if (m_Proto_searching1.find()) {
             System.out.println("Come in");
-            line =line.replace(m_Proto_searching1.group(), "");
+            line = line.replace(m_Proto_searching1.group(), "");
         }
-
 
 
         return line;
@@ -104,9 +119,9 @@ public class NeiserClass {
 
     private static String namesDeterminate(String line) {
         String name = "";
-        if (line.contains("Oleksandr Kyselov")){
+        if (line.contains("Oleksandr Kyselov")) {
             name = "Oleks";
-        }else{
+        } else {
             String[] splitName = line.split("\\s"); //с помощью split делим на массив
             name = splitName[2] + "." + splitName[3].charAt(0);
         }
@@ -143,9 +158,11 @@ public class NeiserClass {
     }
 
     public static void origon(ArrayList<String> comeList) throws IOException {
+
+        Pattern patternLounge = Pattern.compile("(A|K)\\d{1,3}(R|L)?");
+        Matcher m_loungeSearching = null;
         Pattern p = Pattern.compile("[a-zA-Z]");
         String ln = null;
-        String CorrectString = null;
         String previousString = null;
 
 
@@ -156,17 +173,17 @@ public class NeiserClass {
                 ln = mainLoadList.get(i);
                 //Log.d(TAG, "main:" + ln);
                 if (ln.substring(0, 2).contains("OR")) {   //Origon совмещаем Вариант 3
-                    previousString = mainLoadList.get(i - 2);
+                    previousString = mainLoadList.get(i - 1);
                     String previos_number = previousString.substring(0, 8);
-                    int oo = previousString.length();
-                    String nnew = previos_number + ln + previousString.substring(15, oo);
-                    mainLoadList.remove(i - 2);
-                    mainLoadList.add(i - 2, nnew);
+                    //int oo = previousString.length();
+                    String nnew = previos_number + ln + previousString.substring(15);
                     mainLoadList.remove(i);
+                    mainLoadList.remove(i - 1);
+                    mainLoadList.add(i - 1, nnew);
                 } else if (ln.substring(0, 1).matches(p.toString())) { // изменения внесены 15.08.2019
                     mainLoadList.remove(i);
                     mainLoadList.add(i, "        " + "1 " + ln);
-
+                    i--;
                 } else if (ln.contains("kokku")) {
                     mainLoadList.remove(i);
                 } else if (ln.contains("MIAM")) {
@@ -184,98 +201,86 @@ public class NeiserClass {
                     String lp = ln.substring(0, 17);
                     mainLoadList.remove(i);
                     mainLoadList.add(i, lp + pp);
-                } else if (ln.contains("PITTSBURGH/LUX") || ln.contains("UMA/LUX") || ln.contains("LIVINGSTON/LUX")) {
+                } else if (ln.contains("IDAHO")) {
+                    ln = ln + " { ASPEN }";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("FOREST") && !ln.contains("LOUNGE")
+                        || ln.contains("NICOL")&& !ln.contains("LOUNGE")
+                        || ln.contains("STOCKHOLM") && !ln.contains("LOUNGE")) {
+                    ln = ln + " { LOUNGE }";
+                    replaceIndex(mainLoadList, i, ln);
+                    i--;
+                } else if (ln.contains("FEATHER")) {
+                    ln = ln + " {plan-kr: A95L/R-115; A118L/R-138; A95V-141; B75V-196}";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("OREGON")) {
+                    ln = ln + " { LIFE }";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("JONAS") || ln.contains("Jonas")) {
+                    ln = ln + " { Valmont }";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("HUURRE") || ln.contains("HUURRE/LUX") ) {
+                    ln = ln + " { BOGART }";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("NASHVILLE B80V")) {
+                    ln = ln + " {Aero 80v= 25; 90v= 3}";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("NASHVILLE B90V")) {
+                    ln = ln + " {Aero 80v= 25; 90v= 3}";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("JACKSON")) {
+                    ln = ln + " {P = Doug}";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("CLARA")) {
+                    ln = ln + " {P = Clara + Douglas }";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("EDITIONS")) {
+                    ln = ln + " {KR- pitt}";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("SANTA FE")) {
+                    ln = ln + " {КТ 1H = Vanc}";
+                    replaceIndex(mainLoadList, i, ln);
+                } else if (ln.contains("OTTAWA")) {
+                    ln = ln + " {Montreal}";
+                    replaceIndex(mainLoadList, i, ln);
+                }
+                if (ln.contains("LOUNGE") ) {
+                    //Log.d(TAG, "Зашли в lounge " + ln);
+
+                    m_loungeSearching = patternLounge.matcher(ln);
+                    while (m_loungeSearching.find()){
+                        if (m_loungeSearching.group().equals("A95")){
+                            lounge95++;
+                        }else if (m_loungeSearching.group().equals("K1")){
+                            lounge_k1++;
+                        }else if (m_loungeSearching.group().equals("A125")){
+                            lounge125++;
+                        }else if (m_loungeSearching.group().equals("A110")){
+                            lounge110++;
+                        }
+                        //Log.d(TAG, "Lounge Find " + m_loungeSearching.group());
+                    }
+                }
+                if (ln.contains("BOGART/LUX") || ln.contains("HUURRE/LUX") ) {
+                    if (ln.contains("B80")) {
+                        bogart80 += 2;
+                    }
+                    if (ln.contains("B95")) {
+                        bogart95 += 2;
+                    }
+                    if (ln.contains("B115")) {
+                        bogart115 += 2;
+                    }
+                }
+                if (ln.contains("PITTSBURGH/LUX") || ln.contains("UMA/LUX") || ln.contains("LIVINGSTON/LUX")) {
                     if (ln.contains("B80")) {
                         pittB80 += 2;
                     }
                     if (ln.contains("B95")) {
                         pittB95 += 2;
                     }
-                }else if (ln.contains("F135")) {
-                    CorrectString = ln + " { F104 }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                } else if (ln.contains("F80")) {
-                    CorrectString = ln + " {P = F80; Karkas - F75}";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                } else if (ln.contains("F132")) {
-                    CorrectString = ln + " { F110 }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                } else if (ln.contains("IDAHO")) {
-                    CorrectString = ln + " { ASPEN }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                } else if (ln.contains("FOREST")) {
-                    CorrectString = ln + " { LOUNGE }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                } else if (ln.contains("NICOL")) {
-                    CorrectString = ln + " { LOUNGE }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                } else if (ln.contains("FEATHER")) {
-                    CorrectString = ln + " {plan-kr: A95L/R-115; A118L/R-138; A95V-141; B75V-196}";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                } else if (ln.contains("OREGON")) {
-                    CorrectString = ln + " { LIFE }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("STOCKHOLM") || ln.contains("Stockholm")) {
-                    CorrectString = ln + " { LOUNCH }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("JONAS") || ln.contains("Jonas")) {
-                    CorrectString = ln + " { Valmont }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("F139")) {
-                    CorrectString = ln + " { F129 }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("F141")) {
-                    CorrectString = ln + " { F122 }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("F133")) {
-                    CorrectString = ln + " { F111 }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("HUURRE")) {
-                    CorrectString = ln + " { BOGART }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("F131")) {
-                    CorrectString = ln + " { F122 }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("NASHVILLE B80V")) {
-                    CorrectString = ln + " {Aero 80v= 25; 90v= 3}";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("NASHVILLE B90V")) {
-                    CorrectString = ln + " {Aero 80v= 25; 90v= 3}";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("JACKSON")) {
-                    CorrectString = ln + " {P = Doug}";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("CLARA")) {
-                    CorrectString = ln + " {P = Clara с ухом }";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("EDITIONS")) {
-                    CorrectString = ln + " {KR- pitt}";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
-                }else if (ln.contains("SANTA FE")) {
-                    CorrectString = ln + " {КТ 1H = Vanc}";
-                    mainLoadList.remove(i);
-                    mainLoadList.add(i, CorrectString);
                 }
+                workWithTumbad(ln, mainLoadList, i);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -283,6 +288,129 @@ public class NeiserClass {
 
 
         mainSupport.addAll(mainLoadList);
+    }
+
+    public static void replaceIndex(ArrayList<String> list, int index, String line) {
+
+        list.remove(index);
+        list.add(index, line);
+    }
+
+    public static void workWithTumbad(String ln, ArrayList mainLoadList, int i) {
+        if (ln.contains("F62")) {
+            ln = ln + " {F68}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F82")) {
+            ln = ln + " { F78 }";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F84")) {
+            ln = ln + " {p-F79}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F90")) {
+            ln = ln + " {p-F85}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F96")) {
+            ln = ln + " {p-F86}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F97")) {
+            ln = ln + " {p-F87}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F112")) {
+            ln = ln + " {p_lux-F80; p_soft-F79}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F116")) {
+            ln = ln + " {F-114}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F117")) {
+            ln = ln + " {F-115}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F121")) {
+            ln = ln + " {p-F110}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F122")) {
+            ln = ln + " {p-F111}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F124")) {
+            ln = ln + " {p-F114}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F125")) {
+            ln = ln + " {F-123}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F126")) {
+            ln = ln + " {kr-F124; p-F114}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F127")) {
+            ln = ln + " {F-123}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F128")) {
+            ln = ln + " {kr-F124; p-F114}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F130")) {
+            ln = ln + " {kr-F121; p-F110}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F134")) {
+            ln = ln + " {p-F81}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F136") || ln.contains("F137")) {
+            ln = ln + " {kr-F75; p-F80}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F142")) {
+            ln = ln + " {kr-F121; p-F110}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F155")) {
+            ln = ln + " {p-F138}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F156")) {
+            ln = ln + " {p-F95}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F158")) {
+            ln = ln + " {F157}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F145")) {
+            ln = ln + " {F138}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F146")) {
+            ln = ln + " {F78}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F148")) {
+            ln = ln + " {kr-F75; p-F80}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F151")) {
+            ln = ln + " {F143}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F152")) {
+            ln = ln + " {F149}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F153")) {
+            ln = ln + " {kr-F31; p-F153}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F165")) {
+            ln = ln + " {p-F138}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F139")) {
+            ln = ln + " { F129 }";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F141")) {
+            ln = ln + " { kr-F122; p-111}";
+            replaceIndex(mainLoadList, i, ln);
+        } else if (ln.contains("F133")) {
+            ln = ln + " { F111 }";
+            replaceIndex(mainLoadList, i, ln);
+        }else if (ln.contains("F135")) {
+            ln = ln + " { F104 }";
+            replaceIndex(mainLoadList,i,ln);
+        } else if (ln.contains("F80")) {
+            ln = ln + " {Kr - F75; P = F80}";
+            replaceIndex(mainLoadList,i,ln);
+        } else if (ln.contains("F132")) {
+            ln = ln + " { F110 }";
+            replaceIndex(mainLoadList,i,ln);
+        }else if (ln.contains("F131")) {
+            ln = ln + " {kr-F122; p-111}";
+            replaceIndex(mainLoadList, i, ln);
+        }
+
+
     }
 
 }
