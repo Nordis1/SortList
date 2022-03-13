@@ -10,15 +10,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NeiserClass {
-    static int pittB80;
-    static int pittB95;
-    static int bogart115;
-    static int bogart95;
-    static int bogart80;
-    static int lounge95;
-    static int lounge110;
-    static int lounge125;
-    static int lounge_k1;
+    static int pittB80 = 0;
+    static int pittB95 = 0;
+    static int bogart115 = 0;
+    static int bogart95 = 0;
+    static int bogart80 = 0;
+    static int lounge95 = 0;
+    static int lounge110 = 0;
+    static int lounge125 = 0;
+    static int lounge_k1 = 0;
     static ArrayList<String> mainList = new ArrayList<>();
     static ArrayList<String> mainSupport = new ArrayList<>();
     static int countDate = 0;
@@ -26,6 +26,19 @@ public class NeiserClass {
 
 
     public static ArrayList<String> main(ArrayList<String> comingList) throws IOException {
+        if (!mainList.isEmpty() || !mainSupport.isEmpty()){
+            mainList.clear();
+            mainSupport.clear();
+            pittB95 = 0;
+            bogart115 = 0;
+            bogart95 = 0;
+            bogart80 = 0;
+            lounge95 = 0;
+            lounge110 = 0;
+            lounge125 = 0;
+            lounge_k1 = 0;
+            countDate = 0;
+        }
         origon(comingList);
 
         Pattern patternName = Pattern.compile("\\d{0,3}? - [a-zA-Z]+?\\s[a-zA-Z]+?"); // для поиска имени  10 - Janek Reemann
@@ -33,7 +46,7 @@ public class NeiserClass {
         Pattern patternIns = Pattern.compile("(INSPIRA)"); // для нахождения INSPIRA и укорачивания до INS
         Pattern patternExtra = Pattern.compile("1R/|(?<=\\s)25/|(?<=\\s)3/|(?<=\\s)2/|(?<=\\s)15/|[AB]\\d{1,3}[RL]/|35/|02[LR]/");
         Pattern patternProto = Pattern.compile("(PROTO PROTO kombinatsioon 1tk;)");
-        Pattern patternDate = Pattern.compile("^\\d{1,2}[.]\\d{1,2}[.]\\d{4}");
+        Pattern patternDate = Pattern.compile("^\\d{1,2}[.]\\d{1,2}[.]\\d{2,4}");
         Matcher m_nameSearching = null;
         Matcher m_B90R_L_Searching = null;
         Matcher m_INSPIRA_Searching = null;
@@ -50,15 +63,16 @@ public class NeiserClass {
             //Log.d(TAG, "main:" + line);
             // Забиваем переменные на совпадения
 
+            m_date_Searshing = patternDate.matcher(line.trim());
             m_nameSearching = patternName.matcher(line.trim()); // c помощью trim убераем пробелы с переди и с зади.
             m_B90R_L_Searching = patternReplay.matcher(line.trim());
             m_INSPIRA_Searching = patternIns.matcher(line.trim());
             m_1R_25_3_2_15_serching = patternExtra.matcher(line.trim());
             m_Proto_searching = patternProto.matcher(line.trim());
-            m_date_Searshing = patternDate.matcher(line.trim());
 
             if (m_date_Searshing.find()) {
                 day = daysDeterminate(line);        // находим дату и формируем её в удобную форму
+                //Log.d(TAG, "main: нашли дату :"+ day +" "+ name);
             } else if (m_nameSearching.find()) {     // ищем Имена
                 name = namesDeterminate(line);
             } else {                                 //Работа с регуляками
@@ -134,22 +148,22 @@ public class NeiserClass {
         String dateString = line.substring(0, 10); // поддержка строки от 0 до 10
         LocalDate localDate = LocalDate.parse(dateString, formatter);
         String b = localDate.getDayOfWeek().toString();
-        String day = "";
+        String day1 = "Day?";
         if (b.contains("MONDAY")) {
-            day = "Esm";
+            day1 = "Esm";
         } else if (b.contains("TUESDAY")) {
-            day = "Tei";
+            day1 = "Tei";
         } else if (b.contains("WEDNESDAY")) {
-            day = "Kol";
+            day1 = "Kol";
         } else if (b.contains("THURSDAY")) {
-            day = "Nel";
+            day1 = "Nel";
         } else if (b.contains("FRIDAY")) {
-            day = "Reede";
+            day1 = "Reede";
         } else if (b.contains("SATURDAY")) {
-            day = "Lau";
+            day1 = "Lau";
         }
 
-        return day;
+        return day1;
     }
 
     private static String deletingExtraSpaces(String extraLine) {

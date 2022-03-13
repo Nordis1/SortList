@@ -698,6 +698,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             cursor.close();
             chosenCharset = null;
             mProgresscounter = 0;
+            handler.post(runnableIncrementProgressbar);
             uri = null;
 
         }
@@ -867,10 +868,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     try {
                         Log.i(TAG, "onClick: Зашли в чистку всех елементов");
                         sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
-                        Log.i(TAG, "onClick: sPref:" + sPref);
                         sPref.edit().clear().apply();
-                        Log.i(TAG, "onClick: sPref после удалениея:" + sPref);
                         cursor.close();
+                        fileName = null;
                         listFromSharedPreference.clear();
                         listForSearch.clear();
                         mainList.clear();
@@ -881,7 +881,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         choosen_ItemInClickmethod = null;
                         bool_accessToDeleteAllWithOutDialog = false;
                         adapter1.clear();
-                        backcounter = 0;
+                        mProgresscounter = 0;
                         mColumnmax = 0;
                         mColumnmin = 0;
                         name = null;
@@ -890,6 +890,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         binding.idWhatIsList.setVisibility(View.GONE);
                         binding.listItemModel.setVisibility(View.GONE);
                         binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
+                        file_xls_reader = null;
+
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, R.string.something_went_wrong, Toast.LENGTH_SHORT).show();
                     }
