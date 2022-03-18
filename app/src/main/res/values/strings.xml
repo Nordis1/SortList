@@ -2,16 +2,13 @@
     <string name="app_name">CheckList</string>
     <string name="search">Search</string>
     <string name="Typeitem">Search or add the word</string>
-    <string name="ShowAll">Show full list</string>
     <string name="Save">Save</string>
 
     <string name="cancel">Cancel</string>
-    <string name="load_db">Load file\n( txt, xls )</string>
     <string name="Change_Row">Change this String</string>
     <string name="Delete_Row">Delete this String</string>
     <string name="ShowUnchekedItems">Show unchecked items</string>
     <string name="TextForDelete1">If save unchecked positions.\nLater, combine them with a new file uploading.They Mark as - * </string>
-    <string name="Delete">Delete</string>
     <string name="Delete_all">Delete all</string>
     <string name="Delete_Checked_rows">Delete all checked</string>
     <string name="From_which_to_which">From which to which column to read ?</string>

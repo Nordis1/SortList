@@ -41,6 +41,10 @@ public class NeiserClass {
         }
         origon(comingList);
 
+        for (int i = 0; i < mainSupport.size(); i++) {
+            Log.d(TAG, "main: mainSupport "+ mainSupport.get(i));
+        }
+
         Pattern patternName = Pattern.compile("\\d{0,3}? - [a-zA-Z]+?\\s[a-zA-Z]+?"); // для поиска имени  10 - Janek Reemann
         Pattern patternReplay = Pattern.compile("([BD])\\d{0,2}([RL])/"); // для удаления лишнего B90R/
         Pattern patternIns = Pattern.compile("(INSPIRA)"); // для нахождения INSPIRA и укорачивания до INS
@@ -101,8 +105,7 @@ public class NeiserClass {
         String s = mainList.get(0);
         if (s.contains("TOOTMISPLAAN")) {
             s = s.substring(18, s.length() - 4);
-            mainList.remove(0);
-            mainList.add(0, s);
+            mainList.set(0,s);
         }
 
 
@@ -294,7 +297,7 @@ public class NeiserClass {
                         pittB95 += 2;
                     }
                 }
-                workWithTumbad(ln, mainLoadList, i);
+                //workWithTumbad(ln, mainLoadList, i);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -306,8 +309,8 @@ public class NeiserClass {
 
     public static void replaceIndex(ArrayList<String> list, int index, String line) {
 
-        list.remove(index);
-        list.add(index, line);
+        list.set(index,line);
+
     }
 
     public static void workWithTumbad(String ln, ArrayList mainLoadList, int i) {

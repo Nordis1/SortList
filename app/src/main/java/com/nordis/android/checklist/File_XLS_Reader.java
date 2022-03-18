@@ -152,6 +152,9 @@ public class File_XLS_Reader extends MainActivity {
             handler.sendEmptyMessage(hSetToastErrorOfFileReading);
             e.printStackTrace();
         }
+ /*       for (int i = 0; i < arrayListFromXlsFile.size(); i++) {
+            Log.d(TAG, "readingXLS: "+ arrayListFromXlsFile.get(i));
+        }*/
 
         //Если файл для Neiser , тогда работаем с ним и возвращаем.
         if (bool_neiser){

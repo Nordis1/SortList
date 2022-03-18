@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.os.PersistableBundle;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -70,11 +71,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
-//Планы на завтра  Поправить Layout для телефонов для планшетов вроде норм.
-//Реализовать фунционал в контекстном меню delete row
-// Добавить возможность чтения xls файлов.
-// Не забыть включить удаление файла при удалении базы данных. По возможности сделать это изберательно.
-//Попробовать сделать огромный список на 600+ элементов, посмотреть как будет вести себя Listview.Будет ли лагать.
+
         AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
     //Inner DataBase SQL variables
     DBHelper dbHelper;
@@ -107,25 +104,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
-    static volatile boolean bool_fileOfNameReady, bool_fileNotChosen, bool_isSaved, bool_prepereDeleteRow, bool_onSaveReady, bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled, bool_accessToDeleteAllWithOutDialog, bool_haveDeletingRight, bool_billingInitializeOk, bool_owner, bool_neiser = false;
-    //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
-    //bool_prepereDeleteRow - для контекстной функции Delete row.
-    //bool_isSaved - используется в RestCreating. Что бы прога не удалила план пока не завершится сохранение остатка.
-    //bool_onSaveReady - для контекстной функции Delete All checked.
-    //bool_isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
+    static volatile boolean
+            bool_fileOfNameReady, //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
+            bool_fileNotChosen,
+            bool_isSaved, ///bool_isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
+            bool_prepereDeleteRow, //bool_prepereDeleteRow - для контекстной функции Delete row.
+            bool_onSaveReady, //bool_onSaveReady - для контекстной функции Delete All checked.
+            bool_xlsColumnsWasChosen,
+            bool_xlsExecutorCanceled,
+            bool_accessToDeleteAllWithOutDialog,
+            bool_haveDeletingRight,
+            bool_billingInitializeOk,
+            bool_owner,
+            bool_neiser = false;
 
     //Integer variables
     static int batteryLvl;
-    int backcounter = 0;  //backcounter - работает с backSearchlist
     final int requestCodeActivityResult_PickFile = 1;
+    final private int requestCodePermissionResult_ToReadFile = 2;
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
     static int firstWordCounter = -1; //переменная вторичная
     final int menuSize = 4;
-    static int takeFlags;
-
     final int hSetToastErrorOfFileReading = 1;
     final int hsetdelete_WithOut_rest = 3;
     final int hSetbtnReadFileEnabledFalse = 4;
@@ -165,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DialogClass newdialog;
     LocalDateTime localDateChecked;
     static Uri uri; // Получаем нахождение файла в OnActivityResult
-    final private int requestCodePermissionResult_ToReadFile = 2;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -1711,7 +1711,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //UP-date Main
             sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
             int kol = sPref.getInt("Kolichesvo", 0);
-            Log.d(TAG, "loadCheckedItems: кол-во сохранёных в spref "+ kol);
+            Log.d(TAG, "loadCheckedItems: кол-во сохранёных в spref " + kol);
             for (int i = 0; i < kol; i++) {
                 listFromSharedPreference.add(sPref.getString("Keyg" + i, "")); //загрузка с Preferences всех сохранёных отмеченных итемов
             }
@@ -1752,23 +1752,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+    }
+
+    @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        bool_fileOfNameReady = savedInstanceState.getBoolean("val1");
-        bool_fileNotChosen = savedInstanceState.getBoolean("val2");
-        bool_isSaved = savedInstanceState.getBoolean("val3");
-        bool_xlsExecutorCanceled = savedInstanceState.getBoolean("val4");
-        bool_xlsColumnsWasChosen = savedInstanceState.getBoolean("val5");
-        isSubscribed = savedInstanceState.getBoolean("val6");
-        if (dbHelper == null) dbHelper = new DBHelper(this);
-        if (contentValues == null) contentValues = new ContentValues();
-        if (handler == null) onHandlerCreate();
-        if (localDateChecked == null) {
-            String date = savedInstanceState.getString("val7");
-            localDateChecked = LocalDateTime.parse(date);
+        if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
+            Intent i = new Intent(this, MainActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+        } else {
+            try {
+                bool_fileOfNameReady = savedInstanceState.getBoolean("val1");
+                bool_fileNotChosen = savedInstanceState.getBoolean("val2");
+                bool_isSaved = savedInstanceState.getBoolean("val3");
+                bool_xlsExecutorCanceled = savedInstanceState.getBoolean("val4");
+                bool_xlsColumnsWasChosen = savedInstanceState.getBoolean("val5");
+                isSubscribed = savedInstanceState.getBoolean("val6");
+                if (dbHelper == null) dbHelper = new DBHelper(this);
+                if (contentValues == null) contentValues = new ContentValues();
+                if (handler == null) onHandlerCreate();
+                if (localDateChecked == null) {
+                    String date = savedInstanceState.getString("val7");
+                    localDateChecked = LocalDateTime.parse(date);
+                }
+                bool_owner = savedInstanceState.getBoolean("val8");
+                regSubElements(isSubscribed);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        bool_owner = savedInstanceState.getBoolean("val8");
-        regSubElements(isSubscribed);
 
     }
 

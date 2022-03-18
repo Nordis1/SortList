@@ -3,16 +3,13 @@
     <string name="app_name">CheckList</string>
     <string name="search">Поиск</string>
     <string name="Typeitem">Поисковое или добавляемое слово</string>
-    <string name="ShowAll">Показать всё</string>
     <string name="Save">Сохранить</string>
 
     <string name="cancel">Отмена</string>
-    <string name="load_db">Загрузить\n( txt, xls )</string>
     <string name="Change_Row">Изменить позицию</string>
     <string name="Delete_Row">Удалить позицию</string>
     <string name="ShowUnchekedItems">Показать неотмеченные строки</string>
     <string name="TextForDelete1">Если сохранить неотмеченные позиции.\nОни подгружаються совместно с новым файлом</string>
-    <string name="Delete">Удалить</string>
     <string name="Delete_all">Удалить всё</string>
     <string name="Delete_Checked_rows">Удалить все отмеченные</string>
     <string name="From_which_to_which">Чтение xls столбцов от и до ?</string>
