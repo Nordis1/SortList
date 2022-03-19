@@ -313,7 +313,7 @@ public class NeiserClass {
 
     }
 
-    public static void workWithTumbad(String ln, ArrayList mainLoadList, int i) {
+    public static void workWithTumbad(String ln, ArrayList<String> mainLoadList, int i) {
         if (ln.contains("F62")) {
             ln = ln + " {F68}";
             replaceIndex(mainLoadList, i, ln);

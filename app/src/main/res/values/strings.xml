@@ -93,7 +93,9 @@
     <string name="clue_seven">If the subscription is cancelled, it will still be valid until it expires.</string>
     <string name="clue_0">Take it step by step.</string>
     <string name="string_owner">Developer Mode</string>
+    <string name="string_ru_owner">Russian mode</string>
     <string name="developer_mode" translatable="false">Developer mode is activated</string>
+    <string name="ru_mode" translatable="false">Russia mode is activated</string>
     <string name="element_isExist">The string is already exist</string>
     <string name="main">Main List</string>
     <string name="main2">Main List</string>

@@ -58,7 +58,7 @@
             app:layout_constraintHeight_percent="0.7"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.5" />
+            app:layout_constraintWidth_percent="0.8" />
 
         <TextView
             android:id="@+id/idsubscriptionText"

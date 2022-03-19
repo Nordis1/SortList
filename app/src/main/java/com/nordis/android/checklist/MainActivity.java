@@ -73,10 +73,71 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
 
         AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
+    final static int hSetCreateDialogFromWhichToWhich = 16;
+    final static int hSetSubscribeTrue = 18;
+    final static int hSetSubscribeFalse = 19;
+    final static int hBillingClientInitializeIsCorrect = 20;
+    final static int hShowAd = 22;
+    final static int hSetSubscribePending = 23;
+    final static int hSetSubscribeUNSPECIFIED = 24;
+    final static CountDownLatch countDownLatch = new CountDownLatch(1);
+    //final String TAG = "Main_Activity";
+    private static final String TAG = "Main_Activity";
+    //String variables
+    public static volatile String fileName;
+    public static String name = "";
+    public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
+    //Boolean variables
+    static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
+    static volatile boolean
+            bool_fileOfNameReady, //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
+            bool_fileNotChosen,
+            bool_isSaved, ///bool_isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
+            bool_prepereDeleteRow, //bool_prepereDeleteRow - для контекстной функции Delete row.
+            bool_onSaveReady, //bool_onSaveReady - для контекстной функции Delete All checked.
+            bool_xlsColumnsWasChosen,
+            bool_xlsExecutorCanceled,
+            bool_accessToDeleteAllWithOutDialog,
+            bool_haveDeletingRight,
+            bool_billingInitializeOk,
+            bool_owner,
+            bool_ru_owner,
+            bool_neiser = false;
+    //Integer variables
+    static int batteryLvl;
+    volatile static int mProgresscounter = 0;
+    volatile static int mColumnmax = 0;
+    volatile static int mColumnmin = 0;
+    static int firstWordCounter = -1; //переменная вторичная
+    static volatile SharedPreferences sPref;
+    static Handler handler;
+    static Uri uri; // Получаем нахождение файла в OnActivityResult
+    final int requestCodeActivityResult_PickFile = 1;
+    static int menuSize = 4;
+    final int hSetToastErrorOfFileReading = 1;
+    final int hsetdelete_WithOut_rest = 3;
+    final int hSetbtnReadFileEnabledFalse = 4;
+    final int hSetbtnReadFileEnabledTrue = 5;
+    final int hSetProgressBarVisible = 6;
+    final int hSetProgressBarGone = 7;
+    final int hSetMainInnerUserGuideOnVISIBLE = 8;
+    final int hsetdelete_IsCanceled = 9;
+    final int hsetlistView_Onvisible = 10;
+    final int hSetLoadingListOfView_fromAdapter1 = 11;
+    final int hSetToastErrorfromReadingAdditionalLoad = 12;
+    final int hSetCreateDialogError = 13;
+    final int hSetDoRest = 14;
+    final int hSetDeleteRest = 15;
+    final int hSetDeleteChekedPositions = 17;
+    final int hBatteryOn = 25;
+    final int hsetLostConnectionsWithGooglePlay = 26;
+    final int hNewXLSReader = 27;
+    final int hSetWhatIsListVisible = 28;
+    final int hSetWhatIsListNotVisible = 29;
+    final private int requestCodePermissionResult_ToReadFile = 2;
     //Inner DataBase SQL variables
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
-
     //Arraylist variables
     //Примечание: mainlist и foundlist и foundAccurateList основные.В list_of_View отбражаться всё что есть в mainlist или foundlist с помощью  adapter1.
     ArrayList<String> mainList = new ArrayList<>(); //основной лист
@@ -92,80 +153,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile HashSet<String> hashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
     volatile ArrayAdapter adapter1;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
     Thread thread;
-
     volatile File_XLS_Reader file_xls_reader;
-
-    //String variables
-    public static volatile String fileName;
-    public static String name = "";
-    final String TAG = "Main_Activity";
     String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
-    public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
-
-    //Boolean variables
-    static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
-    static volatile boolean
-            bool_fileOfNameReady, //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
-            bool_fileNotChosen,
-            bool_isSaved, ///bool_isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
-            bool_prepereDeleteRow, //bool_prepereDeleteRow - для контекстной функции Delete row.
-            bool_onSaveReady, //bool_onSaveReady - для контекстной функции Delete All checked.
-            bool_xlsColumnsWasChosen,
-            bool_xlsExecutorCanceled,
-            bool_accessToDeleteAllWithOutDialog,
-            bool_haveDeletingRight,
-            bool_billingInitializeOk,
-            bool_owner,
-            bool_neiser = false;
-
-    //Integer variables
-    static int batteryLvl;
-    final int requestCodeActivityResult_PickFile = 1;
-    final private int requestCodePermissionResult_ToReadFile = 2;
-    volatile static int mProgresscounter = 0;
-    volatile static int mColumnmax = 0;
-    volatile static int mColumnmin = 0;
-    static int firstWordCounter = -1; //переменная вторичная
-    final int menuSize = 4;
-    final int hSetToastErrorOfFileReading = 1;
-    final int hsetdelete_WithOut_rest = 3;
-    final int hSetbtnReadFileEnabledFalse = 4;
-    final int hSetbtnReadFileEnabledTrue = 5;
-    final int hSetProgressBarVisible = 6;
-    final int hSetProgressBarGone = 7;
-    final int hSetMainInnerUserGuideOnVISIBLE = 8;
-    final int hsetdelete_IsCanceled = 9;
-    final int hsetlistView_Onvisible = 10;
-    final int hSetLoadingListOfView_fromAdapter1 = 11;
-    final int hSetToastErrorfromReadingAdditionalLoad = 12;
-    final int hSetCreateDialogError = 13;
-    final int hSetDoRest = 14;
-    final int hSetDeleteRest = 15;
-    final static int hSetCreateDialogFromWhichToWhich = 16;
-    final int hSetDeleteChekedPositions = 17;
-    final static int hSetSubscribeTrue = 18;
-    final static int hSetSubscribeFalse = 19;
-    final static int hBillingClientInitializeIsCorrect = 20;
-    final static int hShowAd = 22;
-    final static int hSetSubscribePending = 23;
-    final static int hSetSubscribeUNSPECIFIED = 24;
-    final int hBatteryOn = 25;
-    final int hsetLostConnectionsWithGooglePlay = 26;
-    final int hNewXLSReader = 27;
-    final int hSetWhatIsListVisible = 28;
-    final int hSetWhatIsListNotVisible = 29;
-
-    static volatile SharedPreferences sPref;
     Executor executor;
     Cursor cursor;
     ContentValues contentValues = new ContentValues();
-    static Handler handler;
-    final static CountDownLatch countDownLatch = new CountDownLatch(1);
     ActivityMainBinding binding;
-    private RewardedAd mRewardedAd;
     DialogClass newdialog;
     LocalDateTime localDateChecked;
-    static Uri uri; // Получаем нахождение файла в OnActivityResult
+    Runnable runnableIncrementProgressbar = new Runnable() {
+        @Override
+        public void run() {
+            Log.i(TAG, "run: зашли в в увеличение progressbar mProgresscounter = " + mProgresscounter);
+            binding.downloadBar.setProgress(mProgresscounter);
+
+        }
+    };
+    Runnable runnableToDelete = () -> prepareToDelete(choosen_ItemInClickmethod);
+    private RewardedAd mRewardedAd;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -173,7 +178,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        onMenuCreate();
+        //Locale.getDefault().getLanguage();
+        Log.d(TAG, "onCreate: " + Locale.getDefault().getLanguage());
+        if (Locale.getDefault().getLanguage().equals("ru")) {
+            bool_ru_owner = true;
+        }
 
 
         executor = Executors.newCachedThreadPool(); // With this method, the thread lives 60 sec if it done.
@@ -197,7 +206,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         checkInnerPreview();
         onHandlerCreate();
         checkSub();
+        onMenuCreate();
         onAdCreate();
+
 
     }
 
@@ -216,11 +227,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void onMenuCreate() {
-        menuList.add(getString(R.string.manual));
-        menuList.add(getString(R.string.charset_determinations));
-        menuList.add(getString(R.string.getSubscribe));
-        menuList.add(getString(R.string.toSeeAds));
-        menuList.add("");
+        if (bool_owner || bool_ru_owner) {
+            menuSize = 2;
+            menuList.add(getString(R.string.manual));
+            menuList.add(getString(R.string.charset_determinations));
+            menuList.add("");
+        } else {
+            menuSize = 4;
+            menuList.add(getString(R.string.manual));
+            menuList.add(getString(R.string.charset_determinations));
+            menuList.add(getString(R.string.getSubscribe));
+            menuList.add(getString(R.string.toSeeAds));
+            menuList.add("");
+        }
         //final int menuSize = menuList.size()-1;
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, menuList) {
             @Override
@@ -235,13 +254,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
+        Log.d(TAG, "checkSub: Зашли в checkSub ");
         sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
         bool_owner = sPref.getBoolean("keyown", false);
 
-        if (!bool_owner) {
+        if (bool_owner || bool_ru_owner) {
+            Log.d(TAG, "checkSub: зашли в проверку хозяин или Россиянен.");
+            isSubscribed = true;
+            regSubElements(isSubscribed);
+        }else {
+            Log.d(TAG, "checkSub: зашли в проверку подписки");
             //Логика дейсвий:
             //1 Проверяеться connection to PlayStore, если ошибка тогда оповещаем клиента что ошибка!
             //2 Если connecting in correct. Then we have check subscription.
@@ -276,15 +300,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(MainActivity.this, R.string.intializegettingFall, Toast.LENGTH_LONG).show();
                 Log.d(TAG, "checkSub: error: " + e.getMessage());
             }
-        } else {
-            isSubscribed = true;
-            regSubElements(isSubscribed);
 
         }
 
 
     }
-
 
     public void onAdCreate() {
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -473,18 +493,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void regSubElements(Boolean subcribtionY) {
         if (subcribtionY) {
-            if (bool_owner) {
+
+            if (bool_owner || bool_ru_owner) {
                 binding.menuViewBattery.setVisibility(View.GONE);
                 binding.idsubscriptionText.setVisibility(View.GONE);
-                binding.idTextOwner.setVisibility(View.VISIBLE);
-                Toast.makeText(MainActivity.this, R.string.developer_mode, Toast.LENGTH_SHORT).show();
+                if (bool_ru_owner) {
+                    Log.d(TAG, "regSubElements: Зашли в оформления России");
+                    binding.idTextOwner.setVisibility(View.VISIBLE);
+                    binding.idTextOwner.setText(R.string.string_ru_owner);
+                    Toast.makeText(MainActivity.this, R.string.ru_mode, Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.d(TAG, "regSubElements: Зашли в оформление Хозяина");
+                    binding.idTextOwner.setVisibility(View.VISIBLE);
+                    Toast.makeText(MainActivity.this, R.string.developer_mode, Toast.LENGTH_SHORT).show();
+                }
             } else {
                 binding.idTextOwner.setVisibility(View.GONE);
                 binding.menuViewBattery.setVisibility(View.GONE);
                 binding.idsubscriptionText.setVisibility(View.VISIBLE);
             }
 
-        } else {
+        }
+        else {
             binding.idTextOwner.setVisibility(View.GONE);
             binding.idsubscriptionText.setVisibility(View.GONE);
             binding.menuViewBattery.setVisibility(View.VISIBLE);
@@ -599,7 +629,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dbHelper.close();
 
     }
-
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -960,7 +989,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             onmyQueryTextSubmit(searchWord);
                         }
                     } else {
-                        if (!bool_owner) {
+                        if (!bool_owner && !bool_ru_owner) {
                             if (LocalDateTime.now().isAfter(localDateChecked.plusDays(1))) {
                                 Log.d(TAG, "onClick: проходим дополнительную проверку.");
                                 checkSub();
@@ -1081,7 +1110,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.listItemModel.setAdapter(adapter1);
     }
 
-
     private void restCreating() {
         //В этом методе main лист становиться меньше поэтому мы должны его востанавливать. что бы сново применять этот метод. Что бы работал корректно.
         sPref = getSharedPreferences("Jaak", MODE_PRIVATE);// удаляем старую версию остатка
@@ -1111,7 +1139,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bool_isSaved = true;
     }
 
-
     @Override //после получения доступа Загружаем базу данных
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -1135,7 +1162,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mProgresscounter = 0;
         bool_fileOfNameReady = false;
     }
-
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public boolean deleteFileUsingDisplayName(Context context, String displayName) {
@@ -1266,16 +1292,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         thread.start();
     }
 
-    Runnable runnableIncrementProgressbar = new Runnable() {
-        @Override
-        public void run() {
-            Log.i(TAG, "run: зашли в в увеличение progressbar mProgresscounter = " + mProgresscounter);
-            binding.downloadBar.setProgress(mProgresscounter);
-
-        }
-    };
-
-
     private void mainloading() {
         try {
             // Open a specific media item using ParcelFileDescriptor.
@@ -1393,7 +1409,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, "0.0 % " + getString(R.string.done), Toast.LENGTH_LONG).show();
         }
     }
-
 
     public void deleteRestMemory() {
         Log.i(TAG, "deleteRestMemory: зашли удалить Остаток");
@@ -1546,7 +1561,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
     public void getAllListItemsIsCheched(ArrayList<String> arrayList) {
         sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
         SharedPreferences.Editor editor = sPref.edit();
@@ -1601,10 +1615,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.btnSave.callOnClick();
 
     }
-
-
-    Runnable runnableToDelete = () -> prepareToDelete(choosen_ItemInClickmethod);
-
 
     //для поиска
     public void onmyQueryTextSubmit(String s) { //метод для поиска слова (присвоил к кнопке)
@@ -1748,6 +1758,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         outState.putBoolean("val6", isSubscribed);
         if (localDateChecked != null) outState.putString("val7", localDateChecked.toString());
         outState.putBoolean("val8", bool_owner);
+        outState.putBoolean("val9", bool_ru_owner);
 
     }
 
@@ -1778,6 +1789,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     localDateChecked = LocalDateTime.parse(date);
                 }
                 bool_owner = savedInstanceState.getBoolean("val8");
+                bool_ru_owner = savedInstanceState.getBoolean("val9");
                 regSubElements(isSubscribed);
             } catch (Exception e) {
                 e.printStackTrace();

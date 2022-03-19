@@ -7,6 +7,7 @@
         <entry key="..\:/android projects/picker/app/src/main/res/drawable/history_icon72.xml" value="0.118" />
         <entry key="..\:/android projects/picker/app/src/main/res/layout-large/activity_main.xml" value="0.5307539682539683" />
         <entry key="..\:/android projects/picker/app/src/main/res/layout-xlarge/activity_main.xml" value="0.18271857923497267" />
+        <entry key="..\:/android projects/picker/app/src/main/res/layout/activity_main.xml" value="0.2791666666666667" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/Picker/app/src/main/res/layout-large/activity_delete_file.xml" value="0.22814207650273224" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/Picker/app/src/main/res/layout-large/activity_main.xml" value="0.67" />
         <entry key="..\:/old_D_disk/Programming/android studio/AndroidStudioProjects/Picker/app/src/main/res/layout-large/activity_user_guide.xml" value="0.6626984126984127" />
@@ -68,7 +69,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_16" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
