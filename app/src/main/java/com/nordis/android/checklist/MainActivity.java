@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -1003,50 +1004,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //История поиска
             case R.id.idBackSearch:
-                if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
-                    Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
-                    break;
-                }
-                if (supportRequestHistoryForChangeStrings.size() >= 2) {
-                    Log.d(TAG, "onClick: зашли в историю поиска пунк 1");
-                    try {
-                        loadhistory.addAll(supportRequestHistoryForChangeStrings);
-                        binding.btnSave.callOnClick();
-                        String howDeepWeGo = "";
-                        // supportRequestHistoryForChangeStrings чистить не нужно так как чистица автоматом в поиске.
-                        for (int i = 0; i < loadhistory.size() - 1; i++) {
-                            if (i == loadhistory.size() - 2) {
-                                howDeepWeGo = howDeepWeGo + loadhistory.get(i);
-                                Log.d(TAG, "onClick: №1 " + howDeepWeGo);
-                            } else {
-                                howDeepWeGo = howDeepWeGo + loadhistory.get(i);
-                                howDeepWeGo = howDeepWeGo + "->";
-                                Log.d(TAG, "onClick: №2 " + howDeepWeGo);
-                            }
 
-                            binding.etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
-                            binding.btnSearch.callOnClick();
-                        }
-                        loadhistory.clear();
-                        Log.d(TAG, "onClick: вызываем тост");
-                        Toast.makeText(this, howDeepWeGo, Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG).show();
-                        e.printStackTrace();
+                try {
+                    if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
+                        Toast.makeText(MainActivity.this, getString(R.string.First_download_the_file), Toast.LENGTH_SHORT).show();
+                        break;
                     }
-                } else if (!firstWordSearchingList.isEmpty()) {
-                    //firstWordCounter = firstWordSearchingList.size()-1;
-                    binding.btnSave.callOnClick();
-                    if (firstWordCounter <= -1)
-                        firstWordCounter = firstWordSearchingList.size() - 1;
-                    Log.i(TAG, "onClick: firstWordSearchingList.size = " + firstWordSearchingList.size());
-                    Log.i(TAG, "onClick: firstWordCounter = " + firstWordCounter);
-                    binding.etName.setText(firstWordSearchingList.get(firstWordCounter));
-                    firstWordCounter--;
-                    binding.btnSearch.callOnClick();
-                } else {
-                    Log.d(TAG, "onClick: зашли в историю поиска пунк 2");
-                    binding.btnSave.callOnClick();
+                    if (supportRequestHistoryForChangeStrings.size() >= 2) {
+                        Log.d(TAG, "onClick: зашли в историю поиска пунк 1");
+                        try {
+                            loadhistory.addAll(supportRequestHistoryForChangeStrings);
+                            binding.btnSave.callOnClick();
+                            String howDeepWeGo = "";
+                            // supportRequestHistoryForChangeStrings чистить не нужно так как чистица автоматом в поиске.
+                            for (int i = 0; i < loadhistory.size() - 1; i++) {
+                                if (i == loadhistory.size() - 2) {
+                                    howDeepWeGo = howDeepWeGo + loadhistory.get(i);
+                                    Log.d(TAG, "onClick: №1 " + howDeepWeGo);
+                                } else {
+                                    howDeepWeGo = howDeepWeGo + loadhistory.get(i);
+                                    howDeepWeGo = howDeepWeGo + "->";
+                                    Log.d(TAG, "onClick: №2 " + howDeepWeGo);
+                                }
+
+                                binding.etName.setText(loadhistory.get(i)); //сюда закидываються слова которые были в поиске
+                                binding.btnSearch.callOnClick();
+                            }
+                            loadhistory.clear();
+                            Log.d(TAG, "onClick: вызываем тост");
+                            Toast.makeText(this, howDeepWeGo, Toast.LENGTH_LONG).show();
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, R.string.fail_to_restore_previous_searching, Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
+                    } else if (!firstWordSearchingList.isEmpty()) {
+                        binding.btnSave.callOnClick();
+                        if (firstWordCounter <= -1)
+                            firstWordCounter = firstWordSearchingList.size() - 1;
+                        Log.i(TAG, "onClick: firstWordSearchingList.size = " + firstWordSearchingList.size());
+                        Log.i(TAG, "onClick: firstWordCounter = " + firstWordCounter);
+                        binding.etName.setText(firstWordSearchingList.get(firstWordCounter));
+                        firstWordCounter--;
+                        binding.btnSearch.callOnClick();
+                    } else {
+                        Log.d(TAG, "onClick: зашли в историю поиска пунк 2");
+                        binding.btnSave.callOnClick();
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(this,R.string.backSearchError + e.getMessage(), Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
                 }
                 break;
 //Добавляемая строка
@@ -1250,9 +1256,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.d(TAG, "ждём  инициальзации file_xls_reader");
                     }
                     Log.d(TAG, "Инициализация успешна!");
+                    loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
                     downloadList = file_xls_reader.readingXLS(MainActivity.this);
                     Log.i(TAG, "run: Получили считанный лист. Его размер: " + downloadList.size());
-                    loadingRest(); // запускаем метод что бы получить остаток если он есть + получить переменную mProgresscounter.
 
                     int j = downloadList.size() + mProgresscounter;
                     binding.downloadBar.setMax(j); // так как переменная volantile все изменения будут видны в любом потоке.
@@ -1378,7 +1384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String s = sPref.getString("Rest" + i, "");
                     if (s.contains(" - *")) {
                         downloadList.add(s);
-                    } else downloadList.add(s + " - *");
+                    } else downloadList.add(s + " - Old");
                 }
                 sPref.edit().clear().apply(); // Чистим наше сохранения
 

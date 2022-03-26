@@ -100,4 +100,5 @@
     <string name="main">Main List</string>
     <string name="main2">Main List</string>
     <string name="searchList">Search List</string>
+    <string name="backSearchError">History search error</string>
 </resources>

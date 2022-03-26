@@ -97,4 +97,5 @@
     <string name="main">Основной лист</string>
     <string name="main2">Основной лист</string>
     <string name="searchList">Поисковый лист</string>
+    <string name="backSearchError">Ошибка поиска</string>
 </resources>
