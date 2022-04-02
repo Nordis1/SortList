@@ -108,7 +108,8 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
         };
 
-        subscribeLayoutBinding.btnGotoread.setOnClickListener(this);
+        subscribeLayoutBinding.btnSubRemoveGotoread.setOnClickListener(this);
+        subscribeLayoutBinding.btnSubDetailGotoread.setOnClickListener(this);
 
         /*final String databaseUrl = "https://checklist-nordis-default-rtdb.europe-west1.firebasedatabase.app";
         database = FirebaseDatabase.getInstance(databaseUrl);*/
@@ -227,8 +228,12 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
             initAndCheckPurchase(skuDetalsList123.get(2));
 
         }
-        if (subscribeLayoutBinding.btnGotoread.equals(v)){
+        if (subscribeLayoutBinding.btnSubRemoveGotoread.equals(v)){
             Intent intent = new Intent(SubcribeClass.this,ActivitySubRemove.class);
+            startActivity(intent);
+        }
+        if (subscribeLayoutBinding.btnSubDetailGotoread.equals(v)){
+            Intent intent = new Intent(SubcribeClass.this,SubcribeDetailsActivity.class);
             startActivity(intent);
         }
 
@@ -422,9 +427,9 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                                     SkuDetails iteminfo = skuDetailsList.get(0);
                                     SkuDetails iteminfo1 = skuDetailsList.get(1);
                                     SkuDetails iteminfo2 = skuDetailsList.get(2);
-                                    btnMonthApplySubscribe.setText(iteminfo.getPrice());
+                                   /* btnMonthApplySubscribe.setText(iteminfo.getPrice());
                                     btnSixMonthApplySubscribe.setText(iteminfo1.getPrice());
-                                    btnYeardApplySubscribe.setText(iteminfo2.getPrice());
+                                    btnYeardApplySubscribe.setText(iteminfo2.getPrice());*/
                                     skuDetalsList123.addAll(skuDetailsList);
                                 }
                             });

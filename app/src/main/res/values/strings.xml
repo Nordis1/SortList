@@ -101,4 +101,14 @@
     <string name="main2">Main List</string>
     <string name="searchList">Search List</string>
     <string name="backSearchError">History search error</string>
+    <string name="MonthPrice" translatable="false">1.20 Euro</string>
+    <string name="SixMonthPrice" translatable="false" >6.45 Euro</string>
+    <string name="YeardPrice" translatable="false" >10 Euro</string>
+    <string name="SubscribtionDetails">Subscription - details</string>
+    <string name="SubscribtionDetailsText">The subscription allows an unlimited number of times to use the search on the downloaded sheet.</string>
+    <string name="SubscribtionDetailsText1">In order to get this opportunity, you need to subscribe for a month, 6 months or a year.</string>
+    <string name="SubscribtionDetailsText2">Payment is made through GooglePlay services and will be charged automatically every month, 6 months or year, depending on the type of subscription. </string>
+    <string name="SubscribtionDetailsText3">You need to subscribe if you like the app and want to use it without watching ads.</string>
+    <string name="SubscribtionDetailsText4">You can also unsubscribe at any time. But an already paid subscription must be valid until the end of its term.</string>
+    <string name="withouttaxes">Prices without taxes</string>
 </resources>

@@ -173,12 +173,12 @@
         android:text="@string/removeSub"
         android:layout_marginBottom="40dp"
         android:textSize="30sp"
-        app:layout_constraintBottom_toTopOf="@+id/btnGotoread"
+        app:layout_constraintBottom_toTopOf="@+id/btnSubRemoveGotoread"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/btnGotoread"
+        android:id="@+id/btnSubRemoveGotoread"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:text="@string/Go_to_reading_howRemoveSub"

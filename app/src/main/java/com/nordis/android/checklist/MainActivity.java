@@ -227,6 +227,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.btnSave.callOnClick();
     }
 
+    //меню
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        Log.d(TAG, "onItemSelected: " + parent.getAdapter().getItem(position).toString());
+        if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.manual))) {
+            binding.menuSpiner.setSelection(menuSize);
+            Intent intent = new Intent(MainActivity.this, UserGuideActivity.class);
+            startActivity(intent);
+
+        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
+            if (!bool_owner) {
+                binding.menuSpiner.setSelection(menuSize);
+                Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
+                startActivity(intent);
+            }
+            binding.menuSpiner.setSelection(menuSize);
+        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
+            binding.menuSpiner.setSelection(menuSize);
+            Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
+            startActivityForResult(intent, 2);
+        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
+            if (!bool_owner) {
+                if (mRewardedAd != null) {
+                    binding.menuSpiner.setSelection(menuSize);
+                    DialogClass dialogClass = new DialogClass(MainActivity.this,
+                            getString(R.string.toGetBatteryEnergy),
+                            getString(R.string.ad),
+                            getString(R.string.towatch),
+                            getString(R.string.cancel),
+                            null
+                    );
+                    dialogClass.createStandartNewDialogShowAd();
+                    dialogClass.dialog.show();
+                } else {
+                    binding.menuSpiner.setSelection(menuSize);
+                    Toast.makeText(this, R.string.rewardedAdsIsNull, Toast.LENGTH_LONG).show();
+                }
+            }
+            binding.menuSpiner.setSelection(menuSize);
+        }
+
+    }
     private void onMenuCreate() {
         if (bool_owner || bool_ru_owner) {
             menuSize = 2;
@@ -1853,49 +1895,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy: Активити умерло.");
-    }
-
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Log.d(TAG, "onItemSelected: " + parent.getAdapter().getItem(position).toString());
-        if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.manual))) {
-            binding.menuSpiner.setSelection(menuSize);
-            Intent intent = new Intent(MainActivity.this, UserGuideActivity.class);
-            startActivity(intent);
-
-        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
-            if (!bool_owner) {
-                binding.menuSpiner.setSelection(menuSize);
-                Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
-                startActivity(intent);
-            }
-            binding.menuSpiner.setSelection(menuSize);
-        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
-            binding.menuSpiner.setSelection(menuSize);
-            Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
-            startActivityForResult(intent, 2);
-        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
-            if (!bool_owner) {
-                if (mRewardedAd != null) {
-                    binding.menuSpiner.setSelection(menuSize);
-                    DialogClass dialogClass = new DialogClass(MainActivity.this,
-                            getString(R.string.toGetBatteryEnergy),
-                            getString(R.string.ad),
-                            getString(R.string.towatch),
-                            getString(R.string.cancel),
-                            null
-                    );
-                    dialogClass.createStandartNewDialogShowAd();
-                    dialogClass.dialog.show();
-                } else {
-                    binding.menuSpiner.setSelection(menuSize);
-                    Toast.makeText(this, R.string.rewardedAdsIsNull, Toast.LENGTH_LONG).show();
-                }
-            }
-            binding.menuSpiner.setSelection(menuSize);
-        }
-
     }
 
     @Override
