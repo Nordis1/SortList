@@ -31,8 +31,6 @@ import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.example.android.checklist.R;
 import com.example.android.checklist.databinding.SubscribeLayoutBinding;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,7 +39,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.Inflater;
 
 public class SubcribeClass extends AppCompatActivity implements View.OnClickListener {
     Button btnYeardApplySubscribe, btnMonthApplySubscribe, btnSixMonthApplySubscribe;
@@ -49,14 +46,11 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
     private BillingFlowParams billingFlowParams;
     private ArrayList<SkuDetails> skuDetalsList123 = new ArrayList<>();
     public static final String TAG = "My_SubClass";
-    DatabaseReference myRef;
-    FirebaseDatabase database;
     String currentPrice;
     static Handler handlerForSubscribtionClass;
     SharedPreferences sPref;
     static String currentPurchaseToken;
     public static String whatSubChosen;
-    static String purchaseTime;
     Activity activity = SubcribeClass.this;
     ExecutorService executorServiceSubClass = Executors.newCachedThreadPool();
     SubscribeLayoutBinding subscribeLayoutBinding;
@@ -110,6 +104,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
         subscribeLayoutBinding.btnSubRemoveGotoread.setOnClickListener(this);
         subscribeLayoutBinding.btnSubDetailGotoread.setOnClickListener(this);
+        subscribeLayoutBinding.btnClose.setOnClickListener(this);
 
         /*final String databaseUrl = "https://checklist-nordis-default-rtdb.europe-west1.firebasedatabase.app";
         database = FirebaseDatabase.getInstance(databaseUrl);*/
@@ -216,6 +211,7 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
     //использовать firebase cloud function as backend server. And firestore as the database.
     @Override
     public void onClick(View v) {
+        Intent intent;
         int responseCode;
         if (v.getId() == R.id.btn_Buy_month) {
             initAndCheckPurchase(skuDetalsList123.get(0));
@@ -229,11 +225,16 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
 
         }
         if (subscribeLayoutBinding.btnSubRemoveGotoread.equals(v)){
-            Intent intent = new Intent(SubcribeClass.this,ActivitySubRemove.class);
+            intent = new Intent(SubcribeClass.this,ActivitySubRemove.class);
             startActivity(intent);
         }
         if (subscribeLayoutBinding.btnSubDetailGotoread.equals(v)){
-            Intent intent = new Intent(SubcribeClass.this,SubcribeDetailsActivity.class);
+            intent = new Intent(SubcribeClass.this,SubcribeDetailsActivity.class);
+            startActivity(intent);
+        }
+        if (subscribeLayoutBinding.btnClose.equals(v)){
+            intent = new Intent(SubcribeClass.this,MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         }
 

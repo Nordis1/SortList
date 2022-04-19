@@ -3,7 +3,6 @@
     <string name="search">Search</string>
     <string name="Typeitem">Search or add the word</string>
     <string name="Save">Save</string>
-
     <string name="cancel">Cancel</string>
     <string name="Change_Row">Change this String</string>
     <string name="Delete_Row">Delete this String</string>
@@ -14,7 +13,6 @@
     <string name="From_which_to_which">From which to which column to read ?</string>
     <string name="Accept">Accept</string>
     <string name="Save_unchecked">Save unchecked positions?</string>
-
     <string name="File_reading_Error">File reading Error!</string>
     <string name="Reading_rest_data_Error">Reading rest data Error!</string>
     <string name="Create_dialog_Error">Create dialog Error!</string>
@@ -22,7 +20,6 @@
     <string name="Delete_Error">Delete Error</string>
     <string name="Not_data_to_show">No data to show</string>
     <string name="First_download_the_file">\"First, download the file \"</string>
-
     <string name="permission_denied">Permission denied</string>
     <string name="done">\" done\"</string>
     <string name="search_error">Search Error</string>
@@ -51,7 +48,7 @@
     <string name="checkallpositions">Check all positions</string>
     <string name="backarrow">Back arrow will return you to the previous search query.</string>
     <string name="getSubscribe">Subscription</string>
-    <string name="one_Yeard">Yeard</string>
+    <string name="one_Yeard">Year</string>
     <string name="Month">Month</string>
     <string name="Sixmonths">6 Months</string>
     <string name="checklistsubscribe">Picker - Subscription</string>
@@ -82,7 +79,7 @@
     <string name="lostConnection">Please check sing in  Google play account</string>
     <string name="connectionIssue">Play store connections lost</string>
     <string name="What_subscription_give">A subscription gives you access to unlimited searching on your list.</string>
-    <string name="removeSub">How to remove subscription?</string>
+    <string name="removeSub">Subscription - remove</string>
     <string name="Go_to_reading_howRemoveSub">Read</string>
     <string name="clue_one">Open the Google Play app</string>
     <string name="clue_two">At the top right, tap the profile icon.</string>
@@ -101,14 +98,17 @@
     <string name="main2">Main List</string>
     <string name="searchList">Search List</string>
     <string name="backSearchError">History search error</string>
-    <string name="MonthPrice" translatable="false">1.20 Euro</string>
-    <string name="SixMonthPrice" translatable="false" >6.45 Euro</string>
-    <string name="YeardPrice" translatable="false" >10 Euro</string>
+    <string name="MonthPrice">1.20 Euro/mo\nFree trial: 7 days</string>
+    <string name="SixMonthPrice">6.45 Euro/6 mo\nProfit 10%</string>
+    <string name="YeardPrice">10 Euro/yеar\nProfit 30%</string>
+    <string name="SubWarning">Attention! Payment is made through GooglePlay services and will be charged automatically every month, 6 months or year, depending on the type of subscription.</string>
     <string name="SubscribtionDetails">Subscription - details</string>
     <string name="SubscribtionDetailsText">The subscription allows an unlimited number of times to use the search on the downloaded sheet.</string>
+    <string name="SubscribtionDetailsText0">You can use this application without a subscription, for this you need to periodically view ads to replenish energy.</string>
     <string name="SubscribtionDetailsText1">In order to get this opportunity, you need to subscribe for a month, 6 months or a year.</string>
-    <string name="SubscribtionDetailsText2">Payment is made through GooglePlay services and will be charged automatically every month, 6 months or year, depending on the type of subscription. </string>
+    <string name="SubscribtionDetailsText2">Payment is made through GooglePlay services and will be charged automatically every month, 6 months or year, depending on the type of subscription.</string>
     <string name="SubscribtionDetailsText3">You need to subscribe if you like the app and want to use it without watching ads.</string>
-    <string name="SubscribtionDetailsText4">You can also unsubscribe at any time. But an already paid subscription must be valid until the end of its term.</string>
+    <string name="SubscribtionDetailsText4">You can also unsubscribe at any time. Subscriptions already paid for are non-refundable. But an already paid subscription is valid until the end of its term.</string>
     <string name="withouttaxes">Prices without taxes</string>
+    <string name="Free_trial">Payment will automatically be charged at the end of the trial.</string>
 </resources>

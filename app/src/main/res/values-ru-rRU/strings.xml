@@ -98,11 +98,17 @@
     <string name="main2">Основной лист</string>
     <string name="searchList">Поисковый лист</string>
     <string name="backSearchError">Ошибка поиска</string>
+    <string name="MonthPrice">1.20 Евро/мес\nБесплатный период: 7 дней</string>
+    <string name="SixMonthPrice">6.45 Евро/6 мес\nВыгода 10%</string>
+    <string name="YeardPrice">10 Евро/год\nВыгода 30%</string>
+    <string name="SubWarning">Внимание! Плата производиться через сервисы GooglePlay и будет взыматься автоматически каждые месяц, пол года или год в зависимости от типа подписки.</string>
     <string name="SubscribtionDetails">Детали - подписки</string>
     <string name="SubscribtionDetailsText">Подписка даёт вожможность неограниченное кол-во раз использовать поиск по загруженному листу.</string>
+    <string name="SubscribtionDetailsText0">Вы можете использовать это приложение без подписки, для этого вам нужно переодически просматривать рекламу для пополнения энергии.</string>
     <string name="SubscribtionDetailsText1">Для того что бы получить такую возможность, подписку нужно оформить на месяц, пол года или год.</string>
     <string name="SubscribtionDetailsText2">Плата производиться через сервисы GooglePlay и будет взыматься автоматически каждые месяц, пол года или год в зависимости от типа подписки.</string>
     <string name="SubscribtionDetailsText3">Вам необходимо оформить подписку в случае если вам понравилось приложение и вы хотите им пользоваться без просмотра рекламы.</string>
-    <string name="SubscribtionDetailsText4">Вы так же можете с отказаться от подписки в любое время. Но уже оплаченная подписка, должна действовать до конца своего срока.</string>
+    <string name="SubscribtionDetailsText4">Вы так же можете отказаться от подписки в любое время. Денежные средства за уже оплаченную подписку возврату не подлежат. Но оплаченная подписка, будет действовать до конца своего срока.</string>
     <string name="withouttaxes">Цены без налога</string>
+    <string name="Free_trial">Оплата будет автоматически снята в конце бесплатного периода.</string>
 </resources>
