@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -71,9 +70,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,
-
-        AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener,
+        AdapterView.OnItemSelectedListener {
     final static int hSetCreateDialogFromWhichToWhich = 16;
     final static int hSetSubscribeTrue = 18;
     final static int hSetSubscribeFalse = 19;
@@ -103,7 +101,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bool_billingInitializeOk,
             bool_owner,
             bool_ru_owner,
-            bool_neiser = false;
+            bool_neiser,
+            boolPlayStoreISSigned = false;
     //Integer variables
     static int batteryLvl;
     volatile static int mProgresscounter = 0;
@@ -113,8 +112,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     static volatile SharedPreferences sPref;
     static Handler handler;
     static Uri uri; // Получаем нахождение файла в OnActivityResult
-    final int requestCodeActivityResult_PickFile = 1;
     static int menuSize = 4;
+    final int requestCodeActivityResult_PickFile = 1;
     final int hSetToastErrorOfFileReading = 1;
     final int hsetdelete_WithOut_rest = 3;
     final int hSetbtnReadFileEnabledFalse = 4;
@@ -237,11 +236,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
 
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
-            if (!bool_owner) {
+            if (!boolPlayStoreISSigned){
+                DialogClass dialogClass = new DialogClass(MainActivity.this,
+                        getString(R.string.connectionIssue),
+                        getString(R.string.playMarket),
+                        null,
+                        null,
+                        getString(R.string.understand)
+                );
+                dialogClass.createStandartNewDialogShowAd();
+                dialogClass.dialog.show();
+            }else {
                 binding.menuSpiner.setSelection(menuSize);
                 Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
                 startActivity(intent);
             }
+
             binding.menuSpiner.setSelection(menuSize);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
             binding.menuSpiner.setSelection(menuSize);
@@ -269,13 +279,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
+
     private void onMenuCreate() {
         if (bool_owner || bool_ru_owner) {
             menuSize = 2;
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
             menuList.add("");
-        } else {
+        }else {
             menuSize = 4;
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
@@ -307,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.d(TAG, "checkSub: зашли в проверку хозяин или Россиянен.");
             isSubscribed = true;
             regSubElements(isSubscribed);
-        }else {
+        } else {
             Log.d(TAG, "checkSub: зашли в проверку подписки");
             //Логика дейсвий:
             //1 Проверяеться connection to PlayStore, если ошибка тогда оповещаем клиента что ошибка!
@@ -321,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
                     subcribeClass.connectToGooglePlayBilling(false);// false так как это обычное подсоединение.
                     try {
-                        int i = 4;
+                        int i = 3;
                         while (!subcribeClass.checkConnections()) {
                             if (i == 0) {
                                 throw new InterruptedException();
@@ -334,11 +345,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         handler.sendEmptyMessage(hsetLostConnectionsWithGooglePlay);
                         return;
                     }
+                    boolPlayStoreISSigned = true;
                     Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
                     subcribeClass.checkThePurchases();
                 });
             } catch (Exception e) {
-                //Далее методика Если инициализация не прошла, то идёт проверка на существующий токен, А если есть то сколько он ещё дейсвует.
                 e.printStackTrace();
                 Toast.makeText(MainActivity.this, R.string.intializegettingFall, Toast.LENGTH_LONG).show();
                 Log.d(TAG, "checkSub: error: " + e.getMessage());
@@ -556,8 +567,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 binding.idsubscriptionText.setVisibility(View.VISIBLE);
             }
 
-        }
-        else {
+        } else {
             binding.idTextOwner.setVisibility(View.GONE);
             binding.idsubscriptionText.setVisibility(View.GONE);
             binding.menuViewBattery.setVisibility(View.VISIBLE);
@@ -1033,7 +1043,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     } else {
                         if (!bool_owner && !bool_ru_owner) {
-                            if (LocalDateTime.now().isAfter(localDateChecked.plusDays(1))) {
+                            if (LocalDateTime.now().isAfter(localDateChecked.plusDays(3))) {
+                                // Если прошёло 3 дня с момента последней проверки подписки, то проверяем снова.
                                 Log.d(TAG, "onClick: проходим дополнительную проверку.");
                                 checkSub();
                             }
@@ -1093,7 +1104,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         binding.btnSave.callOnClick();
                     }
                 } catch (Exception e) {
-                    Toast.makeText(this,R.string.backSearchError + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, R.string.backSearchError + e.getMessage(), Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
                 break;
@@ -1807,6 +1818,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (localDateChecked != null) outState.putString("val7", localDateChecked.toString());
         outState.putBoolean("val8", bool_owner);
         outState.putBoolean("val9", bool_ru_owner);
+        outState.putBoolean("val10", boolPlayStoreISSigned);
 
     }
 
@@ -1838,7 +1850,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 bool_owner = savedInstanceState.getBoolean("val8");
                 bool_ru_owner = savedInstanceState.getBoolean("val9");
+                boolPlayStoreISSigned = savedInstanceState.getBoolean("val10");
                 regSubElements(isSubscribed);
+                Toast.makeText(MainActivity.this, R.string.monitorRestored, Toast.LENGTH_LONG).show();
             } catch (Exception e) {
                 e.printStackTrace();
             }

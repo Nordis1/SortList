@@ -48,11 +48,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.nordis.android.checklist.SubcribeClass1"
-            android:exported="true"
-            android:label="@string/title_activity_user_subscribe"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name="com.nordis.android.checklist.UserGuideActivity"
             android:exported="true"
             android:label="@string/title_activity_user_guide"

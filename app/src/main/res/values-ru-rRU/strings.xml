@@ -57,7 +57,7 @@
     <string name="tobuy">Купить</string>
     <string name="choose_subscribe_plan">Выберете срок подписки</string>
     <string name="title_activity_user_subscribe1">My user subscribe</string>
-    <string name="subscribe_out">Нет подписки</string>
+    <string name="subscribe_out">Подписка отсутсвует</string>
     <string name="subscribe_is_valid">Дейсвует подписка</string>
     <string name="charset_determinations">Кодировка</string>
     <string name="Reason_for_encodin_choose">"Во избежании неизвестных символов при загрузке файла в приложение, желательно выбрать кодировку загружаемого файла."</string>
@@ -111,4 +111,6 @@
     <string name="SubscribtionDetailsText4">Вы так же можете отказаться от подписки в любое время. Денежные средства за уже оплаченную подписку возврату не подлежат. Но оплаченная подписка, будет действовать до конца своего срока.</string>
     <string name="withouttaxes">Цены без налога</string>
     <string name="Free_trial">Оплата будет автоматически снята в конце бесплатного периода.</string>
+    <string name="playMarket">GooglePlay market</string>
+    <string name="monitorRestored">Монитор востановлен</string>
 </resources>
