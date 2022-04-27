@@ -6,9 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
-
-import com.example.android.checklist.databinding.ActivityEncodingBinding;
+import com.nordis.android.checklist.databinding.ActivityEncodingBinding;
 
 import java.util.ArrayList;
 import java.util.Arrays;

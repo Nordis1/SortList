@@ -18,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.edmodo.rangebar.RangeBar;
-import com.example.android.checklist.R;
 
 import java.util.concurrent.TimeUnit;
 

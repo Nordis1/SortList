@@ -4,8 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
-import com.example.android.checklist.R;
-
 public class ActivitySubRemove extends AppCompatActivity {
 
     @Override

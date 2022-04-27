@@ -29,8 +29,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
-import com.example.android.checklist.R;
-import com.example.android.checklist.databinding.SubscribeLayoutBinding;
+import com.nordis.android.checklist.databinding.SubscribeLayoutBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
