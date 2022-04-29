@@ -214,7 +214,7 @@ public class NeiserClass {
                     ln = ln+ " {Samba}";
                     mainLoadList.set(i, ln);
                 }else if (ln.contains("CHICAGO")){
-                    ln = ln+ " {California}";
+                    ln = ln+ " {California; 2 -\uD83D\uDD73 }";
                     mainLoadList.set(i, ln);
                 }else if (ln.contains("MIAM")) {
                     String lp = ln.substring(18, ln.length()).replaceAll("(MIAM/)([NX])(/k-|/p)", ""); // уберает лишние MIAM/N/k-B85-H6R  1tk;  MIAM/N/k-QL  1tk
@@ -262,6 +262,15 @@ public class NeiserClass {
                     mainLoadList.set(i, ln);
                 } else if (ln.contains("OTTAWA")) {
                     ln = ln + " {Montreal}";
+                    mainLoadList.set(i, ln);
+                }else if (ln.contains("BRUCE")) {
+                    ln = ln + " {4 - \uD83D\uDD73}";
+                    mainLoadList.set(i, ln);
+                }else if (ln.contains("CLASSIC")) {
+                    ln = ln + " {1 \uD83D\uDD73}";
+                    mainLoadList.set(i, ln);
+                }else if (ln.contains("NOMAD")) {
+                    ln = ln + " \uD802\uDE67";
                     mainLoadList.set(i, ln);
                 }
                 if (ln.contains("FOREST") || ln.contains("NICOL") || ln.contains("STOCKHOLM")

@@ -51,7 +51,7 @@
     <string name="one_Yeard">Year</string>
     <string name="Month">Month</string>
     <string name="Sixmonths">6 Months</string>
-    <string name="checklistsubscribe">Picker - Subscription</string>
+    <string name="checklistsubscribe">SortList - Subscription</string>
     <string name="tobuy">BUY</string>
     <string name="choose_subscribe_plan">Choose subscribe plan</string>
     <string name="title_activity_user_subscribe1">My user subscribe</string>
@@ -61,12 +61,12 @@
     <string name="Reason_for_encodin_choose">"In order to avoid unknown characters when loading a file in-app, it is advisable to select the file encoding."</string>
     <string name="Cyrillic">Cyrillic</string>
     <string name="Uncheckallpositions">Uncheck all positions</string>
-    <string name="toSeeAds">Charge the battery</string>
+    <string name="toSeeAds">Get charge energy</string>
     <string name="rewardedAdsIsNull">Ad content doesn\'t load</string>
     <string name="towatch">Watch</string>
     <string name="toGetBatteryEnergy">To replenish the charge by 25%, watch ads!</string>
     <string name="ad">"Advertising"</string>
-    <string name="checkBatteryLoading">Check the battery.</string>
+    <string name="checkBatteryLoading">Charge energy!</string>
     <string name="pending">Your transaction is in a Pending state. You can\'t access to subscribe state.</string>
     <string name="understand">Ok</string>
     <string name="pendingtitle">Pending</string>
@@ -113,4 +113,6 @@
     <string name="Free_trial">Payment will automatically be charged at the end of the trial.</string>
     <string name="playMarket">GooglePlay market</string>
     <string name="monitorRestored">Monitor Restored</string>
+    <string name="permission_granted">Permission Granted</string>
+    <string name="evaluateUs">Evaluate Us</string>
 </resources>

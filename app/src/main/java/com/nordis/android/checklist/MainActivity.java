@@ -33,6 +33,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -71,25 +75,16 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener,
         AdapterView.OnItemSelectedListener {
-    final static int hSetCreateDialogFromWhichToWhich = 16;
-    final static int hSetSubscribeTrue = 18;
-    final static int hSetSubscribeFalse = 19;
-    final static int hBillingClientInitializeIsCorrect = 20;
-    final static int hShowAd = 22;
-    final static int hSetSubscribePending = 23;
-    final static int hSetSubscribeUNSPECIFIED = 24;
     final static CountDownLatch countDownLatch = new CountDownLatch(1);
     //final String TAG = "Main_Activity";
     private static final String TAG = "Main_Activity";
     //String variables
-    public static volatile String fileName;
+    public static volatile String fileName; //Нужен что бы распозновать какой тип файла мы читаем xml,txt
     public static String name = "";
     public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
     static volatile boolean
-            bool_fileOfNameReady, //bool_fileOfNameReady используеться в Загрузке и onRestart и ActivityResult
-            bool_fileNotChosen,
             bool_isSaved, ///bool_isSaved переменная служит для сохранения остатка , что бы удаление не произошло раньше чем не сохраниться остаток.
             bool_prepereDeleteRow, //bool_prepereDeleteRow - для контекстной функции Delete row.
             bool_onSaveReady, //bool_onSaveReady - для контекстной функции Delete All checked.
@@ -112,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     static Handler handler;
     static Uri uri; // Получаем нахождение файла в OnActivityResult
     static int menuSize = 4;
-    final int requestCodeActivityResult_PickFile = 1;
     final int hSetToastErrorOfFileReading = 1;
     final int hsetdelete_WithOut_rest = 3;
     final int hSetbtnReadFileEnabledFalse = 4;
@@ -133,6 +127,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hNewXLSReader = 27;
     final int hSetWhatIsListVisible = 28;
     final int hSetWhatIsListNotVisible = 29;
+    final static int hSetCreateDialogFromWhichToWhich = 16;
+    final static int hSetSubscribeTrue = 18;
+    final static int hSetSubscribeFalse = 19;
+    final static int hBillingClientInitializeIsCorrect = 20;
+    final static int hShowAd = 22;
+    final static int hSetSubscribePending = 23;
+    final static int hSetSubscribeUNSPECIFIED = 24;
     final private int requestCodePermissionResult_ToReadFile = 2;
     //Inner DataBase SQL variables
     DBHelper dbHelper;
@@ -154,10 +155,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Thread thread;
     volatile File_XLS_Reader file_xls_reader;
     String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
-    Executor executor;
+    Executor executor,checkExecutor;
     Cursor cursor;
+    Intent intent;
     ContentValues contentValues = new ContentValues();
     ActivityMainBinding binding;
+    ActivityResultLauncher<String> mGetContentResult;
+    ActivityResultLauncher<Intent> mGetActivityResult;
     DialogClass newdialog;
     LocalDateTime localDateChecked;
     Runnable runnableIncrementProgressbar = new Runnable() {
@@ -183,8 +187,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bool_ru_owner = true;
         }
 
+        methodsRegisterForActivity();
+
 
         executor = Executors.newCachedThreadPool(); // With this method, the thread lives 60 sec if it done.
+        checkExecutor = Executors.newFixedThreadPool(3);
 
         //Лист куда закидываеться основной или поисковые листы при помощи адаптера (adapter1)
         binding.listItemModel.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -203,12 +210,75 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dbHelper = new DBHelper(this);
         viewData();
         checkInnerPreview();
-        onHandlerCreate();
         checkSub();
+        onHandlerCreate();
         onMenuCreate();
         onAdCreate();
 
 
+    }
+
+    private void methodsRegisterForActivity() {
+
+        //Для  выбора charset
+        mGetActivityResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+
+
+                if (result.getResultCode() == RESULT_OK) {
+                    assert result.getData() != null;
+                    chosenCharset = result.getData().getStringExtra("nameOfCharset");
+                    Log.d(TAG, "onActivityResult: Данные полученны: " + chosenCharset);
+                }
+                if (result.getResultCode() == RESULT_CANCELED) {
+                    Log.d(TAG, "onActivityResult: Была отмена!");
+                }
+
+            }
+        });
+
+
+        //Для открытия и чтения файла.
+        mGetContentResult = registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
+            @Override
+            public void onActivityResult(Uri result) {
+                uri = result;
+                fileName = getFileName(uri);
+                Log.d(TAG, "onActivityResult: fileName is 1 : "+ fileName);
+                if (fileName!= null && !fileName.isEmpty()) {
+                    binding.IDMainInnerUserGuide.setVisibility(View.GONE);
+                        creatingThreadToReadingFile();
+
+                }
+            }
+        });
+
+
+
+    }
+
+    @SuppressLint("Range")
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
     private void checkInnerPreview() {
@@ -230,11 +300,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         Log.d(TAG, "onItemSelected: " + parent.getAdapter().getItem(position).toString());
         if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.manual))) {
+            //Прочесть Руководсво пользователя
             binding.menuSpiner.setSelection(menuSize);
-            Intent intent = new Intent(MainActivity.this, UserGuideActivity.class);
+            intent = new Intent(MainActivity.this, UserGuideActivity.class);
             startActivity(intent);
 
-        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
+        }
+        else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
+            //получить подписку
             if (!boolPlayStoreISSigned){
                 DialogClass dialogClass = new DialogClass(MainActivity.this,
                         getString(R.string.connectionIssue),
@@ -247,16 +320,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 dialogClass.dialog.show();
             }else {
                 binding.menuSpiner.setSelection(menuSize);
-                Intent intent = new Intent(MainActivity.this, SubcribeClass.class);
+                intent = new Intent(MainActivity.this, SubcribeClass.class);
                 startActivity(intent);
             }
 
             binding.menuSpiner.setSelection(menuSize);
-        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
+        }
+        else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
+            // Изменить чтение charset
             binding.menuSpiner.setSelection(menuSize);
-            Intent intent = new Intent(MainActivity.this, EncodingActivity.class);
-            startActivityForResult(intent, 2);
+            intent = new Intent(MainActivity.this, EncodingActivity.class);
+            mGetActivityResult.launch(intent);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
+            //Посмотреть Рекламу
             if (!bool_owner) {
                 if (mRewardedAd != null) {
                     binding.menuSpiner.setSelection(menuSize);
@@ -275,6 +351,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
             binding.menuSpiner.setSelection(menuSize);
+        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.evaluateUs))) {
+            binding.menuSpiner.setSelection(menuSize);
+            intent = new Intent(Intent.ACTION_VIEW,Uri.parse("https://play.google.com/store/apps/details?id=com.nordis.android.checklist"));
+            startActivity(intent);
+
         }
 
     }
@@ -286,11 +367,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             menuList.add(getString(R.string.charset_determinations));
             menuList.add("");
         }else {
-            menuSize = 4;
+            menuSize = 5;
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
             menuList.add(getString(R.string.getSubscribe));
             menuList.add(getString(R.string.toSeeAds));
+            menuList.add(getString(R.string.evaluateUs));
             menuList.add("");
         }
         //final int menuSize = menuList.size()-1;
@@ -684,11 +766,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-        //int green = getResources().getColor(valmis);
         choosen_ItemInClickmethod = ((TextView) view).getText().toString(); // Кликнутая строка в данный момент
-        Thread thread = new Thread(this::checkedItemsReloadInfo);
-        thread.start();
-        //checkedItemsReloadInfo();
+        checkExecutor.execute(() -> checkedItemsReloadInfo());
 
     }
 
@@ -800,69 +879,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             binding.listItemModel.setAdapter(adapter1);
             cursor.close();
         }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        //Сюда приходим из Загрузки, и ищём наш файл на устройстве. А так же инициализируем его имя.
-        if (requestCode == requestCodeActivityResult_PickFile && resultCode == Activity.RESULT_OK) {
-            if (data == null) {
-                return;
-            }
-            uri = data.getData();
-            fileName = getFileName(uri);
-            bool_fileOfNameReady = true;
-
-            binding.IDMainInnerUserGuide.setVisibility(View.GONE);
-
-            //Проверяем доступ к файлам.
-            int result = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
-            //Если нет доступа то запрашиваем и в onPermissionResult осуществляем открытие документа.
-            if (result != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, requestCodePermissionResult_ToReadFile);
-            } else {
-                //Если доступ был предоставлен то делаем открытие документа тут.
-                creatingThreadToReadingFile();
-            }
-
-
-        }
-        if (requestCode == 2 && resultCode == RESULT_OK) {
-            if (data == null) {
-                return;
-            }
-            chosenCharset = data.getStringExtra("nameOfCharset");
-            Log.d(TAG, "onActivityResult: Данные полученны: " + data.getStringExtra("nameOfCharset"));
-        }
-        if (requestCode == 2 && resultCode == RESULT_CANCELED) {
-            Log.d(TAG, "onActivityResult: Была отмена!");
-        }
-
-    }
-
-    @SuppressLint("Range")
-    public String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-            try {
-                if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        if (result == null) {
-            result = uri.getPath();
-            int cut = result.lastIndexOf('/');
-            if (cut != -1) {
-                result = result.substring(cut + 1);
-            }
-        }
-        return result;
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -992,17 +1008,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 //Загрузка
             case R.id.btnLoadFile:
-                if (!bool_fileOfNameReady) {
-                    bool_fileNotChosen = false;
-                }
                 if (!mainList.isEmpty() || !found_List.isEmpty()) {
                     Toast.makeText(MainActivity.this, R.string.list_is_already_full, Toast.LENGTH_LONG).show();
 
                 } else {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("*/*");
-                    setResult(RESULT_OK, intent);
-                    startActivityForResult(intent, requestCodeActivityResult_PickFile);
+                    //Проверяем доступ к файлам.
+                    int result1 = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+                    //Если нет доступа то запрашиваем и в onPermissionResult осуществляем открытие документа.
+                    if (result1 != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, requestCodePermissionResult_ToReadFile);
+                    }else {
+                        mGetContentResult.launch("*/*");
+                    }
                 }
                 break;
 //поиск
@@ -1033,7 +1051,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         binding.etName.setText("");
                         checkSub();
 
-                    } else if (!isSubscribed) {
+                    } else if (!isSubscribed) {//Если нет подписки то...
                         if (batteryLvl == 0) {
                             Toast.makeText(this, getString(R.string.checkBatteryLoading), Toast.LENGTH_LONG).show();
                         } else {
@@ -1041,7 +1059,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             onmyQueryTextSubmit(searchWord);
                         }
                     } else {
-                        if (!bool_owner && !bool_ru_owner) {
+                        if (!bool_owner && !bool_ru_owner) { // Если есть подписка то...
                             if (LocalDateTime.now().isAfter(localDateChecked.plusDays(3))) {
                                 // Если прошёло 3 дня с момента последней проверки подписки, то проверяем снова.
                                 Log.d(TAG, "onClick: проходим дополнительную проверку.");
@@ -1200,79 +1218,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override //после получения доступа Загружаем базу данных
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        //начинаеться логика загрузки файла
         if (requestCode == requestCodePermissionResult_ToReadFile &&
                 grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "onRequestPermissionsResult: зашли в чтение файла");
-            if (fileName == null) {
-                return;
-            }
-            creatingThreadToReadingFile();
+            mGetContentResult.launch("*/*");
+            //Toast.makeText(this,getString(R.string.permission_granted),Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_LONG).show();
-            binding.downloadBar.setProgress(0);
-            mProgresscounter = 0;
-            bool_fileOfNameReady = false;
-
         }
-        binding.downloadBar.setProgress(0);
-        mProgresscounter = 0;
-        bool_fileOfNameReady = false;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    public boolean deleteFileUsingDisplayName(Context context, String displayName) {
-        //MediaStore.DownloadColumns.DISPLAY_NAME     false
-        //MediaStore.Downloads.DISPLAY_NAME           false
-        if (MediaStore.Downloads.DISPLAY_NAME.contains(displayName)) {
-            Log.d(TAG, "deleteFileUsingDisplayName: Да! есть такой файл ");
-        } else {
-            Log.d(TAG, "deleteFileUsingDisplayName: ТАкого файла тут нет.");
-        }
-
-        if (uri != null) {
-            final ContentResolver resolver = context.getContentResolver();
-            String[] selectionArgsPdf = new String[]{displayName};
-
-            try {
-                resolver.delete(uri, MediaStore.Downloads.DISPLAY_NAME + "=?", selectionArgsPdf);
-                return true;
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                // show some alert message
-            }
-        }
-        return false;
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private boolean chkFilefromMediaStore(String in_filename) {
-
-        String path, filename;
-        try (Cursor cursor = getApplicationContext().getContentResolver().query(
-                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                null, null, null, null
-        )) {
-
-            assert cursor != null;
-            while (cursor.moveToNext()) {
-                // Use an ID column from the projection to get
-                // a URI representing the media item itself.
-                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA));
-                filename = path.substring(path.lastIndexOf('/') + 1);
-
-                if (filename.equals(in_filename)) {
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
-
-    }
 
     private void creatingThreadToReadingFile() {
         thread = new Thread(() -> {
@@ -1289,7 +1243,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 handler.sendEmptyMessage(hSetProgressBarGone);
                 handler.sendEmptyMessage(hSetWhatIsListVisible);
                 handler.sendEmptyMessage(hsetlistView_Onvisible);
-                //} else if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
             } else if (fileName.contains(".xls")) {
                 if (fileName.toLowerCase(Locale.ROOT).contains("neiser")) {
                     Log.d(TAG, "Содержит в названии Neiser");
@@ -1434,9 +1387,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (luk > 0) {
                 for (int i = 0; i < luk; i++) {
                     String s = sPref.getString("Rest" + i, "");
-                    if (s.contains(" - *")) {
+                    if (s.contains(" - Old \uD83D\uDCDC")) {
                         downloadList.add(s);
-                    } else downloadList.add(s + " - Old");
+                    } else downloadList.add(s + " - Old \uD83D\uDCDC");
                 }
                 sPref.edit().clear().apply(); // Чистим наше сохранения
 
@@ -1808,17 +1761,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onSaveInstanceState(outState);
         // View элементы у которых есть ID они сами востанавливают своё значение. Так же как Элементы Final.
         // А все другие нужно сохранять тут. А востанавливать в onRestoreInstanceState.
-        outState.putBoolean("val1", bool_fileOfNameReady);
-        outState.putBoolean("val2", bool_fileNotChosen);
-        outState.putBoolean("val3", bool_isSaved);
-        outState.putBoolean("val4", bool_xlsExecutorCanceled);
-        outState.putBoolean("val5", bool_xlsColumnsWasChosen);
-        outState.putBoolean("val6", isSubscribed);
-        if (localDateChecked != null) outState.putString("val7", localDateChecked.toString());
-        outState.putBoolean("val8", bool_owner);
-        outState.putBoolean("val9", bool_ru_owner);
-        outState.putBoolean("val10", boolPlayStoreISSigned);
-
+        //outState.putBoolean("val3", bool_isSaved);
     }
 
     @Override
@@ -1828,35 +1771,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
-            Intent i = new Intent(this, MainActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(i);
-        } else {
-            try {
-                bool_fileOfNameReady = savedInstanceState.getBoolean("val1");
-                bool_fileNotChosen = savedInstanceState.getBoolean("val2");
-                bool_isSaved = savedInstanceState.getBoolean("val3");
-                bool_xlsExecutorCanceled = savedInstanceState.getBoolean("val4");
-                bool_xlsColumnsWasChosen = savedInstanceState.getBoolean("val5");
-                isSubscribed = savedInstanceState.getBoolean("val6");
-                if (dbHelper == null) dbHelper = new DBHelper(this);
-                if (contentValues == null) contentValues = new ContentValues();
-                if (handler == null) onHandlerCreate();
-                if (localDateChecked == null) {
-                    String date = savedInstanceState.getString("val7");
-                    localDateChecked = LocalDateTime.parse(date);
-                }
-                bool_owner = savedInstanceState.getBoolean("val8");
-                bool_ru_owner = savedInstanceState.getBoolean("val9");
-                boolPlayStoreISSigned = savedInstanceState.getBoolean("val10");
-                regSubElements(isSubscribed);
-                Toast.makeText(MainActivity.this, R.string.monitorRestored, Toast.LENGTH_LONG).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
+        //Всё что создаёться в on Create тут востанавливать не нужно.
     }
 
     @Override
@@ -1879,10 +1794,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onRestart() {
         super.onRestart();
-        //isSaved = false;
-        if (!bool_fileOfNameReady) {
-            bool_fileNotChosen = true;
-        }
         Log.i(TAG, "onRestart");
     }
 

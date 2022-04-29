@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SortList</string>
+    <string name="app_name">Комплектовщик</string>
     <string name="search">Поиск</string>
     <string name="Typeitem">Поисковое или добавляемое слово</string>
     <string name="Save">Сохранить</string>
@@ -68,7 +68,7 @@
     <string name="towatch">Смотреть</string>
     <string name="toGetBatteryEnergy">Для пополнения заряда на 25% посмотреть рекламу!</string>
     <string name="ad">"Реклама"</string>
-    <string name="checkBatteryLoading">Уровень заряда мал</string>
+    <string name="checkBatteryLoading">Зарядись энергией!</string>
     <string name="pending">Ваш перевод в состоянии ожидания. В данный момент вы не можете получить доступ к подписке.</string>
     <string name="understand">Понятно</string>
     <string name="pendingtitle">Перевод в ожидании!</string>
@@ -113,4 +113,6 @@
     <string name="Free_trial">Оплата будет автоматически снята в конце бесплатного периода.</string>
     <string name="playMarket">GooglePlay market</string>
     <string name="monitorRestored">Монитор востановлен</string>
+    <string name="permission_granted">Доступ получен</string>
+    <string name="evaluateUs">Оцените нас</string>
 </resources>
