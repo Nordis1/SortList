@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class File_XLS_Reader extends MainActivity {
+    //Для чтения xml файла нужна библиотека poi и она запрашавывает мин API 26 = Android 8
     String filename;
     static int maxUsedColumnIs = 1;
     static int minUsedColumnIs = 1;

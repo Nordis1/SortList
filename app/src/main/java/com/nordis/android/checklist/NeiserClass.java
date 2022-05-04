@@ -103,8 +103,8 @@ public class NeiserClass {
         Log.d(TAG, "Кол-во в конце " + mainList.size());
         if (s.contains("TOOTMISPLAAN")) {
             //s = s.substring(17, s.length() - 4);
-            s = s.replace("TOOTMISPLAAN","");
-            s = s.replace("} :","");
+            s = s.replace("TOOTMISPLAAN", "");
+            s = s.replace("} :", "");
             mainList.set(0, s);
         }
 
@@ -194,9 +194,9 @@ public class NeiserClass {
             for (int i = 0; i < mainLoadList.size(); i++) {
                 ln = mainLoadList.get(i);
                 if (ln.substring(0, 1).matches(p.toString())) { //Если начинаеться не с номера а с модели
-                    Log.d(TAG, "origon: Begins with word " + ln);
+                    //Log.d(TAG, "origon: Begins with word " + ln);
                     ln = "   1 " + ln;
-                    mainLoadList.set(i,ln);
+                    mainLoadList.set(i, ln);
                 }
                 if (ln.substring(0, 2).contains("OR")) {   //Origon совмещаем Вариант 3
                     previousString = mainLoadList.get(i - 1);
@@ -204,19 +204,19 @@ public class NeiserClass {
                     ln = previos_number + ln + previousString.substring(15);
                     mainLoadList.set(i, ln);
                     mainLoadList.remove(i - 1);
-                }else if (ln.contains("SHADOW")|| ln.contains("SILVER")){
-                    ln = ln+ " {Sterling}";
+                } else if (ln.contains("SHADOW") || ln.contains("SILVER")) {
+                    ln = ln + " {Sterling}";
                     mainLoadList.set(i, ln);
-                }else if (ln.contains("STUART")){
-                    ln = ln+ " {Stratos}";
+                } else if (ln.contains("STUART")) {
+                    ln = ln + " {Stratos}";
                     mainLoadList.set(i, ln);
-                }else if (ln.contains("KOLTON")){
-                    ln = ln+ " {Samba}";
+                } else if (ln.contains("KOLTON")) {
+                    ln = ln + " {Samba}";
                     mainLoadList.set(i, ln);
-                }else if (ln.contains("CHICAGO")){
-                    ln = ln+ " {California; 2 -\uD83D\uDD73 }";
+                } else if (ln.contains("CHICAGO")) {
+                    ln = ln + " {California; 2 -\uD83D\uDD73 }";
                     mainLoadList.set(i, ln);
-                }else if (ln.contains("MIAM")) {
+                } else if (ln.contains("MIAM")) {
                     String lp = ln.substring(18, ln.length()).replaceAll("(MIAM/)([NX])(/k-|/p)", ""); // уберает лишние MIAM/N/k-B85-H6R  1tk;  MIAM/N/k-QL  1tk
                     ln = ln.substring(0, 18);
                     mainLoadList.set(i, ln + lp);
@@ -263,20 +263,41 @@ public class NeiserClass {
                 } else if (ln.contains("OTTAWA")) {
                     ln = ln + " {Montreal}";
                     mainLoadList.set(i, ln);
-                }else if (ln.contains("BRUCE")) {
+                } else if (ln.contains("BRUCE")) {
                     ln = ln + " {4 - \uD83D\uDD73}";
                     mainLoadList.set(i, ln);
-                }else if (ln.contains("CLASSIC")) {
-                    ln = ln + " {1 \uD83D\uDD73}";
+                } else if (ln.contains("CLASSIC")) {
+                    ln = ln + " {1 - \uD83D\uDD73}";
                     mainLoadList.set(i, ln);
-                }else if (ln.contains("NOMAD")) {
-                    ln = ln + " \uD802\uDE67";
+                } else if (ln.contains("NOMAD")) {
+                    byte[] win = ln.getBytes();
+                    for (int j = 0; j < win.length; j++) {
+                        if (win[j] == 73) {
+                            // знак 73 это знак римской цифры 3.
+                            ln = ln + "{CLASSIC - 1 - \uD83D\uDD73}";
+                            mainLoadList.set(i, ln);
+                            break;
+                        }
+                    }
+                    ln = ln + " ->  \uD802\uDE67  <- ";
+                    mainLoadList.set(i, ln);
+                } else if (ln.contains("BOCCA") || ln.contains("CALISTO") || ln.contains("MITCH") || ln.contains("CALISTO/LUX")) {
+                    ln = ln + " {p - James}";
+                    mainLoadList.set(i, ln);
+                } else if (ln.contains("TIME")) {
+                    ln = ln + " {p - doug}";
+                    mainLoadList.set(i, ln);
+                } else if (ln.contains("BREEZE") || ln.contains("OCEAN")) {
+                    ln = ln + " {p - Pitt}";
+                    mainLoadList.set(i, ln);
+                }else if (ln.contains("BAYONNE/LUX") || ln.contains("BAYONNE")) {
+                    ln = ln + " {p - Clara; kr - Jackson}";
                     mainLoadList.set(i, ln);
                 }
                 if (ln.contains("FOREST") || ln.contains("NICOL") || ln.contains("STOCKHOLM")
-                        || ln.contains("BASEL")) {
+                        || ln.contains("BASEL") || ln.contains("NATHALIE")) {
                     //Log.d(TAG, "origon: зашли менять "+ ln);
-                    ln = ln + " { LOUNGE }";
+                    ln = ln + " {p - LOUNGE}";
                     mainLoadList.set(i, ln);
                 }
                 if (ln.contains("LOUNGE")) {

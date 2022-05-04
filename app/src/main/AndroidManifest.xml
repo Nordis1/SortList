@@ -29,10 +29,10 @@
         android:windowSoftInputMode="adjustNothing">
         <activity
             android:name="com.nordis.android.checklist.SubcribeDetailsActivity"
-            android:exported="false" />
+            android:screenOrientation="portrait" />
         <activity
             android:name="com.nordis.android.checklist.ActivitySubRemove"
-            android:exported="false" />
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
@@ -40,17 +40,17 @@
 
         <activity
             android:name="com.nordis.android.checklist.EncodingActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.nordis.android.checklist.SubcribeClass"
-            android:exported="true"
             android:label="@string/title_activity_user_subscribe1"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name="com.nordis.android.checklist.UserGuideActivity"
-            android:exported="true"
             android:label="@string/title_activity_user_guide"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name="com.nordis.android.checklist.MainActivity"
