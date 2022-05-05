@@ -200,11 +200,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         viewData();// загружаем наш список
         checkInnerPreview(); // отображаем наш список
-        onMenuCreate(); // Создаём меню
         onHandlerCreate(); // Создаём хендлер
         methodsRegisterForActivity(); //For ActivityResult
         checkSub(); // Проверяем подписку
-        onAdCreate(); // Загружаем рекламу
+        onMenuCreate(); // Создаём меню
+        // onAdCreate(); Создаётся в методе  regSubElements();
 
 
     }
@@ -592,6 +592,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         regSubElements(false);
                         break;
                     case hSetSubscribeUNSPECIFIED:
+                        isSubscribed = false;
+                        regSubElements(isSubscribed);
+                        sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
+                        batteryLvl = sPref.getInt("KeyBatterylvl", 50);
+                        binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
                         Toast.makeText(MainActivity.this, R.string.unspecified, Toast.LENGTH_LONG).show();
                         break;
                     case hsetLostConnectionsWithGooglePlay:
@@ -646,6 +651,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             binding.idTextOwner.setVisibility(View.GONE);
             binding.idsubscriptionText.setVisibility(View.GONE);
             binding.menuViewBattery.setVisibility(View.VISIBLE);
+            onAdCreate();
         }
     }
 
