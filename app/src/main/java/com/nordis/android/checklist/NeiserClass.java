@@ -290,18 +290,22 @@ public class NeiserClass {
                 } else if (ln.contains("BREEZE") || ln.contains("OCEAN")) {
                     ln = ln + " {p - Pitt}";
                     mainLoadList.set(i, ln);
-                }else if (ln.contains("BAYONNE/LUX") || ln.contains("BAYONNE")) {
+                } else if (ln.contains("BAYONNE/LUX") || ln.contains("BAYONNE")) {
                     ln = ln + " {p - Clara; kr - Jackson}";
                     mainLoadList.set(i, ln);
-                }
-                if (ln.contains("FOREST") || ln.contains("NICOL") || ln.contains("STOCKHOLM")
+                } else if (ln.contains("FOREST") || ln.contains("NICOL") || ln.contains("STOCKHOLM")
                         || ln.contains("BASEL") || ln.contains("NATHALIE")) {
                     //Log.d(TAG, "origon: зашли менять "+ ln);
                     ln = ln + " {p - LOUNGE}";
                     mainLoadList.set(i, ln);
+                }else if (ln.contains("MICHELLE")){
+                    previousString = ln;
+                    ln = ln + " {kr: LOUNGE; kt: Nathalie; p: Michelle;}";
+                    mainLoadList.set(i, ln);
+                    ln = previousString;
                 }
-                if (ln.contains("LOUNGE")) {
 
+                if (ln.contains("LOUNGE")) {
                     m_loungeSearching = patternLounge.matcher(ln);
                     while (m_loungeSearching.find()) {
                         if (m_loungeSearching.group().contains("A95")) {
@@ -452,12 +456,6 @@ public class NeiserClass {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-   /*     for (String s :
-                mainLoadList) {
-            Log.d(TAG, "origon: s" + s);
-        }*/
         mainSupport.addAll(mainLoadList);
     }
 
