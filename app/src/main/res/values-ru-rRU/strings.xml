@@ -63,12 +63,12 @@
     <string name="Reason_for_encodin_choose">"Во избежании неизвестных символов при загрузке файла в приложение, желательно выбрать кодировку загружаемого файла."</string>
     <string name="Cyrillic">Кириллица</string>
     <string name="Uncheckallpositions">Отменить все позиции</string>
-    <string name="toSeeAds">Пополнить заряд</string>
+    <string name="toSeeAds">Пополнить кристаллы</string>
     <string name="rewardedAdsIsNull">Ошибка загрузки рекламы</string>
     <string name="towatch">Смотреть</string>
-    <string name="toGetBatteryEnergy">Для пополнения заряда на 25% посмотреть рекламу!</string>
+    <string name="toGetBatteryEnergy">Для получения 10 кристаллов, посмотреть рекламу!</string>
     <string name="ad">"Реклама"</string>
-    <string name="checkBatteryLoading">Зарядись энергией!</string>
+    <string name="checkBatteryLoading">Пополните кристаллы!</string>
     <string name="pending">Ваш перевод в состоянии ожидания. В данный момент вы не можете получить доступ к подписке.</string>
     <string name="understand">Понятно</string>
     <string name="pendingtitle">Перевод в ожидании!</string>
@@ -116,4 +116,6 @@
     <string name="permission_granted">Доступ получен</string>
     <string name="evaluateUs">Оцените нас</string>
     <string name="DateError">Ошибка данных</string>
+    <string name="diamondValue">100</string>
+    <string name="betweenDiamondAndNumber">X</string>
 </resources>

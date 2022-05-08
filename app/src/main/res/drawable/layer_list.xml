@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:drawable="@drawable/battery_low"
-        android:id="@+id/ID_grey_heard" />
-    <item
-        android:drawable="@drawable/clip"
-        android:id="@+id/ID_heard" />
-</layer-list>

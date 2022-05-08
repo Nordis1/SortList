@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bool_neiser,
             boolPlayStoreISSigned = false;
     //Integer variables
-    static int batteryLvl;
+    int diamondValue = 0;
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
@@ -188,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.listItemModel.setOnItemClickListener(this);
 
         /*иницализация кнопок*/
-        binding.menuViewBattery.setOnClickListener(this);
         binding.btnSave.setOnClickListener(this);
         binding.btnAddCustomLine.setOnClickListener(this);
         binding.btnLoadFile.setOnClickListener(this);
@@ -562,9 +561,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG).show();
                         isSubscribed = false;
                         regSubElements(isSubscribed);
-                        sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 50);
-                        binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+                        diamondValue = sPref.getInt("KeyDiamond", 50);
+                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
                         break;
                     case hBillingClientInitializeIsCorrect:
                         bool_billingInitializeOk = true;
@@ -576,9 +575,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         //Подписка в Ожидании
                         isSubscribed = false;
                         regSubElements(isSubscribed);
-                        sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 50);
-                        binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+                        diamondValue = sPref.getInt("KeyDiamond", 50);
+                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
 
                         newdialog = new DialogClass(MainActivity.this,
                                 getString(R.string.pending),
@@ -594,17 +593,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case hSetSubscribeUNSPECIFIED:
                         isSubscribed = false;
                         regSubElements(isSubscribed);
-                        sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 50);
-                        binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+                        diamondValue = sPref.getInt("KeyDiamond", 50);
+                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
                         Toast.makeText(MainActivity.this, R.string.unspecified, Toast.LENGTH_LONG).show();
                         break;
                     case hsetLostConnectionsWithGooglePlay:
                         isSubscribed = false;
                         regSubElements(isSubscribed);
-                        sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                        batteryLvl = sPref.getInt("KeyBatterylvl", 50);
-                        binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+                        diamondValue = sPref.getInt("KeyDiamond", 50);
+                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
 
                         newdialog = new DialogClass(MainActivity.this,
                                 getString(R.string.lostConnection),
@@ -630,10 +629,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void regSubElements(Boolean subcribtionY) {
+        binding.idDiamondNumber.setVisibility(View.GONE);
+        binding.IdDiamondIcon.setVisibility(View.GONE);
+        binding.IDX.setVisibility(View.GONE);
+        binding.idsubscriptionText.setVisibility(View.GONE);
+        binding.idTextOwner.setVisibility(View.GONE);
         if (subcribtionY) {
             //Убираем батарею и текст о подписке
-            binding.menuViewBattery.setVisibility(View.GONE);
-            binding.idsubscriptionText.setVisibility(View.GONE);
             if (bool_owner) {
                 //Если сюда , значит Хозяин.
                 Log.d(TAG, "regSubElements: Зашли в оформление Хозяина");
@@ -641,16 +643,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(MainActivity.this, R.string.developer_mode, Toast.LENGTH_SHORT).show();
             } else {
                 //Если сюда, значит подписчик.
-                binding.idTextOwner.setVisibility(View.GONE);
-                binding.menuViewBattery.setVisibility(View.GONE);
                 binding.idsubscriptionText.setVisibility(View.VISIBLE);
             }
 
         } else {
             //Сюда если Халявщик
-            binding.idTextOwner.setVisibility(View.GONE);
-            binding.idsubscriptionText.setVisibility(View.GONE);
-            binding.menuViewBattery.setVisibility(View.VISIBLE);
+            binding.IdDiamondIcon.setVisibility(View.VISIBLE);
+            binding.IDX.setVisibility(View.VISIBLE);
+            binding.idDiamondNumber.setVisibility(View.VISIBLE);
             onAdCreate();
         }
     }
@@ -675,7 +675,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // Called when ad is dismissed.
                     // Set the ad reference to null so you don't show the ad a second time.
                     Log.d(TAG, "Ad was dismissed.");
-                    mRewardedAd = null;
+                    onAdCreate();
+                    //mRewardedAd = null;
                 }
             });
             Activity activityContext = MainActivity.this;
@@ -686,15 +687,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "The user earned the reward.");
                     int rewardAmount = rewardItem.getAmount();
                     //получаем количество очков и загружаем в батарею и сохраняем в sPref
-                    batteryLvl += rewardAmount;
-                    if (batteryLvl > 100) {
-                        batteryLvl = 100;
-                    }
+                    diamondValue += rewardAmount;
 
-                    sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                    sPref.edit().putInt("KeyBatterylvl", batteryLvl).apply();
+                    sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+                    sPref.edit().putInt("KeyDiamond", diamondValue).apply();
 
-                    binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                    assert binding.idDiamondNumber != null;
+                    binding.idDiamondNumber.setText(String.valueOf(diamondValue));
+
                     Log.d(TAG, "onUserEarnedReward!!!!!!!!!: rewardAmount - " + rewardAmount);
 
                 }
@@ -1055,7 +1055,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                     } else if (!isSubscribed) {//Если нет подписки то...
-                        if (batteryLvl == 0) {
+                        if (diamondValue == 0) {
                             Toast.makeText(this, getString(R.string.checkBatteryLoading), Toast.LENGTH_LONG).show();
                         } else {
                             String searchWord = binding.etName.getText().toString(); // Берём в переменную тк  в onQueryTextSubmit значение сбивается.
@@ -1159,9 +1159,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
 
-        }
-        if (binding.menuViewBattery.equals(v)) {
-            Toast.makeText(this, binding.menuViewBattery.getTransitionName(), Toast.LENGTH_SHORT).show();
         }
         dbHelper.close();
 
@@ -1719,12 +1716,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (!isSubscribed) {
                 Log.d(TAG, "toAppointSearchList: Подписки нет, уменьшаем батарею");
-                batteryLvl--;
+                diamondValue--;
 
-                binding.menuViewBattery.getBackground().setLevel((batteryLvl * 100));
+                assert binding.idDiamondNumber != null;
+                binding.idDiamondNumber.setText(String.valueOf(diamondValue));
 
-                sPref = getSharedPreferences("BATTERY", MODE_PRIVATE);
-                sPref.edit().putInt("KeyBatterylvl", batteryLvl).apply();
+
+                sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+                sPref.edit().putInt("KeyDiamond", diamondValue).apply();
             }
 
 

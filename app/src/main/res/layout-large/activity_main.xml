@@ -90,21 +90,42 @@
             tools:layout_constrainedWidth="true" />
 
         <View
-            android:id="@+id/menuViewBattery"
+            android:id="@+id/Id_diamond_Icon"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="2dp"
-            android:background="@drawable/layer_list"
-            android:transitionName="@string/large"
+            android:layout_marginStart="5dp"
+            android:background="@mipmap/diamond2"
+            android:transitionName="@string/normal"
             android:visibility="visible"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHeight_percent="0.95"
+            app:layout_constraintHeight_percent="0.80"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.52"
+            app:layout_constraintWidth_percent="0.1"
             tools:layout_constraintLeft_toRightOf="@id/barrier5" />
+
+        <TextView
+            android:id="@+id/id_DiamondNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:textSize="23sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ID_X"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.15" />
+
+        <TextView
+            android:id="@+id/ID_X"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="@string/betweenDiamondAndNumber"
+            android:textSize="23sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/Id_diamond_Icon"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
