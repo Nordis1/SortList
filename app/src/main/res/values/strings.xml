@@ -37,7 +37,7 @@
     <string name="check_new_position">You can mark, modify or delete position.</string>
     <string name="easy_search_word">It is possible to search for positions\nby using keywords in the open list.</string>
     <string name="context_menu_options">Long pressing on the position\ncall additional functions.</string>
-    <string name="possibility_delete_with_rest">When deleting a list, you can save unchecked positions and combine them with another list when loading a new file.They mark as - *</string>
+    <string name="possibility_delete_with_rest">When deleting a list, you can save unchecked positions and combine them with another list when loading a new file.They mark as - Old</string>
     <string name="recomendation">Recommendation</string>
     <string name="string_lengh_limit_90">The app is made for managing lists.\nFor comfortable use, the line length\nshould not exceed 70 characters.</string>
     <string name="Name">Name</string>

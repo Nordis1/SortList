@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
-import android.os.PersistableBundle;
 import android.os.SystemClock;
 import android.provider.OpenableColumns;
 import android.util.Log;
@@ -101,8 +100,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bool_owner,
             bool_neiser,
             boolPlayStoreISSigned = false;
-    //Integer variables
-    int diamondValue = 0;
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
@@ -132,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hSetWhatIsListVisible = 28;
     final int hSetWhatIsListNotVisible = 29;
     final private int requestCodePermissionResult_ToReadFile = 2;
+    //Integer variables
+    int diamondValue = 0;
     //Inner DataBase SQL variables
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
@@ -233,15 +232,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mGetContentResult = registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri result) {
-                uri = result;
-                fileName = getFileName(uri);
-                Log.d(TAG, "onActivityResult: fileName is 1 : " + fileName);
-                if (fileName != null && !fileName.isEmpty()) {
-                    binding.IDMainInnerUserGuide.setVisibility(View.GONE);
-                    creatingThreadToReadingFile();
+
+                if (result == null) {
+                    Intent intent = getIntent();
+                    finish();
+                    startActivity(intent);
+                } else {
+                    uri = result;
+                    fileName = getFileName(uri);
+                    Log.d(TAG, "onActivityResult: fileName is 1 : " + fileName);
+                    if (fileName != null && !fileName.isEmpty()) {
+                        binding.IDMainInnerUserGuide.setVisibility(View.GONE);
+                        creatingThreadToReadingFile();
+                    }
 
                 }
             }
+
+
         });
 
 
@@ -352,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void onMenuCreate() {
-        if (!menuList.isEmpty()){
+        if (!menuList.isEmpty()) {
             menuList.clear();
         }
         if (bool_owner) {
@@ -1072,7 +1080,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 Toast.makeText(MainActivity.this, getString(R.string.DateError), Toast.LENGTH_LONG).show();
-                                intent = new Intent(this,MainActivity.class);
+                                intent = new Intent(this, MainActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 startActivity(intent);
                             }
