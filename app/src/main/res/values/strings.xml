@@ -64,7 +64,7 @@
     <string name="toSeeAds">Get crystals</string>
     <string name="rewardedAdsIsNull">Ad content doesn\'t load</string>
     <string name="towatch">Watch</string>
-    <string name="toGetBatteryEnergy">To replenish the 10 crystals, watch ads!</string>
+    <string name="toGetBatteryEnergy">To replenish the crystals, watch ads!</string>
     <string name="ad">"Advertising"</string>
     <string name="checkBatteryLoading">Replenish crystals!</string>
     <string name="pending">Your transaction is in a Pending state. You can\'t access to subscribe state.</string>

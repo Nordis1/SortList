@@ -196,18 +196,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         dbHelper = new DBHelper(this);
 
-        viewData();// загружаем наш список
-        checkInnerPreview(); // отображаем наш список
+        viewData();// подгружаеться основной лист и адаптер
+        checkInnerPreview(); // Убираем видимость гайда если листы не пусты. И если листы не пусты идёт обновление данных листа.
         onHandlerCreate(); // Создаём хендлер
+        checkSub(); /**Проверка хозяина, если да ставим бул = тру и надпись
+         Если нет :       бул = фалс, видимость камней и их значения, погрузка кол-во камней и подгрузка рекламы.
+         Если подписчик:  бул = тру, подпись что подписчик , запись значения в локал дату*/
         methodsRegisterForActivity(); //For ActivityResult
-        checkSub(); // Проверяем подписку
-        onMenuCreate(); // Создаём меню
-        // onAdCreate(); Создаётся в методе  regSubElements();
+        // onMenuCreate(); && onAdCreate(); Создаётся в методе  regSubElements();
 
 
     }
 
     private void methodsRegisterForActivity() {
+        Log.d(TAG, "methodsRegisterForActivity: Регистрирум Activity result");
 
         //Для  выбора charset
         mGetActivityResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -360,16 +362,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void onMenuCreate() {
+        Log.d(TAG, "onMenuCreate: Зашли в создание меню");
         if (!menuList.isEmpty()) {
             menuList.clear();
         }
         if (bool_owner) {
+            Log.d(TAG, "onMenuCreate:  Это хозяин, меню состоит из 3 позиций");
             menuSize = 3;
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
             menuList.add(getString(R.string.evaluateUs));
             menuList.add("");
         } else {
+            Log.d(TAG, "onMenuCreate:  Это клиент, меню состоит из 5 позиций");
             menuSize = 5;
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
@@ -386,23 +391,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.menuSpiner.setAdapter(adapter);
-        binding.menuSpiner.setSelection(menuSize);
         binding.menuSpiner.setOnItemSelectedListener(this);
+        binding.menuSpiner.setSelection(menuSize);
+
+        Log.d(TAG, "onMenuCreate:  меню успешно созданно!");
 
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
-        Log.d(TAG, "checkSub: Зашли в checkSub ");
+        Log.d(TAG, "checkSub: Зашли в в проверку подписки ");
         sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
         bool_owner = sPref.getBoolean("keyown", false);
 
         if (bool_owner) {
-            Log.d(TAG, "checkSub: зашли в проверку хозяин или Россиянен.");
+            Log.d(TAG, "checkSub: Это хозяин, производим регистрацию до Элементов");
             isSubscribed = true;
             regSubElements(isSubscribed);
         } else {
-            Log.d(TAG, "checkSub: зашли в проверку подписки");
+            Log.d(TAG, "checkSub: Проверка подписки начинается...");
             //Логика дейсвий:
             //1 Проверяеться connection to PlayStore, если ошибка тогда оповещаем клиента что ошибка!
             //2 Если connecting in correct. Then we have check subscription.
@@ -476,6 +483,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void onHandlerCreate() {
+        Log.d(TAG, "onHandlerCreate: Создаём Handler");
         handler = new Handler(getMainLooper()) {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
@@ -559,6 +567,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case hSetSubscribeTrue:
                         //Подписка есть
+                        Log.d(TAG, "handleMessage: Подписка есть!");
                         Toast.makeText(MainActivity.this, R.string.subscribe_is_valid, Toast.LENGTH_LONG).show();
                         isSubscribed = true;
                         regSubElements(isSubscribed);
@@ -566,6 +575,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case hSetSubscribeFalse:
                         //Подписки нет
+                        Log.d(TAG, "handleMessage: Подписки нет!");
                         Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG).show();
                         isSubscribed = false;
                         regSubElements(isSubscribed);
@@ -581,6 +591,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case hSetSubscribePending:
                         //Подписка в Ожидании
+                        Log.d(TAG, "handleMessage: Подписка статус ожидания!");
                         isSubscribed = false;
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
@@ -600,6 +611,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case hSetSubscribeUNSPECIFIED:
                         isSubscribed = false;
+                        Log.d(TAG, "handleMessage: Подписка неизвесный статус!");
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
                         diamondValue = sPref.getInt("KeyDiamond", 50);
@@ -608,6 +620,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case hsetLostConnectionsWithGooglePlay:
                         isSubscribed = false;
+                        Log.d(TAG, "handleMessage: Потерянно соединение с Googleplay!");
                         regSubElements(isSubscribed);
                         sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
                         diamondValue = sPref.getInt("KeyDiamond", 50);
@@ -637,6 +650,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void regSubElements(Boolean subcribtionY) {
+        Log.d(TAG, "regSubElements: Зашли в регистрацию Элементов.");
         binding.idDiamondNumber.setVisibility(View.GONE);
         binding.IdDiamondIcon.setVisibility(View.GONE);
         binding.IDX.setVisibility(View.GONE);
@@ -648,10 +662,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //Если сюда , значит Хозяин.
                 Log.d(TAG, "regSubElements: Зашли в оформление Хозяина");
                 binding.idTextOwner.setVisibility(View.VISIBLE);
+                onMenuCreate();
                 Toast.makeText(MainActivity.this, R.string.developer_mode, Toast.LENGTH_SHORT).show();
             } else {
                 //Если сюда, значит подписчик.
                 binding.idsubscriptionText.setVisibility(View.VISIBLE);
+                onMenuCreate();
             }
 
         } else {
@@ -659,6 +675,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             binding.IdDiamondIcon.setVisibility(View.VISIBLE);
             binding.IDX.setVisibility(View.VISIBLE);
             binding.idDiamondNumber.setVisibility(View.VISIBLE);
+            onMenuCreate();
             onAdCreate();
         }
     }
@@ -900,6 +917,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Обновить
             case R.id.btnSave:
                 Log.d(TAG, "onClick: Status subscribe : " + isSubscribed);
+                //Если все листы пустые то пытаемся подгрузить данные
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
                     sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
                     int kol = sPref.getInt("Kolichesvo", 0);
@@ -917,6 +935,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 bool_onSaveReady = false;
                 //contentValues.put(DBHelper.KEY_NAME, hideName); //шаг 3
+
                 if (binding.etName.length() == 0 || bool_haveDeletingRight) {
                     Log.d(TAG, "onClick: зашли в обновление данных");
                     //Если все значения были пустыми то чистим все листы и обновляем основной с проставлением checked
@@ -1048,19 +1067,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         bool_owner = false;
                         isSubscribed = false;
                         binding.etName.setText("");
-                        onMenuCreate();
                         checkSub();
-                    }
-                    if (name.equals("Nordis-picker")) {
+                    } else if (name.equals("Nordis-picker")) {
                         Log.d(TAG, "onClick: зашли в Nordis-picker");
                         bool_owner = true;
                         isSubscribed = true;
                         sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
                         sPref.edit().putBoolean("keyown", bool_owner).apply();
                         binding.etName.setText("");
-                        onMenuCreate();
                         checkSub();
-
 
                     } else if (!isSubscribed) {//Если нет подписки то...
                         if (diamondValue == 0) {

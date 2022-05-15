@@ -256,7 +256,7 @@
         app:layout_constraintHeight_percent="0.04"
         app:layout_constraintStart_toStartOf="@+id/guideline3"
         app:layout_constraintTop_toTopOf="@+id/guideline4"
-        app:layout_constraintWidth_percent="0.4" />
+        app:layout_constraintWidth_percent="0.45" />
 
     <TextView
         android:id="@+id/textView27"
@@ -274,7 +274,7 @@
         app:layout_constraintHorizontal_bias="0.477"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline4"
-        app:layout_constraintWidth_percent="0.4" />
+        app:layout_constraintWidth_percent="0.45" />
 
     <Button
         android:id="@+id/btnSubRemoveGotoread"
