@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     static volatile SharedPreferences sPref;
     static Handler handler;
     static Uri uri; // Получаем нахождение файла в OnActivityResult
-    static int menuSize = 4;
     final int hSetToastErrorOfFileReading = 1;
     final int hsetdelete_WithOut_rest = 3;
     final int hSetbtnReadFileEnabledFalse = 4;
@@ -199,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viewData();// подгружаеться основной лист и адаптер
         checkInnerPreview(); // Убираем видимость гайда если листы не пусты. И если листы не пусты идёт обновление данных листа.
         onHandlerCreate(); // Создаём хендлер
-        checkSub(); /**Проверка хозяина, если да ставим бул = тру и надпись
+        checkSub();/**Проверка хозяина, если да ставим бул = тру и надпись
          Если нет :       бул = фалс, видимость камней и их значения, погрузка кол-во камней и подгрузка рекламы.
          Если подписчик:  бул = тру, подпись что подписчик , запись значения в локал дату*/
         methodsRegisterForActivity(); //For ActivityResult
@@ -207,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     }
+
 
     private void methodsRegisterForActivity() {
         Log.d(TAG, "methodsRegisterForActivity: Регистрирум Activity result");
@@ -301,15 +301,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //меню
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Log.d(TAG, "onItemSelected: " + parent.getAdapter().getItem(position).toString());
+        Log.d(TAG, "onItemSelected: Была нажат выбор в меню " + parent.getAdapter().getItem(position).toString());
         if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.manual))) {
-            //Прочесть Руководсво пользователя
-            binding.menuSpiner.setSelection(menuSize);
+//Прочесть Руководсво пользователя
+            binding.menuSpiner.setSelection(menuList.size() - 1);
             intent = new Intent(MainActivity.this, UserGuideActivity.class);
             startActivity(intent);
 
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
-            //получить подписку
+//получить подписку
             if (!boolPlayStoreISSigned) {
                 DialogClass dialogClass = new DialogClass(MainActivity.this,
                         getString(R.string.connectionIssue),
@@ -321,22 +321,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 dialogClass.createStandartNewDialogShowAd();
                 dialogClass.dialog.show();
             } else {
-                binding.menuSpiner.setSelection(menuSize);
+                binding.menuSpiner.setSelection(menuList.size() - 1);
                 intent = new Intent(MainActivity.this, SubcribeClass.class);
                 startActivity(intent);
             }
 
-            binding.menuSpiner.setSelection(menuSize);
+            binding.menuSpiner.setSelection(menuList.size() - 1);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
-            // Изменить чтение charset
-            binding.menuSpiner.setSelection(menuSize);
+// Изменить чтение charset
+            binding.menuSpiner.setSelection(menuList.size() - 1);
             intent = new Intent(MainActivity.this, EncodingActivity.class);
             mGetActivityResult.launch(intent);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
-            //Посмотреть Рекламу
+//Посмотреть Рекламу
             if (!bool_owner) {
                 if (mRewardedAd != null) {
-                    binding.menuSpiner.setSelection(menuSize);
+                    binding.menuSpiner.setSelection(menuList.size() - 1);
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
                             getString(R.string.toGetBatteryEnergy),
                             getString(R.string.ad),
@@ -347,13 +347,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     dialogClass.createStandartNewDialogShowAd();
                     dialogClass.dialog.show();
                 } else {
-                    binding.menuSpiner.setSelection(menuSize);
+                    binding.menuSpiner.setSelection(menuList.size() - 1);
                     Toast.makeText(this, R.string.rewardedAdsIsNull, Toast.LENGTH_LONG).show();
                 }
             }
-            binding.menuSpiner.setSelection(menuSize);
+            binding.menuSpiner.setSelection(menuList.size() - 1);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.evaluateUs))) {
-            binding.menuSpiner.setSelection(menuSize);
+            binding.menuSpiner.setSelection(menuList.size() - 1);
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.nordis.android.checklist"));
             startActivity(intent);
 
@@ -368,14 +368,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (bool_owner) {
             Log.d(TAG, "onMenuCreate:  Это хозяин, меню состоит из 3 позиций");
-            menuSize = 3;
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
             menuList.add(getString(R.string.evaluateUs));
             menuList.add("");
         } else {
             Log.d(TAG, "onMenuCreate:  Это клиент, меню состоит из 5 позиций");
-            menuSize = 5;
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
             menuList.add(getString(R.string.getSubscribe));
@@ -386,17 +384,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, menuList) {
             @Override
             public int getCount() {
-                return menuSize;// Этот метод влияет на отображение в самом spinner
+                Log.d(TAG, "getCount: menusize is: " + (menuList.size() - 1));
+                return menuList.size() - 1;// Этот метод влияет на отображение в самом spinner
             }
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.menuSpiner.setAdapter(adapter);
         binding.menuSpiner.setOnItemSelectedListener(this);
-        binding.menuSpiner.setSelection(menuSize);
+        binding.menuSpiner.setAdapter(adapter);
+        binding.menuSpiner.setSelection(menuList.size() - 1);
 
         Log.d(TAG, "onMenuCreate:  меню успешно созданно!");
 
     }
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
@@ -422,7 +422,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
                     subcribeClass.connectToGooglePlayBilling(false);// false так как это обычное подсоединение.
                     try {
-                        int i = 3;
+                        countDownLatch.await(2, TimeUnit.SECONDS);
+                        int i = 2;
                         while (!subcribeClass.checkConnections()) {
                             if (i == 0) {
                                 throw new InterruptedException();
@@ -432,6 +433,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
+                        Log.d(TAG, "checkSub: Была ошибка соединения с GooglePlay");
                         handler.sendEmptyMessage(hsetLostConnectionsWithGooglePlay);
                         return;
                     }
