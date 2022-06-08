@@ -28,10 +28,13 @@
         android:theme="@style/AppTheme"
         android:windowSoftInputMode="adjustNothing">
         <activity
-            android:name="com.nordis.android.checklist.SubcribeDetailsActivity"
+            android:name=".SettingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SubcribeDetailsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.nordis.android.checklist.ActivitySubRemove"
+            android:name=".ActivitySubRemove"
             android:screenOrientation="portrait" />
 
         <meta-data
@@ -39,21 +42,21 @@
             android:value="ca-app-pub-6564886494367745~6728492085" />
 
         <activity
-            android:name="com.nordis.android.checklist.EncodingActivity"
+            android:name=".EncodingActivity"
             android:exported="false"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
-            android:name="com.nordis.android.checklist.SubcribeClass"
+            android:name=".SubcribeClass"
             android:label="@string/title_activity_user_subscribe1"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.nordis.android.checklist.UserGuideActivity"
+            android:name=".UserGuideActivity"
             android:label="@string/title_activity_user_guide"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.nordis.android.checklist.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"

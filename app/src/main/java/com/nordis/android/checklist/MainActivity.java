@@ -94,11 +94,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bool_onSaveReady, //bool_onSaveReady - для контекстной функции Delete All checked.
             bool_xlsColumnsWasChosen,
             bool_xlsExecutorCanceled,
-            bool_accessToDeleteAllWithOutDialog,
+            bool_accessToDeleteAllWithOutDialog,//Переменная нужна если удаляем последнию строку в главном списке
             bool_haveDeletingRight,
             bool_billingInitializeOk,
             bool_owner,
             bool_neiser,
+            bool_autoCompleteText,
             boolPlayStoreISSigned = false;
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
@@ -119,8 +120,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hSetLoadingListOfView_fromAdapter1 = 11;
     final int hSetToastErrorfromReadingAdditionalLoad = 12;
     final int hSetCreateDialogError = 13;
-    final int hSetDoRest = 14;
-    final int hSetDeleteRest = 15;
+    final int hMakeRestMemory = 14;
+    final int hRemoveRestMemory = 15;
     final int hSetDeleteChekedPositions = 17;
     final int hBatteryOn = 25;
     final int hsetLostConnectionsWithGooglePlay = 26;
@@ -135,8 +136,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     SQLiteDatabase sqLiteDatabase;
     //Arraylist variables
     //Примечание: mainlist и foundlist и foundAccurateList основные.В list_of_View отбражаться всё что есть в mainlist или foundlist с помощью  adapter1.
-    ArrayList<String> mainList = new ArrayList<>(); //основной лист
+    ArrayList<String> mainList = new ArrayList<>(); //основной лист , mainSupport для autoCompleteText neiser
     ArrayList<String> found_List = new ArrayList<>();
+    HashSet<String> mainSupportAutocomplete = new HashSet<>();
     ArrayList<String> foundAccurateList = new ArrayList<>();// Используеться в более точном поиске
     ArrayList<String> supportRequestHistoryForChangeStrings = new ArrayList<>();// Для изменения строки
     ArrayList<String> firstWordSearchingList = new ArrayList<>();// Для изменения строки
@@ -146,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться изначально тексты с файла а потом с него загружаем в Базу
     ArrayList<String> loadhistory = new ArrayList<>(); // Лист работает в история поиска.
     volatile HashSet<String> hashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
-    volatile ArrayAdapter adapter1;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
+    volatile ArrayAdapter adapter1,autoCompleteAdapter;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
     Thread thread;
     volatile File_XLS_Reader file_xls_reader;
     String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
@@ -154,11 +156,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Cursor cursor;
     Intent intent;
     ContentValues contentValues = new ContentValues();
-    ActivityMainBinding binding;
     ActivityResultLauncher<String> mGetContentResult;
     ActivityResultLauncher<Intent> mGetActivityResult;
     DialogClass newdialog;
     LocalDateTime localDateChecked;
+    private ActivityMainBinding binding;
     Runnable runnableIncrementProgressbar = new Runnable() {
         @Override
         public void run() {
@@ -195,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         dbHelper = new DBHelper(this);
 
+        checkBoolVariables();
         viewData();// подгружаеться основной лист и адаптер
         checkInnerPreview(); // Убираем видимость гайда если листы не пусты. И если листы не пусты идёт обновление данных листа.
         onHandlerCreate(); // Создаём хендлер
@@ -208,6 +211,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    private void checkBoolVariables(){
+        sPref = getSharedPreferences("Settings", MODE_PRIVATE);
+        bool_autoCompleteText = sPref.getBoolean("autoCompletetext",false);
+
+        sPref = getSharedPreferences("NEISER",MODE_PRIVATE);
+        bool_neiser = sPref.getBoolean("neiser",false);
+    }
     private void methodsRegisterForActivity() {
         Log.d(TAG, "methodsRegisterForActivity: Регистрирум Activity result");
 
@@ -221,8 +231,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     assert result.getData() != null;
                     chosenCharset = result.getData().getStringExtra("nameOfCharset");
                     Log.d(TAG, "onActivityResult: Данные полученны: " + chosenCharset);
-                }
-                if (result.getResultCode() == RESULT_CANCELED) {
+                } else if (result.getResultCode() == 2) {
+                    bool_autoCompleteText = result.getData().getBooleanExtra("AutoCompleteText",false);
+                        Intent intent = getIntent();
+                        finish();
+                        startActivity(intent);
+                } else if (result.getResultCode() == RESULT_CANCELED) {
                     Log.d(TAG, "onActivityResult: Была отмена!");
                 }
 
@@ -357,6 +371,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.nordis.android.checklist"));
             startActivity(intent);
 
+        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.resSetting))) {
+            binding.menuSpiner.setSelection(menuList.size() - 1);
+            intent = new Intent(MainActivity.this, SettingActivity.class);
+            mGetActivityResult.launch(intent);
         }
 
     }
@@ -367,10 +385,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             menuList.clear();
         }
         if (bool_owner) {
-            Log.d(TAG, "onMenuCreate:  Это хозяин, меню состоит из 3 позиций");
+            Log.d(TAG, "onMenuCreate:  Это хозяин, меню состоит из 4 позиций");
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
             menuList.add(getString(R.string.evaluateUs));
+            menuList.add(getString(R.string.resSetting));
             menuList.add("");
         } else {
             Log.d(TAG, "onMenuCreate:  Это клиент, меню состоит из 5 позиций");
@@ -379,6 +398,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             menuList.add(getString(R.string.getSubscribe));
             menuList.add(getString(R.string.toSeeAds));
             menuList.add(getString(R.string.evaluateUs));
+            menuList.add(getString(R.string.resSetting));
             menuList.add("");
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, menuList) {
@@ -389,7 +409,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.menuSpiner.setOnItemSelectedListener(this);
         binding.menuSpiner.setAdapter(adapter);
         binding.menuSpiner.setSelection(menuList.size() - 1);
 
@@ -462,10 +481,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-
-        //ca-app-pub-6564886494367745/7174186976 - my
-        //ca-app-pub-3940256099942544/5224354917 - test
-        RewardedAd.load(this, "ca-app-pub-6564886494367745/7174186976",
+        String myAdNumber = "ca-app-pub-6564886494367745/7174186976";
+        String testAdRewarded = "ca-app-pub-3940256099942544/5224354917";
+        RewardedAd.load(this, myAdNumber,
                 adRequest, new RewardedAdLoadCallback() {
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
@@ -512,7 +530,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 3:
                         binding.btnDeleteAll.callOnClick();
-                        Toast.makeText(MainActivity.this, R.string.deleted_success, Toast.LENGTH_LONG).show();
                         break;
                     case 4:
                         binding.btnLoadFile.setEnabled(false);
@@ -538,6 +555,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 11:
                         binding.listItemModel.setAdapter(adapter1);
+                        if (bool_autoCompleteText){
+                            //Если включена автозаполнение, тогда закидываем наш созданный лист в адаптер
+                            if (bool_neiser){
+                                //Если включенно автозаполнение ещё и для neiser , тогда будте закинут лист mainSupportNeiser, который создан выше.
+                                binding.etName.setAdapter(autoCompleteAdapter);
+                            }else {
+                                binding.etName.setAdapter(autoCompleteAdapter);
+                            }
+                        }
                         binding.idWhatIsList.setText(R.string.main);
                         break;
                     case 12:
@@ -554,10 +580,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 16:
                         Log.d(TAG, "handleMessage: зашли в создание диалога");
-                        LayoutInflater inflater = MainActivity.this.getLayoutInflater();
                         newdialog = new DialogClass(MainActivity.this,
                                 null,
-                                inflater,
                                 null
                         );
                         newdialog.createCustomNewDialogFromWhichTowhich();
@@ -827,6 +851,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, getString(R.string.Not_data_to_show) + cursor.getInt(3), Toast.LENGTH_LONG).show();
         } else {
             while (cursor.moveToNext()) { // тут мы его считываем
+                if (bool_neiser && bool_autoCompleteText){
+                    //Если установлен neiser c автозаполнением, тогда будет отборка для него
+                    String [] lines = cursor.getString(0).split(" ");
+                    mainSupportAutocomplete.add(lines[2]);
+                }else if (!bool_neiser && bool_autoCompleteText){
+                    mainSupportAutocomplete.add(cursor.getString(0));
+                }
                 mainList.add(cursor.getString(0));
                 mProgresscounter++;
                 if (binding.downloadBar.getMax() <= 40) {// В зависимости от объёма данных увеличиваем скорость загрузки
@@ -881,6 +912,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
+            autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
+            if (bool_autoCompleteText){
+                //Если включена автозаполнение, тогда закидываем наш созданный лист в адаптер
+                if (bool_neiser){
+                    //Если включенно автозаполнение ещё и для neiser , тогда будте закинут лист mainSupportNeiser, который создан выше.
+                    autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mainSupportAutocomplete.toArray());
+                }else {
+                    autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mainSupportAutocomplete.toArray());
+                }
+            }
             handler.sendEmptyMessage(hSetLoadingListOfView_fromAdapter1);
             cursor.close();
             chosenCharset = null;
@@ -898,12 +939,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, getString(R.string.Not_data_to_show), Toast.LENGTH_SHORT).show();
         } else {
             while (cursor.moveToNext()) { // тут мы его считываем
+                if (bool_neiser && bool_autoCompleteText){
+                    //Если установлен neiser c автозаполнением, тогда будет отборка для него
+                    String [] lines = cursor.getString(0).split(" ");
+                    mainSupportAutocomplete.add(lines[2]);
+                }else if (!bool_neiser && bool_autoCompleteText){
+                    mainSupportAutocomplete.add(cursor.getString(0));
+                }
                 mainList.add(cursor.getString(0));
+
 
             }
             binding.idWhatIsList.setText(R.string.main);
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
             binding.listItemModel.setAdapter(adapter1);
+            if (bool_autoCompleteText){
+                //Если включена автозаполнение, тогда закидываем наш созданный лист в адаптер
+                if (bool_neiser){
+                    //Если включенно автозаполнение ещё и для neiser , тогда будте закинут лист mainSupportNeiser, который создан выше.
+                    autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mainSupportAutocomplete.toArray());
+                    binding.etName.setAdapter(autoCompleteAdapter);
+                }else {
+                    autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mainSupportAutocomplete.toArray());
+                    binding.etName.setAdapter(autoCompleteAdapter);
+                }
+            }
             cursor.close();
         }
     }
@@ -918,9 +978,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 //Обновить
             case R.id.btnSave:
-                Log.d(TAG, "onClick: Status subscribe : " + isSubscribed);
+                Log.d(TAG, "onClick btn Save: Status subscribe : " + isSubscribed);
                 //Если все листы пустые то пытаемся подгрузить данные
                 if (mainList.isEmpty() && found_List.isEmpty() && foundAccurateList.isEmpty()) {
+                    Log.d(TAG, "onClick onClick btn Save : все листы пустые, попытка подгрузки файлов!");
                     sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
                     int kol = sPref.getInt("Kolichesvo", 0);
                     if (kol > 0) {
@@ -939,12 +1000,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //contentValues.put(DBHelper.KEY_NAME, hideName); //шаг 3
 
                 if (binding.etName.length() == 0 || bool_haveDeletingRight) {
-                    Log.d(TAG, "onClick: зашли в обновление данных");
+                    Log.d(TAG, "onClick btn Save: зашли в обновление данных");
                     //Если все значения были пустыми то чистим все листы и обновляем основной с проставлением checked
                     found_List.clear();
                     foundAccurateList.clear();
                     mainList.clear();
                     hashSetMainCollectorItems.clear();
+                    mainSupportAutocomplete.clear();
                     viewData(); // - В этом методе востанавливаться mainList
 
                     loadCheckedItems(mainList); // Загрузка
@@ -956,7 +1018,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     showListIsReadyPercent();
                     choosen_ItemInClickmethod = "";
                     bool_onSaveReady = true;
+                    bool_haveDeletingRight = false;
                 } else {
+                    Log.d(TAG, "onClick btn Save: Чистим поля");
                     binding.etName.setText("");
                     Toast.makeText(this, R.string.clear_object, Toast.LENGTH_SHORT).show();
                 }
@@ -971,7 +1035,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.i(TAG, "onClick: Была нажата кнопка удалить");
                 String del = binding.etName.getText().toString();
                 String delete = "Delete";
-                if (del.equals(delete) || bool_accessToDeleteAllWithOutDialog) { // Если Ввёл в строку Delete
+                if (del.equals(delete) || bool_accessToDeleteAllWithOutDialog) {
+                    Log.i(TAG, "onClick: Началось активная фаза удаления.");
+                    /**Начинаеться активное удаление*/
                     try {
 
                         sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, null, null);
@@ -1004,30 +1070,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         downloadList.clear();
                         foundAccurateList.clear();
                         hashSetMainCollectorItems.clear();
+                        mainSupportAutocomplete.clear();
                         choosen_ItemInClickmethod = null;
                         bool_accessToDeleteAllWithOutDialog = false;
                         adapter1.clear();
+                        autoCompleteAdapter.clear();
                         mProgresscounter = 0;
                         mColumnmax = 0;
                         mColumnmin = 0;
                         name = null;
-                        binding.etName.setText("");
                         bool_haveDeletingRight = false;
-                        binding.idWhatIsList.setVisibility(View.GONE);
-                        binding.listItemModel.setVisibility(View.GONE);
-                        binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
                         file_xls_reader = null;
+
 
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, R.string.something_went_wrong, Toast.LENGTH_SHORT).show();
                     }
+                    binding.etName.setText("");
+                    binding.idWhatIsList.setVisibility(View.GONE);
+                    binding.listItemModel.setVisibility(View.GONE);
+                    binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
                     Toast.makeText(MainActivity.this, R.string.deleted_successfully, Toast.LENGTH_SHORT).show();
                 } else {
+                    Log.i(TAG, "onClick: Создаём диалог");
+                    /**Диалог для подготовки удаления*/
                     bool_haveDeletingRight = true;
-                    LayoutInflater inflater = this.getLayoutInflater();
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
                             null,
-                            inflater,
                             null
                     );
                     dialogClass.createCustomNewDialogDeleteFile();
@@ -1190,8 +1259,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void createRestMemory() {
-        //mainList.clear();
-        //viewData(); // тут мы востанавливаем main
         binding.btnSave.callOnClick();
         restCreating(); // тут мы сравниваем разность main и hashSetMain
     }
@@ -1216,15 +1283,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, list);
+        autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, list);
         binding.listItemModel.setAdapter(adapter1);
+        if (bool_autoCompleteText){
+            binding.etName.setAdapter(autoCompleteAdapter);
+        }
     }
 
     private void restCreating() {
         //В этом методе main лист становиться меньше поэтому мы должны его востанавливать. что бы сново применять этот метод. Что бы работал корректно.
         sPref = getSharedPreferences("Jaak", MODE_PRIVATE);// удаляем старую версию остатка
         sPref.edit().clear().apply();
-        // От сюда востанавливаем наш main
-
 
         ArrayList<String> dublicateMainList = new ArrayList<>(mainList);
         ArrayList<String> jaakList = new ArrayList<>(hashSetMainCollectorItems);
@@ -1245,6 +1314,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor1.apply();
         jaakList.clear();
         dublicateMainList.clear();
+
         bool_isSaved = true;
     }
 
@@ -1280,6 +1350,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (fileName.toLowerCase(Locale.ROOT).contains("neiser")) {
                     Log.d(TAG, "Содержит в названии Neiser");
                     bool_neiser = true;
+                    sPref = getSharedPreferences("NEISER",MODE_PRIVATE);
+                    sPref.edit().putBoolean("neiser",bool_neiser).apply();
+                }else {
+                    sPref = getSharedPreferences("NEISER",MODE_PRIVATE);
+                    sPref.edit().clear().apply();
                 }
                 Log.i(TAG, "run: File был распознан как xls");
                 try {
@@ -1310,7 +1385,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     downloadList.clear();
                     file_xls_reader = null;
                     mProgresscounter = 0;
-                    bool_neiser = false;
                     //Востанавливаем кнопку и убирает прогресс бар.
                     handler.sendEmptyMessage(hSetbtnReadFileEnabledTrue);
                     handler.sendEmptyMessage(hSetProgressBarGone);
@@ -1491,7 +1565,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             LayoutInflater inflater = this.getLayoutInflater();
             DialogClass dialogClass = new DialogClass(MainActivity.this,
                     "Lets change row",
-                    inflater,
                     choosen_ItemInClickmethod
             );
             dialogClass.createCustomNewDialogChageItem();
@@ -1637,26 +1710,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                /*  sparseBooleanArray.keyAt(i));//получение позиции
              list_of_View.getItemAtPosition( sparseBooleanArray.keyAt(i))); // получение имени по позиции.
             */
-        bool_haveDeletingRight = false;
         binding.btnSave.callOnClick();
         if (hashSetMainCollectorItems.size() == mainList.size()) {
             binding.etName.setText("Delete");
             binding.btnDeleteAll.callOnClick();
+        }else {
+            sqLiteDatabase = dbHelper.getWritableDatabase();
+            SparseBooleanArray sparseBooleanArray = binding.listItemModel.getCheckedItemPositions();//получаем все cheked elements
+            for (int i = 0; i < sparseBooleanArray.size(); i++) {
+                String toDeleteString = (String) binding.listItemModel.getItemAtPosition(sparseBooleanArray.keyAt(i));// получаем строку
+                sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{toDeleteString});
+            }
+            dbHelper.close();
+            hashSetMainCollectorItems.clear();
+            sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+            sPref.edit().clear().apply();
+            binding.etName.setText("");
+            binding.btnSave.callOnClick();
         }
-        sqLiteDatabase = dbHelper.getWritableDatabase();
-        SparseBooleanArray sparseBooleanArray = binding.listItemModel.getCheckedItemPositions();//получаем все cheked elements
-        for (int i = 0; i < sparseBooleanArray.size(); i++) {
-            Log.i(TAG, "onContextItemSelected: " + binding.listItemModel.getItemAtPosition(sparseBooleanArray.keyAt(i)));
-            String toDeleteString = (String) binding.listItemModel.getItemAtPosition(sparseBooleanArray.keyAt(i));// получаем строку
-            //list_of_View.setItemChecked(sparseBooleanArray.keyAt(i),false);
-            sqLiteDatabase.delete(DBHelper.TABLE_CONTACT, DBHelper.KEY_NAME + "= ?", new String[]{toDeleteString});
-            //dbHelper.uninsertData(toDeleteString);
-        }
-        dbHelper.close();
-        hashSetMainCollectorItems.clear();
-        sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
-        sPref.edit().clear().apply();
-        binding.btnSave.callOnClick();
 
     }
 
@@ -1797,7 +1868,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (localDateChecked != null) outState.putString("val", localDateChecked.toString());
         // View элементы у которых есть ID они сами востанавливают своё значение. Так же как Элементы Final.
         // А все другие нужно сохранять тут. А востанавливать в onRestoreInstanceState.
-        //outState.putBoolean("val3", bool_isSaved);
     }
 
     @Override
@@ -1829,7 +1899,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onRestart() {
-        super.onRestart();
+        try {
+            super.onRestart();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Intent i = new Intent(this, MainActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
+        }
         Log.i(TAG, "onRestart");
     }
 
@@ -1848,6 +1925,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
+        binding.menuSpiner.setOnItemSelectedListener(this);
         Log.i(TAG, "onResume");
     }
 

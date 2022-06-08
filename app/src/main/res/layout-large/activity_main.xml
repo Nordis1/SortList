@@ -142,7 +142,7 @@
         app:layout_constraintTop_toBottomOf="@id/ID_ConstraintForMenuItems">
 
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/etName"
             android:layout_width="0dp"
             android:layout_height="0dp"

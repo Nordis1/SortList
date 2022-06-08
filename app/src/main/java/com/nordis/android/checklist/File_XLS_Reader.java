@@ -23,7 +23,6 @@ public class File_XLS_Reader extends MainActivity {
     static int minUsedColumnIs = 1;
     static int firstUsedColumnIs;
     static int lastUsedColumnIs;
-    static boolean booldate = false;
     ArrayList<String> arrayListFromXlsFile = new ArrayList<>();
     private static final String TAG = "File_XLS_Reader";
 
@@ -153,9 +152,6 @@ public class File_XLS_Reader extends MainActivity {
             handler.sendEmptyMessage(hSetToastErrorOfFileReading);
             e.printStackTrace();
         }
- /*       for (int i = 0; i < arrayListFromXlsFile.size(); i++) {
-            Log.d(TAG, "readingXLS: "+ arrayListFromXlsFile.get(i));
-        }*/
 
         //Если файл для Neiser , тогда работаем с ним и возвращаем.
         if (bool_neiser){

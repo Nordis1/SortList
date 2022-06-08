@@ -5,60 +5,40 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Message;
-import androidx.annotation.Nullable;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 import com.edmodo.rangebar.RangeBar;
+import com.nordis.android.checklist.databinding.ActivityDeleteFileBinding;
+import com.nordis.android.checklist.databinding.Activitychangeitem2Binding;
+import com.nordis.android.checklist.databinding.ResizeXlsReaderBinding;
 
 import java.util.concurrent.TimeUnit;
 
-public class DialogClass extends MainActivity implements View.OnClickListener, RangeBar.OnRangeBarChangeListener {
+public class DialogClass extends MainActivity implements View.OnClickListener, RangeBar.OnRangeBarChangeListener, CompoundButton.OnCheckedChangeListener {
 
+    final String TAG = "Dialog_class_Tag";
+    private ActivityDeleteFileBinding activityDeleteFileBinding;
+    private ResizeXlsReaderBinding resizeXlsReaderBinding;
+    private Activitychangeitem2Binding activitychangeitem2Binding;
     // Общие переменные
     AlertDialog dialog;
     AlertDialog.Builder alertBuilder;
     Context context;
     LayoutInflater inflater;
-
-    // Переменные для  createCustomNewDialogFromWhichTowhich
-    TextView minValue;
-    TextView maxValue;
-    Button btnAccept;
-    Button btnCancel;
-
     // Переменные для createCustomNewDialogChageItem()
-    Button btn_ChageItem_Cancel;
-    Button btn_ChageItem_Change;
-    EditText ChageItem_editText;
     String stringPrepareToChange;
-
-
-    // Переменные для createCustomNewDialogDeleteFile()
-    CheckBox checkBox_DeleteFile;
-    CheckBox checkbox_saveCheched;
-
     //Переменные для классического применения диалога.
     String dialog_message, dialog_title, btnPositive, btnNegative, btnNetral;
 
-
-    Button btnDeleteAllChecked;
-
-
-    final String TAG = "Dialog_class_Tag";
-
-    public DialogClass(Context context, @Nullable String dialog_message, LayoutInflater inflater, @Nullable String stringPrepareToChange) {
+    public DialogClass(Context context, @Nullable String dialog_message, @Nullable String stringPrepareToChange) {
         this.context = context;
         this.dialog_message = dialog_message;
-        this.inflater = inflater;
         this.stringPrepareToChange = stringPrepareToChange;
     }
 
@@ -73,62 +53,10 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
     }
 
     @Override
-    public void onClick(View v) {
-        Toast toast;
-        switch (v.getId()) {
-            case R.id.ID_btn_DeleteFile_Dialog_Cancel:
-                handler.sendEmptyMessage(hsetdelete_IsCanceled);
-                dialog.cancel();
-                break;
-            case R.id.ID_btn_DeleteFile_Dialog_DeleteAllChecked:
-                handler.sendEmptyMessage(hSetDeleteRest);
-                try {
-                    TimeUnit.MILLISECONDS.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                handler.sendEmptyMessage(hSetDeleteChekedPositions);
-                dialog.cancel();
-                break;
-            case R.id.ID_btn_DeleteFile_Dialog_Delete:
-                handler.sendEmptyMessage(hsetdelete_WithOut_rest);
-                dialog.cancel();
-                break;
-            case R.id.ID_resize_btnAccept:
-                String max = (String) maxValue.getText();
-                String min = (String) minValue.getText();
-                mColumnmax = Integer.valueOf(max);
-                mColumnmin = Integer.valueOf(min);
-                bool_xlsColumnsWasChosen = true;
-                dialog.cancel();
-                break;
-            case R.id.ID_resize_btnCancel:
-                bool_xlsExecutorCanceled = true;
-                dialog.cancel();
-                break;
-            case R.id.ID_saveUncheckedPositions:
-                if (checkbox_saveCheched.isChecked()) {
-                    btnDeleteAllChecked.setEnabled(false);
-                    btnCancel.setEnabled(false);
-                    handler.sendEmptyMessage(hSetDoRest);
-                }else {
-                    btnDeleteAllChecked.setEnabled(true);
-                    btnCancel.setEnabled(true);
-                    handler.sendEmptyMessage(hSetDeleteRest);
-                }
-                break;
-            default:
-                handler.sendEmptyMessage(hSetCreateDialogError);
-                dialog.cancel();
-                throw new IllegalStateException("Unexpected value: " + v.getId());
-        }
-    }
-
-    @Override
     public void onIndexChangeListener(RangeBar rangeBar, int i, int i1) {
         // rangeBar как и seekbar  только range bar можно регулировать с обеих сторон.
-        minValue.setText(String.valueOf(i));
-        maxValue.setText(String.valueOf(i1));
+        resizeXlsReaderBinding.IDResizeMinValue.setText(String.valueOf(i));
+        resizeXlsReaderBinding.IDResizeMaxValue.setText(String.valueOf(i1));
     }
 
     public void createCustomNewDialogFromWhichTowhich() {
@@ -136,24 +64,30 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
         Log.d(TAG, "createCustomNewDialogFromWhichTowhich: Начало нового диалога");
         try {
             alertBuilder = new AlertDialog.Builder(context);
-            View layout = inflater.inflate(R.layout.resize_xls_reader, null);
-            alertBuilder.setView(layout);
+            inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+            resizeXlsReaderBinding = ResizeXlsReaderBinding.inflate(inflater);
+            resizeXlsReaderBinding.IDResizeBtnAccept.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mColumnmax = Integer.parseInt(resizeXlsReaderBinding.IDResizeMaxValue.getText().toString());
+                    mColumnmin = Integer.parseInt(resizeXlsReaderBinding.IDResizeMinValue.getText().toString());
+                    bool_xlsColumnsWasChosen = true;
+                    dialog.cancel();
+                }
+            });
+            resizeXlsReaderBinding.IDResizeBtnCancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    bool_xlsExecutorCanceled = true;
+                    dialog.cancel();
+                }
+            });
+            resizeXlsReaderBinding.IDResizeRangeBar.setOnRangeBarChangeListener(this);
+            resizeXlsReaderBinding.IDResizeMinValue.setText(String.valueOf(mColumnmin));
+            resizeXlsReaderBinding.IDResizeMaxValue.setText(String.valueOf(--mColumnmax));
+            resizeXlsReaderBinding.IDResizeRangeBar.setTickCount(++mColumnmax);//Внимание устанавливать кол-во нужно до установки нажатия.Иначе ошибка.
+            alertBuilder.setView(resizeXlsReaderBinding.getRoot());
             alertBuilder.setCancelable(false);
-            TextView textView = layout.findViewById(R.id.ID_resizeText);//1
-            ImageView imageView = layout.findViewById(R.id.ID_resize_xls_image);//2
-            minValue = layout.findViewById(R.id.ID_resize_minValue);//3
-            maxValue = layout.findViewById(R.id.ID_resize_maxValue);//4
-            minValue.setText(String.valueOf(mColumnmin));
-            int max = mColumnmax;
-            maxValue.setText(String.valueOf(--max)); // тут вставил так, потому что в setTickCount значения считываються с нуля.
-            RangeBar rangeBar = layout.findViewById(R.id.ID_resize_RangeBar);//5
-            Log.i(TAG, "createCustomNewDialogFromWhichTowhich: mColumbmax = " + mColumnmax);
-            rangeBar.setTickCount(mColumnmax);//Внимание устанавливать кол-во нужно до установки нажатия.Иначе ошибка.
-            rangeBar.setOnRangeBarChangeListener(this);
-            btnAccept = layout.findViewById(R.id.ID_resize_btnAccept);//6
-            btnCancel = layout.findViewById(R.id.ID_resize_btnCancel);//7
-            btnAccept.setOnClickListener(this);
-            btnCancel.setOnClickListener(this);
             dialog = alertBuilder.create();
         } catch (Exception e) {
             handler.sendEmptyMessage(hSetCreateDialogError);
@@ -166,17 +100,44 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
         //Используеться при нажатии кнопки удаления
         try {
             alertBuilder = new AlertDialog.Builder(context);
-            View layout = inflater.inflate(R.layout.activity_delete_file, null);
-            alertBuilder.setView(layout);
-            alertBuilder.setCancelable(false);
-            checkbox_saveCheched = layout.findViewById(R.id.ID_saveUncheckedPositions);
-            btnCancel = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Cancel);
-            btnDeleteAllChecked = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_DeleteAllChecked);
-            Button btnDelete = layout.findViewById(R.id.ID_btn_DeleteFile_Dialog_Delete);
-            checkbox_saveCheched.setOnClickListener(this);
-            btnCancel.setOnClickListener(this);
-            btnDeleteAllChecked.setOnClickListener(this);
-            btnDelete.setOnClickListener(this);
+            inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+            activityDeleteFileBinding = ActivityDeleteFileBinding.inflate(inflater);
+            activityDeleteFileBinding.IDBtnDeleteFileDialogDelete.setOnClickListener(new View.OnClickListener() {
+                /** Удалие */
+                @Override
+                public void onClick(View v) {
+              /*      if (activityDeleteFileBinding.IDSaveUncheckedPositions.isChecked()){
+                        handler.sendEmptyMessage(2);
+                    }else {*/
+                    handler.sendEmptyMessage(hsetdelete_WithOut_rest);
+                    dialog.cancel();
+                }
+            });
+            activityDeleteFileBinding.IDBtnDeleteFileDialogCancel.setOnClickListener(new View.OnClickListener() {
+                /** Отмена */
+                @Override
+                public void onClick(View v) {
+                    handler.sendEmptyMessage(hsetdelete_IsCanceled);
+                    dialog.cancel();
+                }
+            });
+
+            activityDeleteFileBinding.IDBtnDeleteFileDialogDeleteAllChecked.setOnClickListener(new View.OnClickListener() {
+                /** Удаляем все отмеченные */
+                @Override
+                public void onClick(View v) {
+                    handler.sendEmptyMessage(hRemoveRestMemory);
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    handler.sendEmptyMessage(hSetDeleteChekedPositions);
+                    dialog.cancel();
+                }
+            });
+            activityDeleteFileBinding.IDSaveUncheckedPositions.setOnCheckedChangeListener(this);
+            alertBuilder.setView(activityDeleteFileBinding.getRoot());
             dialog = alertBuilder.create();
         } catch (Exception e) {
             handler.sendEmptyMessage(hSetCreateDialogError);
@@ -191,18 +152,19 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
         //Work Example from: https://stackoverflow.com/questions/22655599/alertdialog-builder-with-custom-layout-and-edittext-cannot-access-view
         try {
             alertBuilder = new AlertDialog.Builder(context);
-            View layout = inflater.inflate(R.layout.activitychangeitem2, null);
-            alertBuilder.setView(layout);
-            alertBuilder.setCancelable(false);
-            btn_ChageItem_Change = layout.findViewById(R.id.ID_btnChange_Dialog);
-            btn_ChageItem_Cancel = layout.findViewById(R.id.ID_btnCancel_Dialog);
-            ChageItem_editText = layout.findViewById(R.id.ID_Edit_text_Dialog);
-            ChageItem_editText.setText(stringPrepareToChange);
-
-            btn_ChageItem_Change.setOnClickListener(new View.OnClickListener() {
+            inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+            activitychangeitem2Binding = Activitychangeitem2Binding.inflate(inflater);
+            activitychangeitem2Binding.IDBtnCancelDialog.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
-                    String s = ChageItem_editText.getText().toString();
+                public void onClick(View v) {
+                    Toast.makeText(context, "Cancel", Toast.LENGTH_SHORT).show();
+                    dialog.cancel();
+                }
+            });
+            activitychangeitem2Binding.IDBtnChangeDialog.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String s = activitychangeitem2Binding.IDEditTextDialog.getText().toString();
                     if (!s.isEmpty() && !s.equals(stringPrepareToChange)) {
                         Message msg = handler.obtainMessage();
                         Bundle bundle = new Bundle();
@@ -217,14 +179,10 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                     }
                 }
             });
-            btn_ChageItem_Cancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(context, "Cancel", Toast.LENGTH_SHORT).show();
-                    dialog.cancel();
-                }
-            });
 
+            alertBuilder.setCancelable(false);
+            alertBuilder.setView(activitychangeitem2Binding.getRoot());
+            activitychangeitem2Binding.IDEditTextDialog.setText(stringPrepareToChange);
             dialog = alertBuilder.create();
 
         } catch (Exception e) {
@@ -290,4 +248,16 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
 
     }
 
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked) {
+            activityDeleteFileBinding.IDBtnDeleteFileDialogDeleteAllChecked.setEnabled(false);
+            activityDeleteFileBinding.IDBtnDeleteFileDialogCancel.setEnabled(false);
+            handler.sendEmptyMessage(hMakeRestMemory);
+        } else {
+            activityDeleteFileBinding.IDBtnDeleteFileDialogDeleteAllChecked.setEnabled(true);
+            activityDeleteFileBinding.IDBtnDeleteFileDialogCancel.setEnabled(true);
+            handler.sendEmptyMessage(hRemoveRestMemory);
+        }
+    }
 }

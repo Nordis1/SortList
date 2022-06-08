@@ -42,7 +42,7 @@ public class NeiserClass {
         origon(comingList);
 
 
-        Pattern patternName = Pattern.compile("\\d{0,3}? - [a-zA-Z]+?\\s[a-zA-Z]+?"); // для поиска имени  10 - Janek Reemann
+        Pattern patternName = Pattern.compile("\\d{0,3} - [A-Z][a-z]+?\\s[A-Z][a-z]+?"); // для поиска имени  10 - Janek Reemann
         Pattern patternReplay = Pattern.compile("([BD])\\d{0,2}([RL])/"); // для удаления лишнего B90R/
         Pattern patternIns = Pattern.compile("(INSPIRA)"); // для нахождения INSPIRA и укорачивания до INS
         Pattern patternExtra = Pattern.compile("1R/|(?<=\\s)25/|(?<=\\s)3/|(?<=\\s)2/|(?<=\\s)15/|[AB]\\d{1,3}[RL]/|35/|[025][LR]/");
@@ -135,6 +135,7 @@ public class NeiserClass {
         if (line.contains("Oleksandr Kyselov")) {
             name = "Oleks";
         } else {
+            Log.d(TAG, "namesDeterminate: line is: "+ line);
             String[] splitName = line.split("\\s"); //с помощью split делим на массив
             name = splitName[2] + "." + splitName[3].charAt(0);
         }
@@ -264,10 +265,10 @@ public class NeiserClass {
                     ln = ln + " {Montreal}";
                     mainLoadList.set(i, ln);
                 } else if (ln.contains("BRUCE")) {
-                    ln = ln + " {4 - \uD83D\uDD73}";
+                    ln = ln + " 4 - \uD83D\uDD73";
                     mainLoadList.set(i, ln);
                 } else if (ln.contains("CLASSIC")) {
-                    ln = ln + " {1 - \uD83D\uDD73}";
+                    ln = ln + " 1 - \uD83D\uDD73";
                     mainLoadList.set(i, ln);
                 } else if (ln.contains("NOMAD")) {
                     byte[] win = ln.getBytes();
@@ -303,6 +304,15 @@ public class NeiserClass {
                     ln = ln + " {kr: LOUNGE; kt: Nathalie; p: Michelle;}";
                     mainLoadList.set(i, ln);
                     ln = previousString;
+                }else if (ln.contains("HARRY")){
+                    ln = ln + " {Ilma lõiketa; kr - Mitch; p - B osa James}";
+                    mainLoadList.set(i, ln);
+                }else if (ln.contains("AMSTERDAM")){
+                    ln = ln + " 4 -\uD83D\uDD73";
+                    mainLoadList.set(i, ln);
+                }else if (ln.contains("SAVANNA")){
+                    ln = ln + " 3 -\uD83D\uDD73";
+                    mainLoadList.set(i, ln);
                 }
 
                 if (ln.contains("LOUNGE")) {

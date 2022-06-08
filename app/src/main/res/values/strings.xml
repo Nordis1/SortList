@@ -32,7 +32,6 @@
     <string name="something_went_wrong">Something went wrong</string>
     <string name="clear_object">Clear Object</string>
     <string name="how_delete">How Delete?</string>
-    <string name="manual">USER GUIDE</string>
     <string name="one">Upload the list in *.txt or *.xls extension.</string>
     <string name="check_new_position">You can mark, modify or delete position.</string>
     <string name="easy_search_word">It is possible to search for positions\nby using keywords in the open list.</string>
@@ -47,7 +46,6 @@
     <string name="title_activity_user_subscribe">User Subscribe</string>
     <string name="checkallpositions">Check all positions</string>
     <string name="backarrow">Back arrow will return you to the previous search query.</string>
-    <string name="getSubscribe">Subscription</string>
     <string name="one_Yeard">Year</string>
     <string name="Month">Month</string>
     <string name="Sixmonths">6 Months</string>
@@ -57,11 +55,19 @@
     <string name="title_activity_user_subscribe1">My user subscribe</string>
     <string name="subscribe_out">No subscription.</string>
     <string name="subscribe_is_valid">"Subscription is valid "</string>
-    <string name="charset_determinations">Encoding</string>
     <string name="Reason_for_encodin_choose">"In order to avoid unknown characters when loading a file in-app, it is advisable to select the file encoding."</string>
     <string name="Cyrillic">Cyrillic</string>
     <string name="Uncheckallpositions">Uncheck all positions</string>
+
+    menu
+    <string name="manual">USER GUIDE</string>
+    <string name="charset_determinations">Encoding</string>
+    <string name="getSubscribe">Subscription</string>
     <string name="toSeeAds">Get crystals</string>
+    <string name="evaluateUs">Evaluate Us</string>
+    <string name="resSetting">Settings</string>
+    menu
+
     <string name="rewardedAdsIsNull">Ad content doesn\'t load</string>
     <string name="towatch">Watch</string>
     <string name="toGetBatteryEnergy">To replenish the crystals, watch ads!</string>
@@ -98,9 +104,9 @@
     <string name="main2">Main List</string>
     <string name="searchList">Search List</string>
     <string name="backSearchError">History search error</string>
-    <string name="MonthPrice">1.20 Euro/mo\nFree trial: 7 days</string>
-    <string name="SixMonthPrice">6.45 Euro/6 mo\nProfit 10%</string>
-    <string name="YeardPrice">  10 Euro/yеar   \nProfit 30%</string>
+    <string name="MonthPrice">2 Euro/mo\nFree trial: 7 days</string>
+    <string name="SixMonthPrice">  10 Euro/6 mo\nProfit 20%</string>
+    <string name="YeardPrice">  14 Euro/yеar   \nProfit 40%</string>
     <string name="SubWarning">Attention! Payment is made through GooglePlay services and will be charged automatically every month, 6 months or year, depending on the type of subscription.</string>
     <string name="SubscribtionDetails">Subscription - details</string>
     <string name="SubscribtionDetailsText">The subscription allows an unlimited number of times to use the search on the downloaded sheet.</string>
@@ -114,8 +120,8 @@
     <string name="playMarket">GooglePlay market</string>
     <string name="monitorRestored">Monitor Restored</string>
     <string name="permission_granted">Permission Granted</string>
-    <string name="evaluateUs">Evaluate Us</string>
     <string name="DateError">Data Error</string>
     <string name="diamondValue">100</string>
     <string name="betweenDiamondAndNumber">X</string>
+    <string name="resAutoCompleteText">AutoComplete text</string>
 </resources>

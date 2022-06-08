@@ -34,7 +34,16 @@
     <string name="Not_data_to_show">Данных нет</string>
     <string name="First_download_the_file">Сделайте закачку файла!</string>
     <string name="how_delete">Варианты удаления</string>
+
+    меню
     <string name="manual">РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ</string>
+    <string name="charset_determinations">Кодировка</string>
+    <string name="getSubscribe">Оформить подписку</string>
+    <string name="toSeeAds">Пополнить кристаллы</string>
+    <string name="evaluateUs">Оцените нас</string>
+    <string name="resSetting">Настройки</string>
+    меню
+
     <string name="one">Загружайте список в *.txt или *.xls формате</string>
     <string name="check_new_position">Отмечайте, изменяйте или удаляйте позиции.</string>
     <string name="easy_search_word">Возможен поиск позиций по ключевому слову в открытом списке.</string>
@@ -49,7 +58,6 @@
     <string name="title_activity_user_subscribe">Подписка пользователя</string>
     <string name="checkallpositions">Отметить все позиции</string>
     <string name="backarrow">Кнопка стрелка назад вернёт вас к предыдущему поисковому запросу. </string>
-    <string name="getSubscribe">Оформить подписку</string>
     <string name="one_Yeard">1 год</string>
     <string name="Month">1 месяц</string>
     <string name="Sixmonths">6 месяцов</string>
@@ -59,17 +67,14 @@
     <string name="title_activity_user_subscribe1">My user subscribe</string>
     <string name="subscribe_out">Подписка отсутсвует</string>
     <string name="subscribe_is_valid">Дейсвует подписка</string>
-    <string name="charset_determinations">Кодировка</string>
     <string name="Reason_for_encodin_choose">"Во избежании неизвестных символов при загрузке файла в приложение, желательно выбрать кодировку загружаемого файла."</string>
     <string name="Cyrillic">Кириллица</string>
     <string name="Uncheckallpositions">Отменить все позиции</string>
-    <string name="toSeeAds">Пополнить кристаллы</string>
     <string name="rewardedAdsIsNull">Ошибка загрузки рекламы</string>
     <string name="towatch">Смотреть</string>
     <string name="toGetBatteryEnergy">Для получения кристаллов, посмотреть рекламу!</string>
     <string name="ad">"Реклама"</string>
     <string name="checkBatteryLoading">Пополните кристаллы!</string>
-    <string name="pending">Ваш перевод в состоянии ожидания. В данный момент вы не можете получить доступ к подписке.</string>
     <string name="understand">Понятно</string>
     <string name="pendingtitle">Перевод в ожидании!</string>
     <string name="HowtoaplusBallance">Пополнить энергию возвожно посмотрев рекламу. При оформлении подписки вам уже не нужно пополнять энергию.</string>
@@ -81,7 +86,6 @@
     <string name="lostConnection">Пожалуйста проверьте вход в GooglePlay аккаунт!</string>
     <string name="connectionIssue">Потерянно соединение</string>
     <string name="What_subscription_give">Подписка даёт доступ к безлимитному поиску по листу.</string>
-    <string name="removeSub">Как отменить подписку?</string>
     <string name="Go_to_reading_howRemoveSub">Читать</string>
     <string name="clue_one">"Откройте приложение Google Play "</string>
     <string name="clue_two">В правом верхнем углу экрана нажмите на значок профиля.</string>
@@ -98,11 +102,14 @@
     <string name="main2">Основной лист</string>
     <string name="searchList">Поисковый лист</string>
     <string name="backSearchError">Ошибка поиска</string>
-    <string name="MonthPrice">1.20 Евро/мес\nБесплатный период: 7 дней</string>
-    <string name="SixMonthPrice">6.45 Евро/6 мес\nВыгода 10%</string>
-    <string name="YeardPrice">10 Евро/год\nВыгода 30%</string>
+                                             подписка
+    <string name="MonthPrice">2 Евро/мес\nБесплатный период: 7 дней</string>
+    <string name="SixMonthPrice">  10 Евро/6 мес\n выгода 20%</string>
+    <string name="YeardPrice"> 14 Евро/год   \nвыгода 40%</string>
+    <string name="pending">Ваш перевод в состоянии ожидания. В данный момент вы не можете получить доступ к подписке.</string>
     <string name="SubWarning">Внимание! Плата производиться через сервисы GooglePlay и будет взыматься автоматически каждые месяц, пол года или год в зависимости от типа подписки.</string>
     <string name="SubscribtionDetails">Детали - подписки</string>
+    <string name="removeSub">Отменить - подписку</string>
     <string name="SubscribtionDetailsText">Подписка даёт вожможность неограниченное кол-во раз использовать поиск по загруженному листу.</string>
     <string name="SubscribtionDetailsText0">Вы можете использовать это приложение без подписки, для этого вам нужно переодически просматривать рекламу для пополнения энергии.</string>
     <string name="SubscribtionDetailsText1">Для того что бы получить такую возможность, подписку нужно оформить на месяц, пол года или год.</string>
@@ -111,11 +118,12 @@
     <string name="SubscribtionDetailsText4">Вы так же можете отказаться от подписки в любое время. Денежные средства за уже оплаченную подписку возврату не подлежат. Но оплаченная подписка, будет действовать до конца своего срока.</string>
     <string name="withouttaxes">Цены без налога</string>
     <string name="Free_trial">Оплата будет автоматически снята в конце бесплатного периода.</string>
+
     <string name="playMarket">GooglePlay market</string>
     <string name="monitorRestored">Монитор востановлен</string>
     <string name="permission_granted">Доступ получен</string>
-    <string name="evaluateUs">Оцените нас</string>
     <string name="DateError">Ошибка данных</string>
     <string name="diamondValue">100</string>
     <string name="betweenDiamondAndNumber">X</string>
+    <string name="resAutoCompleteText">Автозаполнение текста</string>
 </resources>
