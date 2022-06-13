@@ -483,7 +483,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         String myAdNumber = "ca-app-pub-6564886494367745/7174186976";
         String testAdRewarded = "ca-app-pub-3940256099942544/5224354917";
-        RewardedAd.load(this, myAdNumber,
+        RewardedAd.load(this, testAdRewarded,
                 adRequest, new RewardedAdLoadCallback() {
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
@@ -1865,7 +1865,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (localDateChecked != null) outState.putString("val", localDateChecked.toString());
+       /* if (localDateChecked != null) outState.putString("val", localDateChecked.toString());*/
         // View элементы у которых есть ID они сами востанавливают своё значение. Так же как Элементы Final.
         // А все другие нужно сохранять тут. А востанавливать в onRestoreInstanceState.
     }
@@ -1873,10 +1873,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (localDateChecked == null) {
+  /*      if (localDateChecked == null) {
             String date = savedInstanceState.getString("val");
             localDateChecked = LocalDateTime.parse(date);
-        }
+        }*/
         //Всё что создаёться в on Create тут востанавливать не нужно.
     }
 
@@ -1899,15 +1899,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onRestart() {
-        try {
             super.onRestart();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Intent i = new Intent(this, MainActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(i);
-        }
-        Log.i(TAG, "onRestart");
     }
 
     @Override
