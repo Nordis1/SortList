@@ -2,7 +2,6 @@ package com.nordis.android.checklist;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -11,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -36,22 +34,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.OnUserEarnedRewardListener;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.nordis.android.checklist.databinding.ActivityMainBinding;
 
 import java.io.BufferedReader;
@@ -72,20 +59,17 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener,
         AdapterView.OnItemSelectedListener {
-    final static CountDownLatch countDownLatch = new CountDownLatch(1);
     final static int hSetCreateDialogFromWhichToWhich = 16;
-    final static int hSetSubscribeTrue = 18;
-    final static int hSetSubscribeFalse = 19;
     final static int hBillingClientInitializeIsCorrect = 20;
     final static int hShowAd = 22;
-    final static int hSetSubscribePending = 23;
-    final static int hSetSubscribeUNSPECIFIED = 24;
     //final String TAG = "Main_Activity";
     private static final String TAG = "Main_Activity";
     //String variables
     public static volatile String fileName; //Нужен что бы распозновать какой тип файла мы читаем xml,txt
     public static String name = "";
     public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
+    public static CountDownLatch countDownLatch = new CountDownLatch(1);
+    public static RewardedAd mRewardedAd;
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
     static volatile boolean
@@ -100,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bool_owner,
             bool_neiser,
             bool_autoCompleteText,
-            boolPlayStoreISSigned = false;
+            bool_isInternet = false;
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
@@ -108,6 +92,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     static volatile SharedPreferences sPref;
     static Handler handler;
     static Uri uri; // Получаем нахождение файла в OnActivityResult
+    //Integer variables
+    static int diamondValue = 0;
     final int hSetToastErrorOfFileReading = 1;
     final int hsetdelete_WithOut_rest = 3;
     final int hSetbtnReadFileEnabledFalse = 4;
@@ -124,13 +110,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hRemoveRestMemory = 15;
     final int hSetDeleteChekedPositions = 17;
     final int hBatteryOn = 25;
-    final int hsetLostConnectionsWithGooglePlay = 26;
     final int hNewXLSReader = 27;
     final int hSetWhatIsListVisible = 28;
     final int hSetWhatIsListNotVisible = 29;
+    final int hSetDiamondValueIncrement = 30;
+    final int hSetInternetReCheck = 31;
     final private int requestCodePermissionResult_ToReadFile = 2;
-    //Integer variables
-    int diamondValue = 0;
     //Inner DataBase SQL variables
     DBHelper dbHelper;
     SQLiteDatabase sqLiteDatabase;
@@ -148,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     volatile ArrayList<String> downloadList = new ArrayList<>();  // - Куда считываеться изначально тексты с файла а потом с него загружаем в Базу
     ArrayList<String> loadhistory = new ArrayList<>(); // Лист работает в история поиска.
     volatile HashSet<String> hashSetMainCollectorItems = new HashSet<>(); // главный подсчёт выделяемых item elements в setOnItemCLick.
-    volatile ArrayAdapter adapter1,autoCompleteAdapter;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
+    volatile ArrayAdapter adapter1, autoCompleteAdapter;   //Главный Адаптер Он закидывает значения с mainList, found_List, foundAccurateList во ViewList тоесть list_of_View.
     Thread thread;
     volatile File_XLS_Reader file_xls_reader;
     String chosenCharset; // получаем значение в OnActivityResult когда выбрали кодировку.
@@ -160,7 +145,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ActivityResultLauncher<Intent> mGetActivityResult;
     DialogClass newdialog;
     LocalDateTime localDateChecked;
-    private ActivityMainBinding binding;
+    ActivityMainBinding binding;
+    AdMobCreator adMobCreator;
     Runnable runnableIncrementProgressbar = new Runnable() {
         @Override
         public void run() {
@@ -170,9 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
     Runnable runnableToDelete = () -> prepareToDelete(choosen_ItemInClickmethod);
-    private RewardedAd mRewardedAd;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -196,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.btnSearch.setOnClickListener(this);
 
         dbHelper = new DBHelper(this);
+        adMobCreator = new AdMobCreator(this);
 
         checkBoolVariables();
         viewData();// подгружаеться основной лист и адаптер
@@ -204,21 +189,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         checkSub();/**Проверка хозяина, если да ставим бул = тру и надпись
          Если нет :       бул = фалс, видимость камней и их значения, погрузка кол-во камней и подгрузка рекламы.
          Если подписчик:  бул = тру, подпись что подписчик , запись значения в локал дату*/
-        methodsRegisterForActivity(); //For ActivityResult
+        methodsRegisterForActivityResult(); //For ActivityResult
         // onMenuCreate(); && onAdCreate(); Создаётся в методе  regSubElements();
 
 
     }
 
 
-    private void checkBoolVariables(){
+    private void checkBoolVariables() {
         sPref = getSharedPreferences("Settings", MODE_PRIVATE);
-        bool_autoCompleteText = sPref.getBoolean("autoCompletetext",false);
+        bool_autoCompleteText = sPref.getBoolean("autoCompletetext", false);
 
-        sPref = getSharedPreferences("NEISER",MODE_PRIVATE);
-        bool_neiser = sPref.getBoolean("neiser",false);
+        sPref = getSharedPreferences("NEISER", MODE_PRIVATE);
+        bool_neiser = sPref.getBoolean("neiser", false);
     }
-    private void methodsRegisterForActivity() {
+
+    private void methodsRegisterForActivityResult() {
         Log.d(TAG, "methodsRegisterForActivity: Регистрирум Activity result");
 
         //Для  выбора charset
@@ -232,10 +218,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     chosenCharset = result.getData().getStringExtra("nameOfCharset");
                     Log.d(TAG, "onActivityResult: Данные полученны: " + chosenCharset);
                 } else if (result.getResultCode() == 2) {
-                    bool_autoCompleteText = result.getData().getBooleanExtra("AutoCompleteText",false);
-                        Intent intent = getIntent();
-                        finish();
-                        startActivity(intent);
+                    bool_autoCompleteText = result.getData().getBooleanExtra("AutoCompleteText", false);
+                    Intent intent = getIntent();
+                    finish();
+                    startActivity(intent);
                 } else if (result.getResultCode() == RESULT_CANCELED) {
                     Log.d(TAG, "onActivityResult: Была отмена!");
                 }
@@ -322,25 +308,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent = new Intent(MainActivity.this, UserGuideActivity.class);
             startActivity(intent);
 
-        } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.getSubscribe))) {
-//получить подписку
-            if (!boolPlayStoreISSigned) {
-                DialogClass dialogClass = new DialogClass(MainActivity.this,
-                        getString(R.string.connectionIssue),
-                        getString(R.string.playMarket),
-                        null,
-                        null,
-                        getString(R.string.understand)
-                );
-                dialogClass.createStandartNewDialogShowAd();
-                dialogClass.dialog.show();
-            } else {
-                binding.menuSpiner.setSelection(menuList.size() - 1);
-                intent = new Intent(MainActivity.this, SubcribeClass.class);
-                startActivity(intent);
-            }
-
-            binding.menuSpiner.setSelection(menuList.size() - 1);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
 // Изменить чтение charset
             binding.menuSpiner.setSelection(menuList.size() - 1);
@@ -348,11 +315,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mGetActivityResult.launch(intent);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
 //Посмотреть Рекламу
-            if (!bool_owner) {
-                if (mRewardedAd != null) {
+            if (bool_isInternet) {
+                if (mRewardedAd != null && bool_isInternet) {
                     binding.menuSpiner.setSelection(menuList.size() - 1);
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
-                            getString(R.string.toGetBatteryEnergy),
+                            getString(R.string.toGetCrystals),
                             getString(R.string.ad),
                             getString(R.string.towatch),
                             getString(R.string.cancel),
@@ -362,8 +329,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     dialogClass.dialog.show();
                 } else {
                     binding.menuSpiner.setSelection(menuList.size() - 1);
+                    onAdCreate();
                     Toast.makeText(this, R.string.rewardedAdsIsNull, Toast.LENGTH_LONG).show();
                 }
+            } else {
+                binding.menuSpiner.setSelection(menuList.size() - 1);
+                DialogClass dialogClass = new DialogClass(MainActivity.this,
+                        getString(R.string.NoInternetConnection),
+                        getString(R.string.ad),
+                        getString(R.string.NoInternetBtnPossitive),
+                        null,
+                        null
+                );
+                dialogClass.createDialogNoInternet();
+                dialogClass.dialog.show();
             }
             binding.menuSpiner.setSelection(menuList.size() - 1);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.evaluateUs))) {
@@ -395,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.d(TAG, "onMenuCreate:  Это клиент, меню состоит из 5 позиций");
             menuList.add(getString(R.string.manual));
             menuList.add(getString(R.string.charset_determinations));
-            menuList.add(getString(R.string.getSubscribe));
+            //menuList.add(getString(R.string.getSubscribe));
             menuList.add(getString(R.string.toSeeAds));
             menuList.add(getString(R.string.evaluateUs));
             menuList.add(getString(R.string.resSetting));
@@ -417,7 +396,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void checkSub() {
         Log.d(TAG, "checkSub: Зашли в в проверку подписки ");
         sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
@@ -428,91 +406,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isSubscribed = true;
             regSubElements(isSubscribed);
         } else {
-            Log.d(TAG, "checkSub: Проверка подписки начинается...");
-            //Логика дейсвий:
-            //1 Проверяеться connection to PlayStore, если ошибка тогда оповещаем клиента что ошибка!
-            //2 Если connecting in correct. Then we have check subscription.
-            //3 If subscribe is correct: isSubscribe = true , else isSubscribe = false;
-            SubcribeClass subcribeClass = new SubcribeClass();
-            try {
-                Log.d(SubcribeClass.TAG, "From Main: BillingClient Initialization begins... ");
-                subcribeClass.initializeBillingClient(this);
-                executor.execute(() -> {
-                    Log.d(SubcribeClass.TAG, "From Main: We launch a new thread and connectToGooglePlayBilling method ");
-                    subcribeClass.connectToGooglePlayBilling(false);// false так как это обычное подсоединение.
-                    try {
-                        countDownLatch.await(2, TimeUnit.SECONDS);
-                        int i = 2;
-                        while (!subcribeClass.checkConnections()) {
-                            if (i == 0) {
-                                throw new InterruptedException();
-                            }
-                            i--;
-                            countDownLatch.await(2, TimeUnit.SECONDS);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        Log.d(TAG, "checkSub: Была ошибка соединения с GooglePlay");
-                        handler.sendEmptyMessage(hsetLostConnectionsWithGooglePlay);
-                        return;
-                    }
-                    boolPlayStoreISSigned = true;
-                    Log.d(SubcribeClass.TAG, "From Main: we have got connections and checkThePurchases method begins");
-                    subcribeClass.checkThePurchases();
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(MainActivity.this, R.string.intializegettingFall, Toast.LENGTH_LONG).show();
-                Log.d(TAG, "checkSub: error: " + e.getMessage());
-            }
-
+            isSubscribed = false;
+            sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+            diamondValue = sPref.getInt("KeyDiamond", 50);
+            binding.idDiamondNumber.setText(String.valueOf(diamondValue));
+            regSubElements(isSubscribed);
         }
 
 
     }
 
     public void onAdCreate() {
-        AdRequest adRequest = new AdRequest.Builder().build();
-
-
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {
-
-            }
-        });
-        String myAdNumber = "ca-app-pub-6564886494367745/7174186976";
-        String testAdRewarded = "ca-app-pub-3940256099942544/5224354917";
-        RewardedAd.load(this, myAdNumber,
-                adRequest, new RewardedAdLoadCallback() {
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        // Handle the error.
-                        Log.d(TAG, "onAdFailedToLoad: " + loadAdError);
-                        Log.d(TAG, "Ad was not loaded " + loadAdError.getMessage());
-                        mRewardedAd = null;
-                    }
-
-                    @Override
-                    public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
-                        mRewardedAd = rewardedAd;
-                        Log.d(TAG, "Ad was loaded.");
-                    }
-                });
-
+        if (new CheckEnthernetConnection().isNetworkAvailable(getApplication())) {
+            bool_isInternet = true;
+            //Тут инициализируеться переменная mRewardedAd
+            adMobCreator.startRewardedAdCreate();
+        } else {
+            bool_isInternet = false;
+        }
     }
 
     public void onHandlerCreate() {
         Log.d(TAG, "onHandlerCreate: Создаём Handler");
         handler = new Handler(getMainLooper()) {
-            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void handleMessage(@NonNull Message msg) {
-                String s = msg.getData().getString("changeString");
-                if (s != null) {
-                    Log.d(TAG, "handleMessage: получили строку " + s);
-                    prepareTochange(s);
-                }
+                prepareToIncrementing(msg.getData().getInt("DiamondIncrementing"));
+                prepareTochange(msg.getData().getString("changeString"));
                 switch (msg.what) {
                     case 1:
                         Toast.makeText(MainActivity.this, (R.string.File_reading_Error), Toast.LENGTH_LONG).show();
@@ -555,12 +475,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 11:
                         binding.listItemModel.setAdapter(adapter1);
-                        if (bool_autoCompleteText){
+                        if (bool_autoCompleteText) {
                             //Если включена автозаполнение, тогда закидываем наш созданный лист в адаптер
-                            if (bool_neiser){
+                            if (bool_neiser) {
                                 //Если включенно автозаполнение ещё и для neiser , тогда будте закинут лист mainSupportNeiser, который создан выше.
                                 binding.etName.setAdapter(autoCompleteAdapter);
-                            }else {
+                            } else {
                                 binding.etName.setAdapter(autoCompleteAdapter);
                             }
                         }
@@ -591,74 +511,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         deleteCheckedItems();
                         Toast.makeText(MainActivity.this, R.string.DeleteCheked, Toast.LENGTH_LONG).show();
                         break;
-                    case hSetSubscribeTrue:
-                        //Подписка есть
-                        Log.d(TAG, "handleMessage: Подписка есть!");
-                        Toast.makeText(MainActivity.this, R.string.subscribe_is_valid, Toast.LENGTH_LONG).show();
-                        isSubscribed = true;
-                        regSubElements(isSubscribed);
-                        localDateChecked = LocalDateTime.now();
-                        break;
-                    case hSetSubscribeFalse:
-                        //Подписки нет
-                        Log.d(TAG, "handleMessage: Подписки нет!");
-                        Toast.makeText(MainActivity.this, R.string.subscribe_out, Toast.LENGTH_LONG).show();
-                        isSubscribed = false;
-                        regSubElements(isSubscribed);
-                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
-                        diamondValue = sPref.getInt("KeyDiamond", 50);
-                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
-                        break;
                     case hBillingClientInitializeIsCorrect:
                         bool_billingInitializeOk = true;
                         break;
                     case hShowAd:
                         showAdExecute();
                         break;
-                    case hSetSubscribePending:
-                        //Подписка в Ожидании
-                        Log.d(TAG, "handleMessage: Подписка статус ожидания!");
-                        isSubscribed = false;
-                        regSubElements(isSubscribed);
-                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
-                        diamondValue = sPref.getInt("KeyDiamond", 50);
-                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
-
-                        newdialog = new DialogClass(MainActivity.this,
-                                getString(R.string.pending),
-                                getString(R.string.pendingtitle),
-                                getString(R.string.understand),
-                                null, null);
-                        newdialog.createDialogPendingState();
-                        newdialog.dialog.show();
-                        break;
                     case hBatteryOn:
                         regSubElements(false);
-                        break;
-                    case hSetSubscribeUNSPECIFIED:
-                        isSubscribed = false;
-                        Log.d(TAG, "handleMessage: Подписка неизвесный статус!");
-                        regSubElements(isSubscribed);
-                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
-                        diamondValue = sPref.getInt("KeyDiamond", 50);
-                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
-                        Toast.makeText(MainActivity.this, R.string.unspecified, Toast.LENGTH_LONG).show();
-                        break;
-                    case hsetLostConnectionsWithGooglePlay:
-                        isSubscribed = false;
-                        Log.d(TAG, "handleMessage: Потерянно соединение с Googleplay!");
-                        regSubElements(isSubscribed);
-                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
-                        diamondValue = sPref.getInt("KeyDiamond", 50);
-                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
-
-                        newdialog = new DialogClass(MainActivity.this,
-                                getString(R.string.lostConnection),
-                                getString(R.string.connectionIssue),
-                                getString(R.string.understand),
-                                null, null);
-                        newdialog.createDialogPendingState();
-                        newdialog.dialog.show();
                         break;
                     case hNewXLSReader:
                         file_xls_reader = new File_XLS_Reader(fileName);
@@ -669,10 +529,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case hSetWhatIsListNotVisible:
                         binding.idWhatIsList.setVisibility(View.GONE);
                         break;
+                    case hSetDiamondValueIncrement:
+                        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+                        sPref.edit().putInt("KeyDiamond", diamondValue).apply();
+                        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
+                        break;
+                    case hSetInternetReCheck:
+                        onAdCreate();
+                        break;
 
                 }
             }
         };
+    }
+
+    private void prepareToIncrementing(int diamondIncrementing) {
+        diamondValue += diamondIncrementing;
+        sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
+        sPref.edit().putInt("KeyDiamond", diamondValue).apply();
+
+        binding.idDiamondNumber.setText(String.valueOf(diamondValue));
     }
 
     public void regSubElements(Boolean subcribtionY) {
@@ -683,19 +559,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.idsubscriptionText.setVisibility(View.GONE);
         binding.idTextOwner.setVisibility(View.GONE);
         if (subcribtionY) {
-            //Убираем батарею и текст о подписке
-            if (bool_owner) {
-                //Если сюда , значит Хозяин.
-                Log.d(TAG, "regSubElements: Зашли в оформление Хозяина");
-                binding.idTextOwner.setVisibility(View.VISIBLE);
-                onMenuCreate();
-                Toast.makeText(MainActivity.this, R.string.developer_mode, Toast.LENGTH_SHORT).show();
-            } else {
-                //Если сюда, значит подписчик.
-                binding.idsubscriptionText.setVisibility(View.VISIBLE);
-                onMenuCreate();
-            }
-
+            //Если сюда , значит Хозяин.
+            Log.d(TAG, "regSubElements: Зашли в оформление Хозяина");
+            binding.idTextOwner.setVisibility(View.VISIBLE);
+            onMenuCreate();
+            Toast.makeText(MainActivity.this, R.string.developer_mode, Toast.LENGTH_SHORT).show();
         } else {
             //Сюда если Халявщик
             binding.IdDiamondIcon.setVisibility(View.VISIBLE);
@@ -708,48 +576,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void showAdExecute() {
         if (mRewardedAd != null) {
-            mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                @Override
-                public void onAdShowedFullScreenContent() {
-                    // Called when ad is shown.
-                    Log.d(TAG, "Ad was shown.");
-                }
-
-                @Override
-                public void onAdFailedToShowFullScreenContent(AdError adError) {
-                    // Called when ad fails to show.
-                    Log.d(TAG, "Ad failed to show.");
-                }
-
-                @Override
-                public void onAdDismissedFullScreenContent() {
-                    // Called when ad is dismissed.
-                    // Set the ad reference to null so you don't show the ad a second time.
-                    Log.d(TAG, "Ad was dismissed.");
-                    onAdCreate();
-                    //mRewardedAd = null;
-                }
-            });
-            Activity activityContext = MainActivity.this;
-            mRewardedAd.show(activityContext, new OnUserEarnedRewardListener() {
-                @Override
-                public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-                    // Handle the reward.
-                    Log.d(TAG, "The user earned the reward.");
-                    int rewardAmount = rewardItem.getAmount();
-                    //получаем количество очков и загружаем в батарею и сохраняем в sPref
-                    diamondValue += rewardAmount;
-
-                    sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
-                    sPref.edit().putInt("KeyDiamond", diamondValue).apply();
-
-                    assert binding.idDiamondNumber != null;
-                    binding.idDiamondNumber.setText(String.valueOf(diamondValue));
-
-                    Log.d(TAG, "onUserEarnedReward!!!!!!!!!: rewardAmount - " + rewardAmount);
-
-                }
-            });
+            adMobCreator.startRewardedAdExecute(MainActivity.this);
         } else {
             Log.d(TAG, "The rewarded ad wasn't ready yet.");
         }
@@ -851,11 +678,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, getString(R.string.Not_data_to_show) + cursor.getInt(3), Toast.LENGTH_LONG).show();
         } else {
             while (cursor.moveToNext()) { // тут мы его считываем
-                if (bool_neiser && bool_autoCompleteText){
+                if (bool_neiser && bool_autoCompleteText) {
                     //Если установлен neiser c автозаполнением, тогда будет отборка для него
-                    String [] lines = cursor.getString(0).split(" ");
+                    String[] lines = cursor.getString(0).split(" ");
                     mainSupportAutocomplete.add(lines[2]);
-                }else if (!bool_neiser && bool_autoCompleteText){
+                } else if (!bool_neiser && bool_autoCompleteText) {
                     mainSupportAutocomplete.add(cursor.getString(0));
                 }
                 mainList.add(cursor.getString(0));
@@ -913,12 +740,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
             autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
-            if (bool_autoCompleteText){
+            if (bool_autoCompleteText) {
                 //Если включена автозаполнение, тогда закидываем наш созданный лист в адаптер
-                if (bool_neiser){
+                if (bool_neiser) {
                     //Если включенно автозаполнение ещё и для neiser , тогда будте закинут лист mainSupportNeiser, который создан выше.
                     autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mainSupportAutocomplete.toArray());
-                }else {
+                } else {
                     autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mainSupportAutocomplete.toArray());
                 }
             }
@@ -939,11 +766,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, getString(R.string.Not_data_to_show), Toast.LENGTH_SHORT).show();
         } else {
             while (cursor.moveToNext()) { // тут мы его считываем
-                if (bool_neiser && bool_autoCompleteText){
+                if (bool_neiser && bool_autoCompleteText) {
                     //Если установлен neiser c автозаполнением, тогда будет отборка для него
-                    String [] lines = cursor.getString(0).split(" ");
+                    String[] lines = cursor.getString(0).split(" ");
                     mainSupportAutocomplete.add(lines[2]);
-                }else if (!bool_neiser && bool_autoCompleteText){
+                } else if (!bool_neiser && bool_autoCompleteText) {
                     mainSupportAutocomplete.add(cursor.getString(0));
                 }
                 mainList.add(cursor.getString(0));
@@ -953,13 +780,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             binding.idWhatIsList.setText(R.string.main);
             adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, mainList);
             binding.listItemModel.setAdapter(adapter1);
-            if (bool_autoCompleteText){
+            if (bool_autoCompleteText) {
                 //Если включена автозаполнение, тогда закидываем наш созданный лист в адаптер
-                if (bool_neiser){
+                if (bool_neiser) {
                     //Если включенно автозаполнение ещё и для neiser , тогда будте закинут лист mainSupportNeiser, который создан выше.
                     autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mainSupportAutocomplete.toArray());
                     binding.etName.setAdapter(autoCompleteAdapter);
-                }else {
+                } else {
                     autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mainSupportAutocomplete.toArray());
                     binding.etName.setAdapter(autoCompleteAdapter);
                 }
@@ -969,7 +796,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @SuppressLint("NonConstantResourceId")
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onClick(View v) {
         name = binding.etName.getText().toString();
@@ -1285,7 +1111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, list);
         autoCompleteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked, list);
         binding.listItemModel.setAdapter(adapter1);
-        if (bool_autoCompleteText){
+        if (bool_autoCompleteText) {
             binding.etName.setAdapter(autoCompleteAdapter);
         }
     }
@@ -1350,10 +1176,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (fileName.toLowerCase(Locale.ROOT).contains("neiser")) {
                     Log.d(TAG, "Содержит в названии Neiser");
                     bool_neiser = true;
-                    sPref = getSharedPreferences("NEISER",MODE_PRIVATE);
-                    sPref.edit().putBoolean("neiser",bool_neiser).apply();
-                }else {
-                    sPref = getSharedPreferences("NEISER",MODE_PRIVATE);
+                    sPref = getSharedPreferences("NEISER", MODE_PRIVATE);
+                    sPref.edit().putBoolean("neiser", bool_neiser).apply();
+                } else {
+                    sPref = getSharedPreferences("NEISER", MODE_PRIVATE);
                     sPref.edit().clear().apply();
                 }
                 Log.i(TAG, "run: File был распознан как xls");
@@ -1714,7 +1540,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (hashSetMainCollectorItems.size() == mainList.size()) {
             binding.etName.setText("Delete");
             binding.btnDeleteAll.callOnClick();
-        }else {
+        } else {
             sqLiteDatabase = dbHelper.getWritableDatabase();
             SparseBooleanArray sparseBooleanArray = binding.listItemModel.getCheckedItemPositions();//получаем все cheked elements
             for (int i = 0; i < sparseBooleanArray.size(); i++) {
@@ -1814,7 +1640,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "toAppointSearchList: Подписки нет, уменьшаем батарею");
                 diamondValue--;
 
-                assert binding.idDiamondNumber != null;
                 binding.idDiamondNumber.setText(String.valueOf(diamondValue));
 
 
@@ -1865,7 +1690,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (localDateChecked != null) outState.putString("val", localDateChecked.toString());
         // View элементы у которых есть ID они сами востанавливают своё значение. Так же как Элементы Final.
         // А все другие нужно сохранять тут. А востанавливать в onRestoreInstanceState.
     }
@@ -1873,10 +1697,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (localDateChecked == null) {
-            String date = savedInstanceState.getString("val");
-            localDateChecked = LocalDateTime.parse(date);
-        }
         //Всё что создаёться в on Create тут востанавливать не нужно.
     }
 

@@ -30,12 +30,6 @@
         <activity
             android:name=".SettingActivity"
             android:exported="false" />
-        <activity
-            android:name=".SubcribeDetailsActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ActivitySubRemove"
-            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
@@ -45,11 +39,6 @@
             android:name=".EncodingActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".SubcribeClass"
-            android:label="@string/title_activity_user_subscribe1"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".UserGuideActivity"
             android:label="@string/title_activity_user_guide"

@@ -5,11 +5,22 @@ implementation fileTree(dir: 'libs', include: ['*.jar'])
  sPref = getSharedPreferences("Settings",MODE_PRIVATE);
  sPref.edit().putBoolean("autoCompletetext",true).apply();
 
-    sPref = getSharedPreferences("NEISER",MODE_PRIVATE);
-    sPref.edit().putBoolean("neiser",bool_neiser);
+ sPref = getSharedPreferences("NEISER",MODE_PRIVATE);
+ sPref.edit().putBoolean("neiser",bool_neiser);
 
-          sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
-            SharedPreferences.Editor editor1 = sPref.edit();
+ sPref = getSharedPreferences("Jaak", MODE_PRIVATE);
+ SharedPreferences.Editor editor1 = sPref.edit();
 
-            sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
-                                    sPref.edit().clear().apply();
+ sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
+ sPref.edit().clear().apply();
+
+
+                                              App map
+Меню
+обработка нажатий: onItemSelected
+
+
+
+
+
+

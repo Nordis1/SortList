@@ -260,4 +260,25 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
             handler.sendEmptyMessage(hRemoveRestMemory);
         }
     }
+    public void createDialogNoInternet() {
+        try {
+            alertBuilder = new AlertDialog.Builder(context);
+            alertBuilder.setMessage(dialog_message).setTitle(dialog_title)
+                    .setCancelable(false)
+                    .setPositiveButton(btnPositive, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            //positive
+                            handler.sendEmptyMessage(hSetInternetReCheck);
+                            dialog.cancel();
+                            //finish(); use finish if you want the app  to be closed.
+                        }
+                    });
+            dialog = alertBuilder.create();
+        } catch (Exception e) {
+            Log.i(TAG, "createNewDialog: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
 }

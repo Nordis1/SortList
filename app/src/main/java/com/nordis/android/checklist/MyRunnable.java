@@ -1,14 +1,9 @@
 package com.nordis.android.checklist;
 
-public class MyRunnable implements Runnable {
+public class MyRunnable extends MainActivity implements Runnable {
 
-    int i;
     @Override
     public void run() {
-
-    }
-
-    public MyRunnable(int i) {
-        this.i = i;
+        binding.downloadBar.setProgress(mProgresscounter);
     }
 }

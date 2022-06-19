@@ -41,19 +41,9 @@
     <string name="string_lengh_limit_90">The app is made for managing lists.\nFor comfortable use, the line length\nshould not exceed 70 characters.</string>
     <string name="Name">Name</string>
     <string name="DeleteCheked">Delete checked positions successfully</string>
-    <string name="deleted_success">Deleted successfully</string>
     <string name="title_activity_user_guide">UserGuide</string>
-    <string name="title_activity_user_subscribe">User Subscribe</string>
     <string name="checkallpositions">Check all positions</string>
     <string name="backarrow">Back arrow will return you to the previous search query.</string>
-    <string name="one_Yeard">Year</string>
-    <string name="Month">Month</string>
-    <string name="Sixmonths">6 Months</string>
-    <string name="checklistsubscribe">SortList - Subscription</string>
-    <string name="tobuy">BUY</string>
-    <string name="choose_subscribe_plan">Choose subscribe plan</string>
-    <string name="title_activity_user_subscribe1">My user subscribe</string>
-    <string name="subscribe_out">No subscription.</string>
     <string name="subscribe_is_valid">"Subscription is valid "</string>
     <string name="Reason_for_encodin_choose">"In order to avoid unknown characters when loading a file in-app, it is advisable to select the file encoding."</string>
     <string name="Cyrillic">Cyrillic</string>
@@ -62,66 +52,35 @@
     menu
     <string name="manual">USER GUIDE</string>
     <string name="charset_determinations">Encoding</string>
-    <string name="getSubscribe">Subscription</string>
     <string name="toSeeAds">Get crystals</string>
     <string name="evaluateUs">Evaluate Us</string>
     <string name="resSetting">Settings</string>
     menu
 
-    <string name="rewardedAdsIsNull">Ad content doesn\'t load</string>
+    Ad
+    <string name="toGetCrystals">To replenish the crystals, watch ads!</string>
     <string name="towatch">Watch</string>
-    <string name="toGetBatteryEnergy">To replenish the crystals, watch ads!</string>
     <string name="ad">"Advertising"</string>
-    <string name="checkBatteryLoading">Replenish crystals!</string>
-    <string name="pending">Your transaction is in a Pending state. You can\'t access to subscribe state.</string>
-    <string name="understand">Ok</string>
-    <string name="pendingtitle">Pending</string>
     <string name="HowtoaplusBallance">It is possible to replenish energy by watching ads. When subscribing, you no longer need to replenish energy.</string>
-    <string name="xlarge">xlarge</string>
-    <string name="large">Large</string>
+    Ad
+
+    Internet
+    <string name="NoInternetConnection">"No internet connection!"</string>
+    <string name="NoInternetBtnPossitive">"Ok"</string>
+    Internet
+
+    <string name="rewardedAdsIsNull">Ad content doesn\'t load</string>
+
+    <string name="checkBatteryLoading">Replenish crystals!</string>
     <string name="normal">Normal</string>
-    <string name="unspecified">Subscription unspecified</string>
-    <string name="intializegettingFall">Issue with identification</string>
-    <string name="lostConnection">Please check sign in Google play account</string>
-    <string name="connectionIssue">You are not signed in play store</string>
-    <string name="What_subscription_give">A subscription gives you access to unlimited searching on your list.</string>
-    <string name="removeSub">Subscription - remove</string>
-    <string name="Go_to_reading_howRemoveSub">Read</string>
-    <string name="clue_one">Open the Google Play app</string>
-    <string name="clue_two">At the top right, tap the profile icon.</string>
-    <string name="clue_three">Tap Payments and subscriptions. Subscriptions.</string>
-    <string name="clue_four">Select the subscription you want to cancel.</string>
-    <string name="clue_five">Tap Cancel subscription.</string>
-    <string name="clue_six">Follow the instructions.</string>
-    <string name="clue_seven">If the subscription is cancelled, it will still be valid until it expires.</string>
-    <string name="clue_0">Take it step by step.</string>
     <string name="string_owner">Developer Mode</string>
-    <string name="string_ru_owner">Russian mode</string>
     <string name="developer_mode" translatable="false">Developer mode is activated</string>
-    <string name="ru_mode" translatable="false">Russia mode is activated</string>
     <string name="element_isExist">The string is already exist</string>
     <string name="main">Main List</string>
     <string name="main2">Main List</string>
     <string name="searchList">Search List</string>
     <string name="backSearchError">History search error</string>
-    <string name="MonthPrice">2 Euro/mo\nFree trial: 7 days</string>
-    <string name="SixMonthPrice">  10 Euro/6 mo\nProfit 20%</string>
-    <string name="YeardPrice">  14 Euro/yеar   \nProfit 40%</string>
-    <string name="SubWarning">Attention! Payment is made through GooglePlay services and will be charged automatically every month, 6 months or year, depending on the type of subscription.</string>
-    <string name="SubscribtionDetails">Subscription - details</string>
-    <string name="SubscribtionDetailsText">The subscription allows an unlimited number of times to use the search on the downloaded sheet.</string>
-    <string name="SubscribtionDetailsText0">You can use this application without a subscription, for this you need to periodically view ads to replenish energy.</string>
-    <string name="SubscribtionDetailsText1">In order to get this opportunity, you need to subscribe for a month, 6 months or a year.</string>
-    <string name="SubscribtionDetailsText2">Payment is made through GooglePlay services and will be charged automatically every month, 6 months or year, depending on the type of subscription.</string>
-    <string name="SubscribtionDetailsText3">You need to subscribe if you like the app and want to use it without watching ads.</string>
-    <string name="SubscribtionDetailsText4">You can also unsubscribe at any time. Subscriptions already paid for are non-refundable. But an already paid subscription is valid until the end of its term.</string>
-    <string name="withouttaxes">Prices without taxes</string>
-    <string name="Free_trial">Payment will automatically be charged at the end of the trial.</string>
-    <string name="playMarket">GooglePlay market</string>
-    <string name="monitorRestored">Monitor Restored</string>
-    <string name="permission_granted">Permission Granted</string>
     <string name="DateError">Data Error</string>
-    <string name="diamondValue">100</string>
     <string name="betweenDiamondAndNumber">X</string>
     <string name="resAutoCompleteText">AutoComplete text</string>
 </resources>
