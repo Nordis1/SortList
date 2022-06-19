@@ -30,13 +30,12 @@ import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
-import com.android.billingclient.api.SkuDetails;
-import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.collect.ImmutableList;
+import com.google.api.services.androidpublisher.model.Price;
+import com.google.api.services.androidpublisher.model.SubscriptionPriceChange;
 import com.nordis.android.checklist.databinding.SubscribeLayoutBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -60,88 +59,8 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
     private QueryProductDetailsParams detailsParams;
     private ArrayList<ProductDetails> productDetailsArrayList = new ArrayList<>();
     private ArrayList<String> myProductsList = new ArrayList<>();
-
-    public static void connectionStateGeneration(int state) {
-        switch (state) {
-            case 0:
-                Log.i(TAG, "connectionStateGeneration: Disconnected");
-                break;
-            case 1:
-                Log.i(TAG, "connectionStateGeneration: Connecting...");
-                break;
-            case 2:
-                Log.d(TAG, "connectionStateGeneration: Connected");
-                break;
-            case 3:
-                Log.d(TAG, "connectionStateGeneration: Closed");
-                break;
-            default:
-                Log.d(TAG, "connectionStateGeneration: Not definitely");
-                break;
-
-        }
-    }
-
-    public static void purchaseStateGeneration(int state) {
-        switch (state) {
-            case 0:
-                Log.d(TAG, "purchaseStateGeneration: UNSPECIFIED_STATE");
-                break;
-            case 1:
-                Log.d(TAG, "purchaseStateGeneration: PURCHASED");
-                break;
-            case 2:
-                Log.d(TAG, "purchaseStateGeneration: PENDING");
-            default:
-                Log.d(TAG, "purchaseStateGeneration: Not definitely");
-                break;
-        }
-    }
-
-    public static void billingClientResponseCodeGenerated(int state) {
-        switch (state) {
-            case 0:
-                Log.d(TAG, "billingClientResponseCodeGenerated: OK");
-                break;
-            case 1:
-                Log.d(TAG, "billingClientResponseCodeGenerated: USER_CANCELED");
-                break;
-            case 2:
-                Log.d(TAG, "billingClientResponseCodeGenerated: SERVICE_UNAVAILABLE");
-                break;
-            case 3:
-                Log.d(TAG, "billingClientResponseCodeGenerated: BILLING_UNAVAILABLE");
-                break;
-            case 4:
-                Log.d(TAG, "billingClientResponseCodeGenerated: ITEM_UNAVAILABLE");
-                break;
-            case 5:
-                Log.d(TAG, "billingClientResponseCodeGenerated: DEVELOPER_ERROR");
-                break;
-            case 6:
-                Log.d(TAG, "billingClientResponseCodeGenerated: ERROR");
-                break;
-            case 7:
-                Log.d(TAG, "billingClientResponseCodeGenerated: ITEM_ALREADY_OWNED");
-                break;
-            case 8:
-                Log.d(TAG, "billingClientResponseCodeGenerated: ITEM_NOT_OWNED");
-                break;
-            case -1:
-                Log.d(TAG, "billingClientResponseCodeGenerated: SERVICE_DISCONNECTED");
-                break;
-            case -2:
-                Log.d(TAG, "billingClientResponseCodeGenerated: FEATURE_NOT_SUPPORTED");
-                break;
-            case -3:
-                Log.d(TAG, "billingClientResponseCodeGenerated: SERVICE_TIMEOUT");
-                break;
-            default:
-                Log.d(TAG, "billingClientResponseCodeGenerated: Not definitely");
-                break;
-        }
-
-    }
+    
+    SubscriptionPriceChange subscriptionPriceChange = new SubscriptionPriceChange();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -352,24 +271,6 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
         }
         Log.d(TAG, "ConnectToGooglePlayBilling end");
     }
-
-    public Boolean checkConnections() {
-        if (billingClient.getConnectionState() == BillingClient.ConnectionState.CONNECTED) {
-            Log.d(TAG, "checkConnections: true");
-            return true;
-        } else {
-            Log.d(TAG, "checkConnections: false");
-            return false;
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        //https://developer.android.com/google/play/billing/integrate#fetch
-        super.onResume();
-        connectToGooglePlayBilling(false);
-    }
-
     //использовать firebase cloud function as backend server. And firestore as the database.
     @Override
     public void onClick(View v) {
@@ -403,6 +304,23 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
             startActivity(intent);
         }
 
+    }
+
+    public Boolean checkConnections() {
+        if (billingClient.getConnectionState() == BillingClient.ConnectionState.CONNECTED) {
+            Log.d(TAG, "checkConnections: true");
+            return true;
+        } else {
+            Log.d(TAG, "checkConnections: false");
+            return false;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        //https://developer.android.com/google/play/billing/integrate#fetch
+        super.onResume();
+        connectToGooglePlayBilling(false);
     }
 
     public void initAndCheckPurchase(ProductDetails productDetails) {
@@ -506,6 +424,89 @@ public class SubcribeClass extends AppCompatActivity implements View.OnClickList
                 }
             }
         });
+
+    }
+
+
+    public static void connectionStateGeneration(int state) {
+        switch (state) {
+            case 0:
+                Log.i(TAG, "connectionStateGeneration: Disconnected");
+                break;
+            case 1:
+                Log.i(TAG, "connectionStateGeneration: Connecting...");
+                break;
+            case 2:
+                Log.d(TAG, "connectionStateGeneration: Connected");
+                break;
+            case 3:
+                Log.d(TAG, "connectionStateGeneration: Closed");
+                break;
+            default:
+                Log.d(TAG, "connectionStateGeneration: Not definitely");
+                break;
+
+        }
+    }
+
+    public static void purchaseStateGeneration(int state) {
+        switch (state) {
+            case 0:
+                Log.d(TAG, "purchaseStateGeneration: UNSPECIFIED_STATE");
+                break;
+            case 1:
+                Log.d(TAG, "purchaseStateGeneration: PURCHASED");
+                break;
+            case 2:
+                Log.d(TAG, "purchaseStateGeneration: PENDING");
+            default:
+                Log.d(TAG, "purchaseStateGeneration: Not definitely");
+                break;
+        }
+    }
+
+    public static void billingClientResponseCodeGenerated(int state) {
+        switch (state) {
+            case 0:
+                Log.d(TAG, "billingClientResponseCodeGenerated: OK");
+                break;
+            case 1:
+                Log.d(TAG, "billingClientResponseCodeGenerated: USER_CANCELED");
+                break;
+            case 2:
+                Log.d(TAG, "billingClientResponseCodeGenerated: SERVICE_UNAVAILABLE");
+                break;
+            case 3:
+                Log.d(TAG, "billingClientResponseCodeGenerated: BILLING_UNAVAILABLE");
+                break;
+            case 4:
+                Log.d(TAG, "billingClientResponseCodeGenerated: ITEM_UNAVAILABLE");
+                break;
+            case 5:
+                Log.d(TAG, "billingClientResponseCodeGenerated: DEVELOPER_ERROR");
+                break;
+            case 6:
+                Log.d(TAG, "billingClientResponseCodeGenerated: ERROR");
+                break;
+            case 7:
+                Log.d(TAG, "billingClientResponseCodeGenerated: ITEM_ALREADY_OWNED");
+                break;
+            case 8:
+                Log.d(TAG, "billingClientResponseCodeGenerated: ITEM_NOT_OWNED");
+                break;
+            case -1:
+                Log.d(TAG, "billingClientResponseCodeGenerated: SERVICE_DISCONNECTED");
+                break;
+            case -2:
+                Log.d(TAG, "billingClientResponseCodeGenerated: FEATURE_NOT_SUPPORTED");
+                break;
+            case -3:
+                Log.d(TAG, "billingClientResponseCodeGenerated: SERVICE_TIMEOUT");
+                break;
+            default:
+                Log.d(TAG, "billingClientResponseCodeGenerated: Not definitely");
+                break;
+        }
 
     }
 }
