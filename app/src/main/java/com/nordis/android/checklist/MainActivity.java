@@ -19,7 +19,6 @@ import android.provider.OpenableColumns;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -67,8 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //String variables
     public static volatile String fileName; //Нужен что бы распозновать какой тип файла мы читаем xml,txt
     public static String name = "";
-    public static volatile String choosen_ItemInClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
-    public static CountDownLatch countDownLatch = new CountDownLatch(1);
+    public static volatile String choosenItem_InClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
     public static RewardedAd mRewardedAd;
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
@@ -150,12 +148,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Runnable runnableIncrementProgressbar = new Runnable() {
         @Override
         public void run() {
-            Log.i(TAG, "run: зашли в в увеличение progressbar mProgresscounter = " + mProgresscounter);
+            //Log.i(TAG, "run: зашли в в увеличение progressbar mProgresscounter = " + mProgresscounter);
             binding.downloadBar.setProgress(mProgresscounter);
 
         }
     };
-    Runnable runnableToDelete = () -> prepareToDelete(choosen_ItemInClickmethod);
+    Runnable runnableToDelete = () -> prepareToDelete(choosenItem_InClickmethod);
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -431,8 +429,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         handler = new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                prepareToIncrementing(msg.getData().getInt("DiamondIncrementing"));
-                prepareTochange(msg.getData().getString("changeString"));
+              /*  prepareToIncrementing(msg.getData().getInt("DiamondIncrementing"));
+                int diamondsIncrementingCount = msg.getData().getInt("DiamondIncrementing");*/
+                if (msg.getData().getInt("DiamondIncrementing") > 0){
+                    Log.d(TAG, "handleMessage: Зашли что бы запустить метод начисляющий кристаллы!");
+                    prepareToIncrementing(msg.getData().getInt("DiamondIncrementing"));
+                }
+                if (msg.getData().getString("changeString") != null){
+                    Log.d(TAG, "handleMessage: Зашли что бы запустить метод изменения строки!");
+                    prepareTochange(msg.getData().getString("changeString"));
+                }
+                msg.getData().clear();
                 switch (msg.what) {
                     case 1:
                         Toast.makeText(MainActivity.this, (R.string.File_reading_Error), Toast.LENGTH_LONG).show();
@@ -588,7 +595,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         contentValues.put(DBHelper.KEY_NAME, changeAbleString);
         if (!found_List.isEmpty() || !foundAccurateList.isEmpty()) {    //Если Пойсковый лист не пустой то данные заменяються и запускаеться обновление
-            sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
+            sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosenItem_InClickmethod});
             Log.i(TAG, "prepareTochange: Изменение с сторией поиска");
             binding.btnSave.callOnClick();
             try {
@@ -605,7 +612,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         } else {
             Log.i(TAG, "prepareTochange: простое изменение");
-            sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosen_ItemInClickmethod});
+            sqLiteDatabase.update(DBHelper.TABLE_CONTACT, contentValues, DBHelper.KEY_NAME + "= ?", new String[]{choosenItem_InClickmethod});
             binding.btnSave.callOnClick();
         }
         dbHelper.close();
@@ -637,36 +644,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 e.printStackTrace();
             }
         }
-        choosen_ItemInClickmethod = null;
+        choosenItem_InClickmethod = null;
         dbHelper.close();
 
     }
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-        choosen_ItemInClickmethod = ((TextView) view).getText().toString(); // Кликнутая строка в данный момент
+        choosenItem_InClickmethod = ((TextView) view).getText().toString(); // Кликнутая строка в данный момент
         checkExecutor.execute(() -> checkedItemsReloadInfo());
 
     }
 
     public void checkedItemsReloadInfo() {
-        if (hashSetMainCollectorItems.contains(choosen_ItemInClickmethod)) { // Основной Список Выбранных Элементов
-            hashSetMainCollectorItems.remove(choosen_ItemInClickmethod);
+        if (hashSetMainCollectorItems.contains(choosenItem_InClickmethod)) { // Основной Список Выбранных Элементов
+            hashSetMainCollectorItems.remove(choosenItem_InClickmethod);
         } else {
-            hashSetMainCollectorItems.add(choosen_ItemInClickmethod);
+            hashSetMainCollectorItems.add(choosenItem_InClickmethod);
         }
 
-        /*Save stats in sharedPreferences*/
-
-        ArrayList<String> gap = new ArrayList<>(hashSetMainCollectorItems);
+        // чистим SharedPreferences
         sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
         SharedPreferences.Editor editor = sPref.edit();
-        sPref.edit().clear().apply();                             // чистим SharedPreferences
+        sPref.edit().clear().apply();
 
+
+        // Заливаем новые данные в SharedPreferences
+        ArrayList<String> gap = new ArrayList<>(hashSetMainCollectorItems);
         for (int i = 0; i < hashSetMainCollectorItems.size(); i++) {
             editor.putString("Keyg" + i, gap.get(i));
         }
-        editor.putInt("Kolichesvo", hashSetMainCollectorItems.size());// Заливаем новые данные в SharedPreferences
+        editor.putInt("Kolichesvo", hashSetMainCollectorItems.size());
         editor.apply();
         gap.clear();
         bool_prepereDeleteRow = true;
@@ -816,7 +824,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (hashSetMainCollectorItems.isEmpty()) {
                             hashSetMainCollectorItems.addAll(listFromSharedPreference); // сохранённые значения которые были актуальны в момент нажатия обновить, передаём hset.
                         }
-                        choosen_ItemInClickmethod = "";
+                        choosenItem_InClickmethod = "";
                         showListIsReadyPercent();
                     } else
                         Toast.makeText(MainActivity.this, R.string.First_download_the_file, Toast.LENGTH_SHORT).show();
@@ -842,7 +850,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     showListIsReadyPercent();
-                    choosen_ItemInClickmethod = "";
+                    choosenItem_InClickmethod = "";
                     bool_onSaveReady = true;
                     bool_haveDeletingRight = false;
                 } else {
@@ -897,7 +905,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         foundAccurateList.clear();
                         hashSetMainCollectorItems.clear();
                         mainSupportAutocomplete.clear();
-                        choosen_ItemInClickmethod = null;
+                        choosenItem_InClickmethod = null;
                         bool_accessToDeleteAllWithOutDialog = false;
                         adapter1.clear();
                         autoCompleteAdapter.clear();
@@ -918,7 +926,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     binding.IDMainInnerUserGuide.setVisibility(View.VISIBLE);
                     Toast.makeText(MainActivity.this, R.string.deleted_successfully, Toast.LENGTH_SHORT).show();
                 } else {
-                    Log.i(TAG, "onClick: Создаём диалог");
+                    Log.i(TAG, "onClick: Создаём диалог для удаления");
                     /**Диалог для подготовки удаления*/
                     bool_haveDeletingRight = true;
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
@@ -1381,17 +1389,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int itemId = item.getItemId();
 //Изменить строку
         if (itemId == R.id.menuitemChageRow) {
-            choosen_ItemInClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
+            choosenItem_InClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
+
             //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
             if (binding.listItemModel.isItemChecked(position1)) {
                 binding.listItemModel.setItemChecked(position1, false);
                 checkedItemsReloadInfo();
             }
             //Создаём диалог
-            LayoutInflater inflater = this.getLayoutInflater();
             DialogClass dialogClass = new DialogClass(MainActivity.this,
                     "Lets change row",
-                    choosen_ItemInClickmethod
+                    choosenItem_InClickmethod
             );
             dialogClass.createCustomNewDialogChageItem();
             dialogClass.dialog.show();
@@ -1403,7 +1411,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 binding.btnDeleteAll.callOnClick();
             } else {
                 bool_prepereDeleteRow = false;
-                choosen_ItemInClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
+                choosenItem_InClickmethod = binding.listItemModel.getItemAtPosition(position1).toString();
                 //Находим строку и присваеваем её к переменной , которая взаимодейсвует с методом checkedItemsReloadInfo();
                 if (binding.listItemModel.isItemChecked(position1)) {
                     binding.listItemModel.setItemChecked(position1, false);

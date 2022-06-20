@@ -168,7 +168,6 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
                     if (!s.isEmpty() && !s.equals(stringPrepareToChange)) {
                         Message msg = handler.obtainMessage();
                         Bundle bundle = new Bundle();
-
                         bundle.putString("changeString", s);
                         msg.setData(bundle);
                         handler.sendMessage(msg);
