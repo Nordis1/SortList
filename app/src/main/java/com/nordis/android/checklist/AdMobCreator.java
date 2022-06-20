@@ -22,7 +22,7 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 
 public class AdMobCreator extends MainActivity {
     private String myAdAppNative = "ca-app-pub-6564886494367745/6806905091";
-    private String myAdNumber = "ca-app-pub-6564886494367745/7174186976";
+    private String myAdRewarded = "ca-app-pub-6564886494367745/7174186976";
     private String testAdRewarded = "ca-app-pub-3940256099942544/5224354917";
     private Context context;
 
@@ -44,7 +44,7 @@ public class AdMobCreator extends MainActivity {
             }
         });
 
-        RewardedAd.load(context, testAdRewarded,
+        RewardedAd.load(context, myAdRewarded,
                 adRequest, new RewardedAdLoadCallback() {
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
