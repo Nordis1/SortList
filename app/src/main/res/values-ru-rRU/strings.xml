@@ -86,4 +86,13 @@
     <string name="DateError">Ошибка данных</string>
     <string name="betweenDiamondAndNumber">X</string>
     <string name="resAutoCompleteText">Автозаполнение текста</string>
+    <string name="settingsAtrEnableAdBanner">AdBanner для авто пополнения кристаллов.</string>
+    <string name="bannerAdFailedLoad">Проблема с подключением, баннер не загружен!</string>
+    Dialogs
+    <string name="dialogFirstmessage">Вы можете отлючить баннер в настройках</string>
+    <string name="dialogFirstMessageTitle">Здравствуйте!</string>
+    <string name="dialogFirstMessagePossitive">Ок</string>
+    <string name="dialogGetPermission">Без разрешения мы не сможем загрузить ваш файл в систему</string>
+    <string name="dialogNotification">Уведомление</string>
+    Dialogs
 </resources>

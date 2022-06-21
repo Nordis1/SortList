@@ -280,4 +280,24 @@ public class DialogClass extends MainActivity implements View.OnClickListener, R
         }
 
     }
+
+    public void createStandartDialogWithStandartButtons() {
+        try {
+            alertBuilder = new AlertDialog.Builder(context);
+            alertBuilder.setMessage(dialog_message).setTitle(dialog_title)
+                    .setCancelable(false)
+                    .setPositiveButton(btnPositive, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            //positive
+                            dialog.cancel();
+                        }
+                    });
+            dialog = alertBuilder.create();
+        } catch (Exception e) {
+            Log.i(TAG, "createNewDialog: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
 }

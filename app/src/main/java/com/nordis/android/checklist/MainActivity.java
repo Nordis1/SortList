@@ -50,7 +50,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +81,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bool_owner,
             bool_neiser,
             bool_autoCompleteText,
-            bool_isInternet = false;
+            bool_adBannerEnabled,
+            bool_isInternet,
+            bool_firstDialogWasShown = false;
     volatile static int mProgresscounter = 0;
     volatile static int mColumnmax = 0;
     volatile static int mColumnmin = 0;
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     static Uri uri; // Получаем нахождение файла в OnActivityResult
     //Integer variables
     static int diamondValue = 0;
+    static ActivityMainBinding binding;
     final int hSetToastErrorOfFileReading = 1;
     final int hsetdelete_WithOut_rest = 3;
     final int hSetbtnReadFileEnabledFalse = 4;
@@ -113,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hSetWhatIsListNotVisible = 29;
     final int hSetDiamondValueIncrement = 30;
     final int hSetInternetReCheck = 31;
+    final int hSetAdBannerFailedLoad = 32;
     final private int requestCodePermissionResult_ToReadFile = 2;
     //Inner DataBase SQL variables
     DBHelper dbHelper;
@@ -143,7 +146,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ActivityResultLauncher<Intent> mGetActivityResult;
     DialogClass newdialog;
     LocalDateTime localDateChecked;
-    ActivityMainBinding binding;
     AdMobCreator adMobCreator;
     Runnable runnableIncrementProgressbar = new Runnable() {
         @Override
@@ -180,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dbHelper = new DBHelper(this);
         adMobCreator = new AdMobCreator(this);
 
-        checkBoolVariables();
+        sPrefVariablesLoading();
         viewData();// подгружаеться основной лист и адаптер
         checkInnerPreview(); // Убираем видимость гайда если листы не пусты. И если листы не пусты идёт обновление данных листа.
         onHandlerCreate(); // Создаём хендлер
@@ -193,13 +195,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    private void sPrefVariablesLoading() {
+        //Загрузка DeveloperMode
+        sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
+        bool_owner = sPref.getBoolean("keyown", false);
 
-    private void checkBoolVariables() {
+        //Если не хозяин, то загружаем баннер.
+        if (!bool_owner) {
+            sPref = getSharedPreferences("SettingsADBanner", MODE_PRIVATE);
+            if (!sPref.contains("AdBanner")){
+                //Если sPref ничего не знает о настройках банера, значит это первая загрузка.
+                bool_adBannerEnabled = true;
+                sPref.edit().putBoolean("AdBanner",true).apply();
+            }else {
+                //А если знает, то грузим настойки которые выставил пользователь.
+                bool_adBannerEnabled = sPref.getBoolean("AdBanner", false);
+            }
+        }
+
+        //Автозаполнение текста
         sPref = getSharedPreferences("Settings", MODE_PRIVATE);
         bool_autoCompleteText = sPref.getBoolean("autoCompletetext", false);
 
+        //НейзерФайл
         sPref = getSharedPreferences("NEISER", MODE_PRIVATE);
         bool_neiser = sPref.getBoolean("neiser", false);
+
+        //ПервыйДиалог, для того что бы не показывался в дальнейшем
+        sPref = getSharedPreferences("FIRST_DIALOG", MODE_PRIVATE);
+        bool_firstDialogWasShown = sPref.getBoolean("firstDialog",false);
+
+    }
+
+    public void showFirstDialog() {
+        if (!bool_firstDialogWasShown){
+            DialogClass dialogClass = new DialogClass(MainActivity.this,
+                    getString(R.string.dialogFirstmessage),
+                    getString(R.string.dialogFirstMessageTitle),
+                    getString(R.string.dialogFirstMessagePossitive),
+                    null,
+                    null);
+            dialogClass.createStandartDialogWithStandartButtons();
+            dialogClass.dialog.show();
+            sPref = getSharedPreferences("FIRST_DIALOG", MODE_PRIVATE);
+            sPref.edit().putBoolean("firstDialog",true).apply();
+        }
     }
 
     private void methodsRegisterForActivityResult() {
@@ -216,7 +256,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     chosenCharset = result.getData().getStringExtra("nameOfCharset");
                     Log.d(TAG, "onActivityResult: Данные полученны: " + chosenCharset);
                 } else if (result.getResultCode() == 2) {
+                    assert result.getData() != null;
                     bool_autoCompleteText = result.getData().getBooleanExtra("AutoCompleteText", false);
+                    bool_adBannerEnabled = result.getData().getBooleanExtra("AdBannerEnable", false);
                     Intent intent = getIntent();
                     finish();
                     startActivity(intent);
@@ -252,6 +294,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         });
 
+
+    }
+
+    public void startPermanentDiamondsIncrement() {
 
     }
 
@@ -302,20 +348,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onItemSelected: Была нажат выбор в меню " + parent.getAdapter().getItem(position).toString());
         if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.manual))) {
 //Прочесть Руководсво пользователя
-            binding.menuSpiner.setSelection(menuList.size() - 1);
+            binding.menuSpiner.setSelection(menuList.size() - 1, false);
             intent = new Intent(MainActivity.this, UserGuideActivity.class);
             startActivity(intent);
 
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.charset_determinations))) {
 // Изменить чтение charset
-            binding.menuSpiner.setSelection(menuList.size() - 1);
+            binding.menuSpiner.setSelection(menuList.size() - 1, false);
             intent = new Intent(MainActivity.this, EncodingActivity.class);
             mGetActivityResult.launch(intent);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
 //Посмотреть Рекламу
             if (bool_isInternet) {
                 if (mRewardedAd != null && bool_isInternet) {
-                    binding.menuSpiner.setSelection(menuList.size() - 1);
+                    binding.menuSpiner.setSelection(menuList.size() - 1, false);
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
                             getString(R.string.toGetCrystals),
                             getString(R.string.ad),
@@ -326,12 +372,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     dialogClass.createStandartNewDialogShowAd();
                     dialogClass.dialog.show();
                 } else {
-                    binding.menuSpiner.setSelection(menuList.size() - 1);
+                    binding.menuSpiner.setSelection(menuList.size() - 1, false);
                     onAdCreate();
                     Toast.makeText(this, R.string.rewardedAdsIsNull, Toast.LENGTH_LONG).show();
                 }
             } else {
-                binding.menuSpiner.setSelection(menuList.size() - 1);
+                binding.menuSpiner.setSelection(menuList.size() - 1, false);
                 DialogClass dialogClass = new DialogClass(MainActivity.this,
                         getString(R.string.NoInternetConnection),
                         getString(R.string.ad),
@@ -342,14 +388,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 dialogClass.createDialogNoInternet();
                 dialogClass.dialog.show();
             }
-            binding.menuSpiner.setSelection(menuList.size() - 1);
+            binding.menuSpiner.setSelection(menuList.size() - 1, false);
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.evaluateUs))) {
-            binding.menuSpiner.setSelection(menuList.size() - 1);
+            binding.menuSpiner.setSelection(menuList.size() - 1, false);
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.nordis.android.checklist"));
             startActivity(intent);
 
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.resSetting))) {
-            binding.menuSpiner.setSelection(menuList.size() - 1);
+            binding.menuSpiner.setSelection(menuList.size() - 1, false);
             intent = new Intent(MainActivity.this, SettingActivity.class);
             mGetActivityResult.launch(intent);
         }
@@ -381,13 +427,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, menuList) {
             @Override
             public int getCount() {
-                Log.d(TAG, "getCount: menusize is: " + (menuList.size() - 1));
+                //Log.d(TAG, "getCount: menusize is: " + (menuList.size() - 1));
                 return menuList.size() - 1;// Этот метод влияет на отображение в самом spinner
             }
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.menuSpiner.setAdapter(adapter);
-        binding.menuSpiner.setSelection(menuList.size() - 1);
+        binding.menuSpiner.setSelection(menuList.size() - 1, false);
+        binding.menuSpiner.setOnItemSelectedListener(this);
 
         Log.d(TAG, "onMenuCreate:  меню успешно созданно!");
 
@@ -396,9 +443,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void checkSub() {
         Log.d(TAG, "checkSub: Зашли в в проверку подписки ");
-        sPref = getSharedPreferences("OWNER", MODE_PRIVATE);
-        bool_owner = sPref.getBoolean("keyown", false);
-
         if (bool_owner) {
             Log.d(TAG, "checkSub: Это хозяин, производим регистрацию до Элементов");
             isSubscribed = true;
@@ -429,13 +473,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         handler = new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-              /*  prepareToIncrementing(msg.getData().getInt("DiamondIncrementing"));
-                int diamondsIncrementingCount = msg.getData().getInt("DiamondIncrementing");*/
-                if (msg.getData().getInt("DiamondIncrementing") > 0){
+                if (msg.getData().getInt("DiamondIncrementing") > 0) {
                     Log.d(TAG, "handleMessage: Зашли что бы запустить метод начисляющий кристаллы!");
-                    prepareToIncrementing(msg.getData().getInt("DiamondIncrementing"));
+                    diamondsIncrementing(msg.getData().getInt("DiamondIncrementing"));
                 }
-                if (msg.getData().getString("changeString") != null){
+                if (msg.getData().getString("changeString") != null) {
                     Log.d(TAG, "handleMessage: Зашли что бы запустить метод изменения строки!");
                     prepareTochange(msg.getData().getString("changeString"));
                 }
@@ -544,14 +586,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case hSetInternetReCheck:
                         onAdCreate();
                         break;
+                    case hSetAdBannerFailedLoad:
+                        Toast.makeText(MainActivity.this, R.string.bannerAdFailedLoad, Toast.LENGTH_LONG).show();
+                        break;
 
                 }
             }
         };
     }
 
-    private void prepareToIncrementing(int diamondIncrementing) {
+    private void diamondsIncrementing(int diamondIncrementing) {
         diamondValue += diamondIncrementing;
+        if (diamondValue >= 1000) {
+            diamondValue = 999;
+        }
         sPref = getSharedPreferences("DIAMOND", MODE_PRIVATE);
         sPref.edit().putInt("KeyDiamond", diamondValue).apply();
 
@@ -576,8 +624,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             binding.IdDiamondIcon.setVisibility(View.VISIBLE);
             binding.IDX.setVisibility(View.VISIBLE);
             binding.idDiamondNumber.setVisibility(View.VISIBLE);
+            if (bool_adBannerEnabled) {
+                binding.AdBannerLayoutHolder.setVisibility(View.VISIBLE);
+                adMobCreator.startAdBannerCreate();
+            } else {
+                binding.AdBannerLayoutHolder.setVisibility(View.GONE);
+            }
             onMenuCreate();
             onAdCreate();
+            showFirstDialog();
         }
     }
 
@@ -1160,6 +1215,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mGetContentResult.launch("*/*");
             //Toast.makeText(this,getString(R.string.permission_granted),Toast.LENGTH_LONG).show();
         } else {
+            DialogClass dialogClass = new DialogClass(MainActivity.this,
+                    getString(R.string.dialogGetPermission),
+                    getString(R.string.dialogNotification),
+                    getString(R.string.NoInternetBtnPossitive),
+                    null,
+                    null);
+            dialogClass.createStandartDialogWithStandartButtons();
+            dialogClass.dialog.show();
             Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_LONG).show();
         }
     }
@@ -1753,7 +1816,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        binding.menuSpiner.setOnItemSelectedListener(this);
         Log.i(TAG, "onResume");
     }
 

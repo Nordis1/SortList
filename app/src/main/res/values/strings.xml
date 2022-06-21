@@ -89,6 +89,21 @@
     Internet
     <string name="NoInternetConnection">"No internet connection!"</string>
     <string name="NoInternetBtnPossitive">"Ok"</string>
+    <string name="settingsAtrEnableAdBanner">AdBanner to auto-replenish crystals.</string>
     Internet
+
+    AdIdentifiers
+    <string name="testBannerAd" translatable="false">"ca-app-pub-3940256099942544/6300978111"</string>
+    <string name="myBannerAd" translatable="false">"ca-app-pub-6564886494367745/8970922055"</string>
+    <string name="bannerAdFailedLoad">Connection problem, banner not working</string>
+    AdIdentifiers
+
+    Dialogs
+    <string name="dialogFirstmessage">You can disable the banner in the settings</string>
+    <string name="dialogFirstMessageTitle">Hello User!</string>
+    <string name="dialogFirstMessagePossitive">Ok</string>
+    <string name="dialogGetPermission">Without permission, we will not be able to upload your file to the system</string>
+    <string name="dialogNotification">Notification</string>
+    Dialogs
 
 </resources>

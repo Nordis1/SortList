@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -72,35 +73,58 @@
             android:visibility="visible"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHeight_percent="0.80"
+            app:layout_constraintHeight_percent="0.50"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.1"
+            app:layout_constraintWidth_percent="0.06"
             tools:layout_constraintLeft_toRightOf="@id/barrier5" />
 
         <TextView
             android:id="@+id/id_DiamondNumber"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:textSize="18sp"
+            android:layout_marginStart="3dp"
+            android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/ID_X"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.15" />
+            app:layout_constraintVertical_bias="0.6"
+            app:layout_constraintWidth_percent="0.07" />
 
         <TextView
             android:id="@+id/ID_X"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
+            android:layout_marginStart="3dp"
             android:text="@string/betweenDiamondAndNumber"
-            android:textSize="18sp"
+            android:textSize="10sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/Id_diamond_Icon"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.6" />
+
+        <LinearLayout
+            android:id="@+id/AdBannerLayoutHolder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/menuSpiner"
+            app:layout_constraintStart_toEndOf="@+id/id_DiamondNumber"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/adBannerView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                ads:adSize="BANNER"
+                ads:adUnitId="@string/myBannerAd" />
+
+
+        </LinearLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -191,7 +215,6 @@
             android:layout_marginBottom="1dp"
             android:fontFamily="@font/roboto_bold"
             android:gravity="center"
-            android:onClick="btnSave"
             android:text="@string/main"
             android:textStyle="normal"
             app:autoSizeMaxTextSize="14sp"

@@ -14,6 +14,8 @@ implementation fileTree(dir: 'libs', include: ['*.jar'])
  sPref = getSharedPreferences("SAVE", MODE_PRIVATE);
  sPref.edit().clear().apply();
 
+ sPref = getSharedPreferences("SettingsADBanner",MODE_PRIVATE);
+ sPref.edit().putBoolean("AdBanner",true).apply();
 
                                               App map
 Меню
