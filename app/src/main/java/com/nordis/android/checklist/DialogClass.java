@@ -20,7 +20,8 @@ import com.nordis.android.checklist.databinding.ResizeXlsReaderBinding;
 
 import java.util.concurrent.TimeUnit;
 
-public class DialogClass extends MainActivity implements View.OnClickListener, RangeBar.OnRangeBarChangeListener, CompoundButton.OnCheckedChangeListener {
+public class DialogClass extends MainActivity implements View.OnClickListener,
+        RangeBar.OnRangeBarChangeListener, CompoundButton.OnCheckedChangeListener {
 
     final String TAG = "Dialog_class_Tag";
     private ActivityDeleteFileBinding activityDeleteFileBinding;

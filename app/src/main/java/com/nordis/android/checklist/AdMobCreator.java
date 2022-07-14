@@ -28,6 +28,7 @@ public class AdMobCreator extends MainActivity {
     private static final String TAG = "AdMobCreator";
     private String myAdRewarded = "ca-app-pub-6564886494367745/7174186976";
     private String testAdRewarded = "ca-app-pub-3940256099942544/5224354917";
+    private String testAdBanner = "ca-app-pub-3940256099942544/6300978111";
     private Context context;
     private Random random = new Random();
 
@@ -49,11 +50,17 @@ public class AdMobCreator extends MainActivity {
 
         RewardedAd.load(context, myAdRewarded,
                 adRequest, new RewardedAdLoadCallback() {
+
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         // Handle the error.
                         Log.d(TAG, "RewardedOnAdFailedToLoad: error");
                         mRewardedAd = null;
+
+                        /** Admob is not loaded, start creating YandexAds*/
+                        Log.d(TAG, "onAdFailedToLoad: Admob is not loaded, start creating YandexAds");
+                        handler.sendEmptyMessage(hSetYandexAdCreator);
+
                     }
 
                     @Override

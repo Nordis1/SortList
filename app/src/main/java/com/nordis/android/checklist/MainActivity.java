@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static String name = "";
     public static volatile String choosenItem_InClickmethod = ""; // Выделяемые View преобразуються в String в setOnItemCL. После checked_Items работает с HashSetMainCollectorItems
     public static RewardedAd mRewardedAd;
+    public static com.yandex.mobile.ads.rewarded.RewardedAd mYRewardedAd;
     //Boolean variables
     static boolean isSubscribed = false;// для того что бы из subscribtion class получить инфу о подписке.
     static volatile boolean
@@ -116,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int hSetDiamondValueIncrement = 30;
     final int hSetInternetReCheck = 31;
     final int hSetAdBannerFailedLoad = 32;
+    final int hSetYandexAdCreator = 33;
     final private int requestCodePermissionResult_ToReadFile = 2;
     //Inner DataBase SQL variables
     DBHelper dbHelper;
@@ -147,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DialogClass newdialog;
     LocalDateTime localDateChecked;
     AdMobCreator adMobCreator;
+    YandexAdCreator yandexAdCreator;
     Runnable runnableIncrementProgressbar = new Runnable() {
         @Override
         public void run() {
@@ -360,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (parent.getAdapter().getItem(position).toString().equals(getString(R.string.toSeeAds))) {
 //Посмотреть Рекламу
             if (bool_isInternet) {
-                if (mRewardedAd != null && bool_isInternet) {
+                if (mRewardedAd != null && bool_isInternet || mYRewardedAd !=null && bool_isInternet) {
                     binding.menuSpiner.setSelection(menuList.size() - 1, false);
                     DialogClass dialogClass = new DialogClass(MainActivity.this,
                             getString(R.string.toGetCrystals),
@@ -586,6 +589,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case hSetInternetReCheck:
                         onAdCreate();
                         break;
+                    case hSetYandexAdCreator:
+                        yandexAdCreator = new YandexAdCreator(MainActivity.this);
+                        yandexAdCreator.yandexRewardAdCreate();
+                        break;
                     case hSetAdBannerFailedLoad:
                         Toast.makeText(MainActivity.this, R.string.bannerAdFailedLoad, Toast.LENGTH_LONG).show();
                         break;
@@ -637,8 +644,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void showAdExecute() {
-        if (mRewardedAd != null) {
-            adMobCreator.startRewardedAdExecute(MainActivity.this);
+        if (mRewardedAd != null || mYRewardedAd != null) {
+            if (mRewardedAd != null){
+                Log.d(TAG, "showAdExecute: зашли запускать адмоб рекламу");
+                adMobCreator.startRewardedAdExecute(MainActivity.this);
+            }else {
+                Log.d(TAG, "showAdExecute: Зашли запустить яндекс рекламу");
+                yandexAdCreator.yandexRewardAdStart();
+            }
         } else {
             Log.d(TAG, "The rewarded ad wasn't ready yet.");
         }
